@@ -25,7 +25,7 @@ _Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm\_source=daily-1
 
  Steerling-8B가 다른 건 이 지점입니다. 사후 분석이 아니라 **아키텍처 자체에 해석 가능성을 내장**했습니다. [TechCrunch의 2026년 2월 보도](https://techcrunch.com/2026/02/23/guide-labs-debuts-a-new-kind-of-interpretable-llm/)에 따르면, Guide Labs는 이를 "내재적 해석 가능성(inherent interpretability)"이라 부릅니다.
 
-    비교 항목 기존 블랙박스 LLM (Llama 2, GPT 등) Steerling-8B    해석 방식 사후 분석 (SHAP, Attention 등) 아키텍처 내장   출력 추적 불가능 학습 데이터까지 역추적   개념 제어 파인튜닝 필요 추론 시점 실시간 제어   파라미터 7B\~70B+ 8B   성능 (벤치마크) 100% 기준선 \~90%   학습 데이터 2\~15조 토큰 1.35조 토큰   라이선스 모델별 상이 오픈소스   이전에 [Wolfram × ChatGPT의 계산 증강 생성(CAG)](https://daily-1-bite.tistory.com/entry/Wolfram-%C3%97-ChatGPT-%EA%B3%84%EC%82%B0-%EC%A6%9D%EA%B0%95-%EC%83%9D%EC%84%B1CAG-AI-%ED%99%98%EA%B0%81%EC%9D%84-%EC%88%98%ED%95%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EB%8A%94-%EC%83%88-%EC%A0%91%EA%B7%BC%EB%B2%95)에서 AI 환각을 줄이는 접근법을 다뤘었는데요. CAG가 "수학적으로 검증 가능한 답변"에 초점을 뒀다면, Steerling-8B는 "왜 그 답변이 나왔는지"에 초점을 맞춥니다. 방향은 다르지만 둘 다 AI 신뢰성이라는 같은 문제를 풀고 있습니다.
+    비교 항목 기존 블랙박스 LLM (Llama 2, GPT 등) Steerling-8B    해석 방식 사후 분석 (SHAP, Attention 등) 아키텍처 내장   출력 추적 불가능 학습 데이터까지 역추적   개념 제어 파인튜닝 필요 추론 시점 실시간 제어   파라미터 7B\~70B+ 8B   성능 (벤치마크) 100% 기준선 \~90%   학습 데이터 2\~15조 토큰 1.35조 토큰   라이선스 모델별 상이 오픈소스   이전에 [Wolfram × ChatGPT의 계산 증강 생성(CAG)](https://daily1bite.com/blog/ai-tutorial/wolfram-x-chatgpt-cag-ai)에서 AI 환각을 줄이는 접근법을 다뤘었는데요. CAG가 "수학적으로 검증 가능한 답변"에 초점을 뒀다면, Steerling-8B는 "왜 그 답변이 나왔는지"에 초점을 맞춥니다. 방향은 다르지만 둘 다 AI 신뢰성이라는 같은 문제를 풀고 있습니다.
 
  
 ## 세 갈래 임베딩 아키텍처: 어떻게 작동하나
@@ -67,7 +67,7 @@ _Photo by [Mirella Callage](https://unsplash.com/@mcallage?utm\_source=daily-1-b
 
  **3\. 학습 데이터 추적을 얻으면 → 저작권 리스크가 오히려 명확해진다**
 
- 이건 재밌는 역설인데요. 출력을 학습 데이터까지 추적할 수 있다는 건, 동시에 "이 출력이 특정 저작물에서 유래했다"는 증거도 명확해진다는 뜻입니다. 이전에 [Memobase 리뷰](https://daily-1-bite.tistory.com/entry/Memobase-ChatGPT%C2%B7Claude-%EA%B8%B0%EC%96%B5%EC%9D%84-%ED%95%98%EB%82%98%EB%A1%9C-%EC%9E%87%EB%8A%94-AI-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%8B%A0%EA%B3%A0)에서도 AI의 데이터 처리 투명성 문제를 짚었었는데, Steerling은 이 투명성을 아예 기술적으로 구현한 셈입니다. 양날의 검이죠.
+ 이건 재밌는 역설인데요. 출력을 학습 데이터까지 추적할 수 있다는 건, 동시에 "이 출력이 특정 저작물에서 유래했다"는 증거도 명확해진다는 뜻입니다. 이전에 [Memobase 리뷰](https://daily1bite.com/blog/ai-tools/memobase-chatgpt-claude-ai)에서도 AI의 데이터 처리 투명성 문제를 짚었었는데, Steerling은 이 투명성을 아예 기술적으로 구현한 셈입니다. 양날의 검이죠.
 
  
 ## 규제 시대에 왜 중요한가
@@ -102,4 +102,4 @@ _Photo by [Van Tay Media](https://unsplash.com/@vantaymedia?utm\_source=daily-1-
 
   [Guide Labs 공식 블로그 - Steerling-8B Base Model Release](https://www.guidelabs.ai/post/steerling-8b-base-model-release/) [TechCrunch - Guide Labs debuts a new kind of interpretable LLM (2026.02.23)](https://techcrunch.com/2026/02/23/guide-labs-debuts-a-new-kind-of-interpretable-llm/) [Dataconomy - New Steerling-8B Model Can Trace Every Single Word Back To Its Training Source (2026.02.24)](https://dataconomy.com/2026/02/24/new-steerling-8b-model-can-trace-every-single-word-back-to-its-training-source/) [Guide Labs - Steering Interpretable Language Models](https://www.guidelabs.ai/post/steerling-steering-8b/) [Wilson Sonsini - 2026 Year in Preview: AI Regulatory Developments](https://www.wsgr.com/en/insights/2026-year-in-preview-ai-regulatory-developments-for-companies-to-watch-out-for.html) [HuggingFace - guidelabs/steerling-8b](https://huggingface.co/guidelabs/steerling-8b)   **함께 읽으면 좋은 글:**
 
-  [Wolfram × ChatGPT '계산 증강 생성(CAG)': AI 환각을 수학으로 잡는 새 접근법](https://daily-1-bite.tistory.com/entry/Wolfram-%C3%97-ChatGPT-%EA%B3%84%EC%82%B0-%EC%A6%9D%EA%B0%95-%EC%83%9D%EC%84%B1CAG-AI-%ED%99%98%EA%B0%81%EC%9D%84-%EC%88%98%ED%95%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EB%8A%94-%EC%83%88-%EC%A0%91%EA%B7%BC%EB%B2%95) - AI 환각을 줄이는 또 다른 접근법 [Memobase: ChatGPT·Claude 기억을 하나로 잇는 AI 유니버설 메모리](https://daily-1-bite.tistory.com/entry/Memobase-ChatGPT%C2%B7Claude-%EA%B8%B0%EC%96%B5%EC%9D%84-%ED%95%98%EB%82%98%EB%A1%9C-%EC%9E%87%EB%8A%94-AI-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%8B%A0%EA%B3%A0) - AI 데이터 투명성에 대한 또 다른 관점 
+  [Wolfram × ChatGPT '계산 증강 생성(CAG)': AI 환각을 수학으로 잡는 새 접근법](https://daily1bite.com/blog/ai-tutorial/wolfram-x-chatgpt-cag-ai) - AI 환각을 줄이는 또 다른 접근법 [Memobase: ChatGPT·Claude 기억을 하나로 잇는 AI 유니버설 메모리](https://daily1bite.com/blog/ai-tools/memobase-chatgpt-claude-ai) - AI 데이터 투명성에 대한 또 다른 관점 

@@ -29,7 +29,7 @@ _Photo by [2H Media](https://unsplash.com/@2hmedia?utm\_source=daily-1-bite&utm\
 
   **Resources**: 파일이나 API 응답 같은 읽기 전용 데이터 **Tools**: LLM이 호출할 수 있는 함수 (사용자 승인 필요) **Prompts**: 특정 작업을 위한 사전 정의 템플릿  이 중 Tools가 가장 많이 쓰이고, 오늘 실습에서도 Tools 중심으로 진행합니다. [MCP 공식 문서](https://modelcontextprotocol.io/docs/develop/build-server)에 따르면, 서버 하나로 여러 클라이언트(Claude Desktop, 커스텀 앱 등)에 동시 연결이 가능합니다 (2026년 3월 기준).
 
- 이전에 [n8n 블로그 자동화](https://daily-1-bite.tistory.com/entry/Claude-Code%EB%A1%9C-2%EC%A3%BC-%EB%A7%8C%EC%97%90-%EC%9D%BC%EB%B3%B8%EC%96%B4-%ED%95%99%EC%8A%B5-SaaS-%EC%99%84%EC%84%B1%ED%95%98%EA%B8%B0-Utakoto-%EC%A0%9C%EC%9E%91%EA%B8%B0)에서 AI 도구를 워크플로우에 통합하는 과정을 다뤘는데요, MCP는 그보다 훨씬 저수준에서 AI와 도구의 연결을 표준화합니다.
+ 이전에 [n8n 블로그 자동화](https://daily1bite.com/blog/dev-life/claude-code-2-saas-utakoto)에서 AI 도구를 워크플로우에 통합하는 과정을 다뤘는데요, MCP는 그보다 훨씬 저수준에서 AI와 도구의 연결을 표준화합니다.
 
  
 ## 사전 준비: 환경 세팅
@@ -66,7 +66,7 @@ _출처: [MCP 공식 문서](https://modelcontextprotocol.io/docs/develop/build-
 
  # MCP Inspector 실행 npx @modelcontextprotocol/inspector uv run server.py 브라우저에서 Inspector UI가 열리면, 등록된 도구 목록을 확인하고 직접 호출해볼 수 있습니다. 솔직히 이 Inspector 없었으면 디버깅이 많이 힘들었을 겁니다. 서버가 어떤 스키마를 노출하는지, 어떤 응답을 반환하는지 실시간으로 볼 수 있거든요.
 
- 이전에 다뤘던 [GPT-5.4 팩트체킹 워크플로우](https://daily-1-bite.tistory.com/entry/GPT-54-%EA%B0%80%EC%9E%A5-%EC%A0%95%ED%99%95%ED%95%9C-%EB%AA%A8%EB%8D%B8-%ED%99%9C%EC%9A%A9%EB%B2%95-%ED%99%98%EA%B0%81-33-%EA%B0%90%EC%86%8C-%EC%8B%A4%EB%AC%B4-%ED%8C%A9%ED%8A%B8%EC%B2%B4%ED%82%B9-%EC%9B%8C%ED%81%AC%ED%94%8C%EB%A1%9C%EC%9A%B0-%EB%A7%8C%EB%93%A4%EA%B8%B0)에서도 외부 검색 API를 교차 검증에 썼는데요, 그 외부 API 호출 부분을 MCP 서버로 만들면 Claude Desktop에서 바로 팩트체킹이 가능해집니다. 이게 MCP의 진짜 매력이에요.
+ 이전에 다뤘던 [GPT-5.4 팩트체킹 워크플로우](https://daily1bite.com/blog/ai-tools/gpt-54-33percent)에서도 외부 검색 API를 교차 검증에 썼는데요, 그 외부 API 호출 부분을 MCP 서버로 만들면 Claude Desktop에서 바로 팩트체킹이 가능해집니다. 이게 MCP의 진짜 매력이에요.
 
  
 ![코드 에디터 화면을 보여주는 개발 환경 이미지](https://images.unsplash.com/photo-1649451844931-57e22fc82de3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxhcGklMjBpbnRlZ3JhdGlvbiUyMGNvZGV8ZW58MHwwfHx8MTc3MzIwNjczOXww&ixlib=rb-4.1.0&q=80&w=1080)
@@ -114,4 +114,4 @@ _Photo by [Ecliptic Graphic](https://unsplash.com/@eclipticgraphic?utm\_source=d
 
   [Introducing the Model Context Protocol | Anthropic 공식 블로그](https://www.anthropic.com/news/model-context-protocol) (2024년 11월) [Build an MCP Server | MCP 공식 문서](https://modelcontextprotocol.io/docs/develop/build-server) (2026년 3월) [MCP SDK Comparison | Stainless](https://www.stainless.com/mcp/mcp-sdk-comparison-python-vs-typescript-vs-go-implementations) (2026년 3월) [Model Context Protocol | Wikipedia](https://en.wikipedia.org/wiki/Model\_Context\_Protocol) (2026년 3월) [MCP GitHub Organization](https://github.com/modelcontextprotocol) (2026년 3월) [MCP Explained: Build Your First Server | DEV Community](https://dev.to/deangrover/mcp-explained-build-your-first-mcp-server-in-typescript-and-python-3hp9) (2026년)   **함께 읽으면 좋은 글:**
 
-  [GPT-5.4 '가장 정확한 모델' 활용법: 환각 33% 감소, 실무 팩트체킹 워크플로우 만들기](https://daily-1-bite.tistory.com/entry/GPT-54-%EA%B0%80%EC%9E%A5-%EC%A0%95%ED%99%95%ED%95%9C-%EB%AA%A8%EB%8D%B8-%ED%99%9C%EC%9A%A9%EB%B2%95-%ED%99%98%EA%B0%81-33-%EA%B0%90%EC%86%8C-%EC%8B%A4%EB%AC%B4-%ED%8C%A9%ED%8A%B8%EC%B2%B4%ED%82%B9-%EC%9B%8C%ED%81%AC%ED%94%8C%EB%A1%9C%EC%9A%B0-%EB%A7%8C%EB%93%A4%EA%B8%B0) - MCP로 팩트체킹 API를 연결하면 더 강력해진다 [Claude Code로 2주 만에 일본어 학습 SaaS 완성하기: Utakoto 제작기](https://daily-1-bite.tistory.com/entry/Claude-Code%EB%A1%9C-2%EC%A3%BC-%EB%A7%8C%EC%97%90-%EC%9D%BC%EB%B3%B8%EC%96%B4-%ED%95%99%EC%8A%B5-SaaS-%EC%99%84%EC%84%B1%ED%95%98%EA%B8%B0-Utakoto-%EC%A0%9C%EC%9E%91%EA%B8%B0) - Claude 생태계에서 AI 도구를 활용하는 실전 사례 
+  [GPT-5.4 '가장 정확한 모델' 활용법: 환각 33% 감소, 실무 팩트체킹 워크플로우 만들기](https://daily1bite.com/blog/ai-tools/gpt-54-33percent) - MCP로 팩트체킹 API를 연결하면 더 강력해진다 [Claude Code로 2주 만에 일본어 학습 SaaS 완성하기: Utakoto 제작기](https://daily1bite.com/blog/dev-life/claude-code-2-saas-utakoto) - Claude 생태계에서 AI 도구를 활용하는 실전 사례 

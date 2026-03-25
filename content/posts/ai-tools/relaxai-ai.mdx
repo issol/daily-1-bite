@@ -21,7 +21,7 @@ _Photo by [Tanya Barrow](https://unsplash.com/@tanyabarrow?utm\_source=daily-1-b
 
  실제로 2025년 4월 영국 IT 리더 대상 설문조사에서, 응답자 대다수가 **"데이터 주권과 명시적 데이터 통제가 AI 도구 도입의 핵심 요건"**이라고 답했습니다 (2025년 4월 기준, [Civo 공식 뉴스룸](https://www.civo.com/newsroom/civo-unveils-relax-ai)). 저만 그런 게 아니었던 겁니다.
 
- 특히 금융이나 헬스케어 쪽에서 일하는 동료들은 아예 AI 챗봇 사용 자체를 회사에서 금지당한 경우도 있더라고요. OpenAI 서버가 미국에 있고, 미국 CLOUD Act에 따라 미국 정부가 해외 서버 데이터에도 접근할 수 있다는 게 법적으로 걸리는 거죠. 이건 좀 별개의 이야기인데, [AI 데이터센터에 1조 달러: 인프라 투자 붐이 개발자에게 의미하는 것](https://daily-1-bite.tistory.com/entry/AI-%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%84%BC%ED%84%B0%EC%97%90-1%EC%A1%B0-%EB%8B%AC%EB%9F%AC-NVIDIA-Vera-Rubin%EA%B3%BC-%EC%9D%B8%ED%94%84%EB%9D%BC-%ED%88%AC%EC%9E%90-%EB%B6%90%EC%9D%B4-%EA%B0%9C%EB%B0%9C%EC%9E%90%EC%97%90%EA%B2%8C-%EC%9D%98%EB%AF%B8%ED%95%98%EB%8A%94-%EA%B2%83)에서도 다뤘듯이, AI 인프라의 물리적 위치가 점점 더 중요해지고 있습니다.
+ 특히 금융이나 헬스케어 쪽에서 일하는 동료들은 아예 AI 챗봇 사용 자체를 회사에서 금지당한 경우도 있더라고요. OpenAI 서버가 미국에 있고, 미국 CLOUD Act에 따라 미국 정부가 해외 서버 데이터에도 접근할 수 있다는 게 법적으로 걸리는 거죠. 이건 좀 별개의 이야기인데, [AI 데이터센터에 1조 달러: 인프라 투자 붐이 개발자에게 의미하는 것](https://daily1bite.com/blog/dev-life/ai-1-nvidia-vera-rubin)에서도 다뤘듯이, AI 인프라의 물리적 위치가 점점 더 중요해지고 있습니다.
 
  
 ## 해결책을 찾은 과정: 로컬 LLM부터 프라이빗 클라우드까지
@@ -53,7 +53,7 @@ _Photo by [Sasun Bughdaryan](https://unsplash.com/@sasun1990?utm\_source=daily-1
 
 _Photo by [Steve Johnson](https://unsplash.com/@steve\_j?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | OpenAI 호환 API 덕분에 전환이 놀라울 정도로 간단하다_
 
- [Civo 공식 블로그](https://www.civo.com/blog/meta-llama-4-models-available)에 따르면, relaxAI는 최근 Meta의 Llama 4 모델도 지원하기 시작했습니다 (2026년 2월 기준). 이 부분은 [Llama 4 Scout vs Maverick 완전 분석](https://daily-1-bite.tistory.com/entry/Llama-4-Scout-vs-Maverick-%EC%99%84%EC%A0%84-%EB%B6%84%EC%84%9D-%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4-LLM%EC%9D%98-%EC%83%88-%EA%B8%B0%EC%A4%80-%EC%8B%A4%EB%AC%B4%EC%97%90%EC%84%9C-%EB%B0%94%EB%A1%9C-%EC%93%B8-%EC%88%98-%EC%9E%88%EB%82%98)에서 더 자세히 다뤘는데요, Llama 4의 성능 자체는 꽤 쓸 만해서 relaxAI 위에서 돌리는 것도 나쁘지 않습니다.
+ [Civo 공식 블로그](https://www.civo.com/blog/meta-llama-4-models-available)에 따르면, relaxAI는 최근 Meta의 Llama 4 모델도 지원하기 시작했습니다 (2026년 2월 기준). 이 부분은 [Llama 4 Scout vs Maverick 완전 분석](https://daily1bite.com/blog/ai-tools/llama-4-scout-vs-maverick-llm)에서 더 자세히 다뤘는데요, Llama 4의 성능 자체는 꽤 쓸 만해서 relaxAI 위에서 돌리는 것도 나쁘지 않습니다.
 
  가격도 합리적인 편입니다. API 기준으로 입력 토큰 백만 개당 £0.10(약 170원), 출력 토큰 백만 개당 £0.60(약 1,020원)이에요. GPT-4o의 입력 $2.50, 출력 $10.00과 비교하면 상당히 저렴합니다.
 
@@ -61,7 +61,7 @@ _Photo by [Steve Johnson](https://unsplash.com/@steve\_j?utm\_source=daily-1-bit
 ## ChatGPT, Claude와 비교: 왜 relaxAI를 선택하나?
  솔직히 순수 성능만 놓고 보면 relaxAI가 ChatGPT나 Claude를 이기기는 어렵습니다. Llama 기반이니까요. 근데 비교 축을 바꾸면 이야기가 달라집니다.
 
-    항목 ChatGPT (GPT-4o) Claude 3.5 Sonnet relaxAI (Llama 4)    데이터 처리 위치 미국 미국 **영국 전용**   CLOUD Act 적용 적용 적용 **미적용**   GDPR 네이티브 부분 준수 부분 준수 **완전 준수**   고객 데이터 학습 옵트아웃 필요 옵트아웃 필요 **기본 미사용**   월 구독료 $20 $20 **£10 (\~$13)**   코딩 능력 최상 최상 중상   멀티모달 이미지+음성 이미지 텍스트만   오픈소스 모델 비공개 비공개 **Llama (오픈소스)**   [Qwen3.5 리뷰](https://daily-1-bite.tistory.com/entry/Qwen35-%EB%A6%AC%EB%B7%B0-%EC%95%8C%EB%A6%AC%EB%B0%94%EB%B0%94-%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4-AI%EB%A5%BC-%EB%A1%9C%EC%BB%AC%EC%97%90%EC%84%9C-%EC%A7%81%EC%A0%91-%EB%8F%8C%EB%A0%A4%EB%B4%A4%EB%8B%A4)에서도 다뤘지만, 오픈소스 모델의 강점은 투명성입니다. relaxAI가 Llama를 쓴다는 건 모델 자체의 동작 방식을 누구나 검증할 수 있다는 뜻이에요. 블랙박스가 아니라는 거죠.
+    항목 ChatGPT (GPT-4o) Claude 3.5 Sonnet relaxAI (Llama 4)    데이터 처리 위치 미국 미국 **영국 전용**   CLOUD Act 적용 적용 적용 **미적용**   GDPR 네이티브 부분 준수 부분 준수 **완전 준수**   고객 데이터 학습 옵트아웃 필요 옵트아웃 필요 **기본 미사용**   월 구독료 $20 $20 **£10 (\~$13)**   코딩 능력 최상 최상 중상   멀티모달 이미지+음성 이미지 텍스트만   오픈소스 모델 비공개 비공개 **Llama (오픈소스)**   [Qwen3.5 리뷰](https://daily1bite.com/blog/ai-tools/qwen35-ai)에서도 다뤘지만, 오픈소스 모델의 강점은 투명성입니다. relaxAI가 Llama를 쓴다는 건 모델 자체의 동작 방식을 누구나 검증할 수 있다는 뜻이에요. 블랙박스가 아니라는 거죠.
 
  
 ![보라빛 추상적 디지털 네트워크 이미지](https://images.unsplash.com/photo-1626624338641-b99e0d32c958?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxkYXRhJTIwc2VjdXJpdHklMjBzZXJ2ZXJ8ZW58MHwwfHx8MTc3MjE3NDE1N3ww&ixlib=rb-4.1.0&q=80&w=1080)
@@ -95,4 +95,4 @@ _Photo by [Sammyayot254](https://unsplash.com/@superadmins?utm\_source=daily-1-b
 ### 참고 자료
   [relaxAI 공식 웹사이트](https://relax.ai/) [Civo 공식 뉴스룸 - relaxAI 출시 발표](https://www.civo.com/newsroom/civo-launches-relaxai) [DataCentre News UK - relaxAI API와 영국 데이터 주권](https://datacentrenews.uk/story/civo-launches-relaxai-api-to-boost-uk-data-sovereignty-in-ai) [IT Brief UK - relaxAI 프라이버시 및 재생에너지](https://itbrief.co.uk/story/civo-unveils-relaxai-prioritising-privacy-renewables) [Civo 블로그 - Llama 4 모델 지원](https://www.civo.com/blog/meta-llama-4-models-available)   **함께 읽으면 좋은 글:**
 
-  [Llama 4 Scout vs Maverick 완전 분석: 오픈소스 LLM의 새 기준](https://daily-1-bite.tistory.com/entry/Llama-4-Scout-vs-Maverick-%EC%99%84%EC%A0%84-%EB%B6%84%EC%84%9D-%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4-LLM%EC%9D%98-%EC%83%88-%EA%B8%B0%EC%A4%80-%EC%8B%A4%EB%AC%B4%EC%97%90%EC%84%9C-%EB%B0%94%EB%A1%9C-%EC%93%B8-%EC%88%98-%EC%9E%88%EB%82%98) - relaxAI가 사용하는 Llama 4 모델의 심층 분석 [AI 데이터센터에 1조 달러: 인프라 투자 붐이 개발자에게 의미하는 것](https://daily-1-bite.tistory.com/entry/AI-%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%84%BC%ED%84%B0%EC%97%90-1%EC%A1%B0-%EB%8B%AC%EB%9F%AC-NVIDIA-Vera-Rubin%EA%B3%BC-%EC%9D%B8%ED%94%84%EB%9D%BC-%ED%88%AC%EC%9E%90-%EB%B6%90%EC%9D%B4-%EA%B0%9C%EB%B0%9C%EC%9E%90%EC%97%90%EA%B2%8C-%EC%9D%98%EB%AF%B8%ED%95%98%EB%8A%94-%EA%B2%83) - 데이터센터 위치가 왜 중요해졌는지 
+  [Llama 4 Scout vs Maverick 완전 분석: 오픈소스 LLM의 새 기준](https://daily1bite.com/blog/ai-tools/llama-4-scout-vs-maverick-llm) - relaxAI가 사용하는 Llama 4 모델의 심층 분석 [AI 데이터센터에 1조 달러: 인프라 투자 붐이 개발자에게 의미하는 것](https://daily1bite.com/blog/dev-life/ai-1-nvidia-vera-rubin) - 데이터센터 위치가 왜 중요해졌는지 

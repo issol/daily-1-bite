@@ -22,9 +22,9 @@ tags: ["seo 최적화", "tistory skin", "다크모드 스킨", "미니멀 블로
 
  첫째, Google에서 제대로 인식되는 구조화 데이터. 둘째, 2026년에 봐도 촌스럽지 않은 디자인. 셋째, 다크 모드. 이 세 가지를 동시에 충족하는 무료 스킨이 생각보다 없었습니다. 유료 스킨 중에는 괜찮은 게 몇 개 있긴 한데, 커스터마이징이 제한적이거나 코드가 지저분한 경우가 많았습니다.
 
- [Backlinko의 Technical SEO 가이드(2026)](https://backlinko.com/technical-seo-guide)에서도 강조하듯이, 블로그 SEO의 기본은 구조화 데이터와 메타 태그 최적화입니다. 이전에 [블로그 SEO 최적화를 직접 해본 결과](https://daily-1-bite.tistory.com/entry/%EB%B8%94%EB%A1%9C%EA%B7%B8-SEO-%EC%B5%9C%EC%A0%81%ED%99%94) 글에서도 공유했지만, 구조화 데이터 하나만 제대로 넣어도 검색 노출이 확연히 달라집니다. 근데 대부분의 티스토리 스킨은 이걸 신경 쓰지 않더라고요. 아니, 정확히는 og:title 하나 넣어놓고 "SEO 최적화 완료"라고 써놓은 경우가 태반이었습니다.
+ [Backlinko의 Technical SEO 가이드(2026)](https://backlinko.com/technical-seo-guide)에서도 강조하듯이, 블로그 SEO의 기본은 구조화 데이터와 메타 태그 최적화입니다. 이전에 [블로그 SEO 최적화를 직접 해본 결과](https://daily1bite.com/blog/dev-life/soft-neutral-seo) 글에서도 공유했지만, 구조화 데이터 하나만 제대로 넣어도 검색 노출이 확연히 달라집니다. 근데 대부분의 티스토리 스킨은 이걸 신경 쓰지 않더라고요. 아니, 정확히는 og:title 하나 넣어놓고 "SEO 최적화 완료"라고 써놓은 경우가 태반이었습니다.
 
- 그래서 처음부터 SEO를 뼈대로 잡고, 그 위에 디자인을 얹는 방식으로 접근했습니다. MCP(Model Context Protocol)를 활용해서 AI 에이전트와 함께 작업했는데, 이 부분은 [MCP로 AI 에이전트 연결하기](https://daily-1-bite.tistory.com/entry/MCPModel-Context-Protocol%EB%A1%9C-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8-%EC%97%B0%EA%B2%B0%ED%95%98%EA%B8%B0-2026%EB%85%84-%ED%91%9C%EC%A4%80-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C-%EC%8B%A4%EC%A0%84-%EC%9E%85%EB%AC%B8) 글에서 다뤘던 내용과 맥이 닿습니다.
+ 그래서 처음부터 SEO를 뼈대로 잡고, 그 위에 디자인을 얹는 방식으로 접근했습니다. MCP(Model Context Protocol)를 활용해서 AI 에이전트와 함께 작업했는데, 이 부분은 [MCP로 AI 에이전트 연결하기](https://daily1bite.com/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026) 글에서 다뤘던 내용과 맥이 닿습니다.
 
  
 ## Soft Neutral 스킨, 뭐가 다른가
@@ -52,7 +52,7 @@ tags: ["seo 최적화", "tistory skin", "다크모드 스킨", "미니멀 블로
 
  Soft Neutral은 MutationObserver를 사용해서 이런 불필요한 리소스를 실시간으로 감지하고 차단합니다.
 
- // MutationObserver로 티스토리 자동 주입 리소스 차단 const observer = new MutationObserver((mutations) => \{ mutations.forEach((mutation) => \{ mutation.addedNodes.forEach((node) => \{ if (node.tagName === 'LINK' || node.tagName === 'SCRIPT') \{ const src = node.href || node.src || ''; if (shouldBlock(src)) \{ node.remove(); // 불필요한 리소스 제거 \} \} \}); \}); \}); observer.observe(document.head, \{ childList: true \}); 추가로 IntersectionObserver를 활용한 레이지 로딩도 구현했습니다. 댓글 반응 버튼이나 코드 하이라이팅 같은 무거운 기능은 뷰포트에 들어올 때만 로드됩니다. [AI가 코드리뷰를 대신할 수 있을까?](https://daily-1-bite.tistory.com/entry/AI%EA%B0%80-%EC%BD%94%EB%93%9C%EB%A6%AC%EB%B7%B0%EB%A5%BC-%EB%8C%80%EC%8B%A0%ED%95%A0-%EC%88%98-%EC%9E%88%EC%9D%84%EA%B9%8C) 글에서도 다뤘지만, 이런 성능 최적화 코드는 AI 코딩 도구의 도움을 받으면 작성 속도가 확 빨라집니다.
+ // MutationObserver로 티스토리 자동 주입 리소스 차단 const observer = new MutationObserver((mutations) => \{ mutations.forEach((mutation) => \{ mutation.addedNodes.forEach((node) => \{ if (node.tagName === 'LINK' || node.tagName === 'SCRIPT') \{ const src = node.href || node.src || ''; if (shouldBlock(src)) \{ node.remove(); // 불필요한 리소스 제거 \} \} \}); \}); \}); observer.observe(document.head, \{ childList: true \}); 추가로 IntersectionObserver를 활용한 레이지 로딩도 구현했습니다. 댓글 반응 버튼이나 코드 하이라이팅 같은 무거운 기능은 뷰포트에 들어올 때만 로드됩니다. [AI가 코드리뷰를 대신할 수 있을까?](https://daily1bite.com/blog/dev-life/ai-3) 글에서도 다뤘지만, 이런 성능 최적화 코드는 AI 코딩 도구의 도움을 받으면 작성 속도가 확 빨라집니다.
 
  
 ### 다크 모드: prefers-color-scheme 자동 전환
@@ -107,10 +107,10 @@ tags: ["seo 최적화", "tistory skin", "다크모드 스킨", "미니멀 블로
 ## 다음 계획
  버전 1.0.0이니까 앞으로 개선할 것들이 꽤 있습니다.
 
-  다크 모드 수동 토글 추가 (플리커링 해결 후) 코드 하이라이팅 테마 커스터마이징 옵션 목차(TOC) 자동 생성 기능 댓글 영역 디자인 리뉴얼  피드백이나 버그 리포트는 댓글로 남겨주시면 반영하겠습니다. 사족을 붙이자면, 이 스킨을 만들면서 [AI 코딩 도구 비용 전쟁 2026](https://daily-1-bite.tistory.com/entry/AI-%EC%BD%94%EB%94%A9-%EB%8F%84%EA%B5%AC-%EB%B9%84%EC%9A%A9-%EC%A0%84%EC%9F%81-2026-%ED%81%AC%EB%A0%88%EB%94%A7-%ED%83%9C%EC%9B%8C%EB%8F%84-%EA%B4%9C%EC%B0%AE%EC%9D%84%EA%B9%8C) 글에서 다뤘던 Claude Code를 꽤 많이 활용했는데, 스킨 코딩 같은 반복적인 작업에서는 확실히 생산성이 올라가더라고요. [Claude Code로 2주 만에 SaaS를 완성한 경험](https://daily-1-bite.tistory.com/entry/Claude-Code%EB%A1%9C-2%EC%A3%BC-%EB%A7%8C%EC%97%90-%EC%9D%BC%EB%B3%B8%EC%96%B4-%ED%95%99%EC%8A%B5-SaaS)에서도 느꼈지만, AI와 함께 코딩하면 반복 작업에서 시간을 절약하고 더 중요한 설계에 집중할 수 있습니다.
+  다크 모드 수동 토글 추가 (플리커링 해결 후) 코드 하이라이팅 테마 커스터마이징 옵션 목차(TOC) 자동 생성 기능 댓글 영역 디자인 리뉴얼  피드백이나 버그 리포트는 댓글로 남겨주시면 반영하겠습니다. 사족을 붙이자면, 이 스킨을 만들면서 [AI 코딩 도구 비용 전쟁 2026](https://daily1bite.com/blog/dev-life/ai-2026) 글에서 다뤘던 Claude Code를 꽤 많이 활용했는데, 스킨 코딩 같은 반복적인 작업에서는 확실히 생산성이 올라가더라고요. [Claude Code로 2주 만에 SaaS를 완성한 경험](https://daily1bite.com/blog/dev-life/claude-code-2-saas-utakoto)에서도 느꼈지만, AI와 함께 코딩하면 반복 작업에서 시간을 절약하고 더 중요한 설계에 집중할 수 있습니다.
 
   함께 읽으면 좋은 글:
 
-  [블로그 SEO 최적화 직접 해본 결과: 3주 만에 방문자 3배](https://daily-1-bite.tistory.com/entry/%EB%B8%94%EB%A1%9C%EA%B7%B8-SEO-%EC%B5%9C%EC%A0%81%ED%99%94) - SEO 최적화 실전 경험담 [Claude Code로 2주 만에 일본어 학습 SaaS 완성하기](https://daily-1-bite.tistory.com/entry/Claude-Code%EB%A1%9C-2%EC%A3%BC-%EB%A7%8C%EC%97%90-%EC%9D%BC%EB%B3%B8%EC%96%B4-%ED%95%99%EC%8A%B5-SaaS) - AI 코딩으로 프로젝트 빌드하기 [내가 AI 도구를 3개월 써본 솔직 후기](https://daily-1-bite.tistory.com/entry/%EB%82%B4%EA%B0%80-AI-%EB%8F%84%EA%B5%AC%EB%A5%BC-3%EA%B0%9C%EC%9B%94) - AI 도구 실사용 리뷰 [MCP(Model Context Protocol)로 AI 에이전트 연결하기](https://daily-1-bite.tistory.com/entry/MCPModel-Context-Protocol%EB%A1%9C-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8-%EC%97%B0%EA%B2%B0%ED%95%98%EA%B8%B0-2026%EB%85%84-%ED%91%9C%EC%A4%80-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C-%EC%8B%A4%EC%A0%84-%EC%9E%85%EB%AC%B8) - AI 에이전트 프로토콜 실전 가이드   참고 자료:
+  [블로그 SEO 최적화 직접 해본 결과: 3주 만에 방문자 3배](https://daily1bite.com/blog/dev-life/soft-neutral-seo) - SEO 최적화 실전 경험담 [Claude Code로 2주 만에 일본어 학습 SaaS 완성하기](https://daily1bite.com/blog/dev-life/claude-code-2-saas-utakoto) - AI 코딩으로 프로젝트 빌드하기 [내가 AI 도구를 3개월 써본 솔직 후기](https://daily1bite.com/blog/ai-tools/ai-3-2) - AI 도구 실사용 리뷰 [MCP(Model Context Protocol)로 AI 에이전트 연결하기](https://daily1bite.com/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026) - AI 에이전트 프로토콜 실전 가이드   참고 자료:
 
   [Backlinko - Technical SEO: The Ultimate Guide for 2026](https://backlinko.com/technical-seo-guide) [Figma - Top Web Design Trends for 2026](https://www.figma.com/resource-library/web-design-trends/) [Positional - Structured Data and SEO Best Practices](https://www.positional.com/blog/structured-data-seo) [Global Reach - Boost AI Organic Visibility with Smart Structured Data](https://www.globalreach.com/global-reach-media/blog/2025/07/29/boost-ai-organic-visibility-with-smart-structured-data) 

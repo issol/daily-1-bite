@@ -25,7 +25,7 @@ _Photo by [Ilya Pavlov](https://unsplash.com/@ilyapavlov?utm\_source=daily-1-bit
 
     도구 기본 요금 프리미엄 모델 사용 시 에이전트 모드 실사용 월 비용 (헤비 유저)    GitHub Copilot Pro+ $39/월 포함 (한도 있음) Ultra $200/월 $39\~200   Cursor Pro $20/월 500 fast req 후 slow Ultra $200/월 $20\~200   Claude Code (Max) $100/월 Opus 사용 시 5배 비용 포함 $100\~200+   Claude Code (API) 종량제 Sonnet $3/Opus $15 per MTok 토큰 기반 $50\~500+   이 표에서 주목할 점은 "에이전트 모드" 열입니다. 2026년 들어 Cursor의 에이전트 모드, Claude Code의 멀티파일 리팩토링 같은 기능이 대세가 됐는데, 이 기능들은 기본 구독 크레딧을 일반 자동완성보다 훨씬 빨리 소모합니다. 제 경우에 에이전트 모드로 리팩토링을 하루 열심히 돌리면, 일주일치 크레딧이 하루 만에 날아간 적도 있습니다. 허탈하더라고요.
 
- 이 문제를 [이전에 MCP로 AI 에이전트 연결하는 글](https://daily-1-bite.tistory.com/73)에서도 잠깐 언급했는데, 에이전트가 자율적으로 여러 파일을 수정하면서 토큰을 대량 소비하는 구조 자체가 비용 폭탄의 원인입니다.
+ 이 문제를 [이전에 MCP로 AI 에이전트 연결하는 글](https://daily1bite.com/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026)에서도 잠깐 언급했는데, 에이전트가 자율적으로 여러 파일을 수정하면서 토큰을 대량 소비하는 구조 자체가 비용 폭탄의 원인입니다.
 
  
 ## 기업은 얼마나 쓰고 있나
@@ -63,7 +63,7 @@ _Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm\_source=daily-1
 
  **1\. 용도별 도구 분리**: 자동완성은 Copilot(저렴), 복잡한 리팩토링은 Claude Code(정확), 빠른 프로토타입은 Cursor. 하나의 도구에 모든 걸 맡기면 비싸지니까 용도별로 나눕니다.
 
- **2\. 모델 선택에 신경 쓰기**: Claude Code에서 Sonnet과 Opus의 토큰 단가 차이가 5배입니다. 간단한 작업은 Sonnet으로 충분한데, 습관적으로 Opus를 쓰면 비용이 확 올라갑니다. 이전에 [GPT-5.4 활용법 글](https://daily-1-bite.tistory.com/72)에서도 다뤘지만, 모델 선택이 곧 비용 선택입니다.
+ **2\. 모델 선택에 신경 쓰기**: Claude Code에서 Sonnet과 Opus의 토큰 단가 차이가 5배입니다. 간단한 작업은 Sonnet으로 충분한데, 습관적으로 Opus를 쓰면 비용이 확 올라갑니다. 이전에 [GPT-5.4 활용법 글](https://daily1bite.com/blog/ai-tools/gpt-54-33percent)에서도 다뤘지만, 모델 선택이 곧 비용 선택입니다.
 
  **3\. 에이전트 모드 사용 시간 정하기**: 오전에 집중적으로 에이전트 모드를 쓰고, 오후에는 일반 자동완성 위주로. 무제한으로 에이전트를 돌리면 크레딧이 순식간에 증발합니다.
 
@@ -83,6 +83,6 @@ _Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm\_source=daily-1
 
   **함께 읽으면 좋은 글:**
 
-  [MCP(Model Context Protocol)로 AI 에이전트 연결하기: 2026년 표준 프로토콜 실전 입문](https://daily-1-bite.tistory.com/73) - AI 에이전트의 토큰 소비 구조를 이해하는 데 도움이 됩니다 [GPT-5.4 '가장 정확한 모델' 활용법: 환각 33% 감소, 실무 팩트체킹 워크플로우 만들기](https://daily-1-bite.tistory.com/72) - 모델 선택이 비용에 미치는 영향   **참고 자료:**
+  [MCP(Model Context Protocol)로 AI 에이전트 연결하기: 2026년 표준 프로토콜 실전 입문](https://daily1bite.com/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026) - AI 에이전트의 토큰 소비 구조를 이해하는 데 도움이 됩니다 [GPT-5.4 '가장 정확한 모델' 활용법: 환각 33% 감소, 실무 팩트체킹 워크플로우 만들기](https://daily1bite.com/blog/ai-tools/gpt-54-33percent) - 모델 선택이 비용에 미치는 영향   **참고 자료:**
 
   [AI Tooling for Software Engineers in 2026 - The Pragmatic Engineer](https://newsletter.pragmaticengineer.com/p/ai-tooling-2026) [How are engineering leaders approaching 2026 AI tooling budgets? - DX](https://getdx.com/blog/how-are-engineering-leaders-approaching-2026-ai-tooling-budget/) [AI Coding Tools Compared (2026): Cursor vs Claude Code vs Copilot - TLDL](https://www.tldl.io/resources/ai-coding-tools-2026) [NVIDIA State of AI Report 2026](https://blogs.nvidia.com/blog/state-of-ai-report-2026/) 

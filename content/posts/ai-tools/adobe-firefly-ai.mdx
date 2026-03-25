@@ -40,7 +40,7 @@ _Photo by [Detail .co](https://unsplash.com/@detailvideo?utm\_source=daily-1-bit
 
  솔직히 말하면, 순수 이미지 퀄리티만 놓고 보면 Midjourney가 여전히 한 끗 위입니다. 특히 조명 표현과 피부 질감 같은 디테일에서요. 근데 Firefly의 강점은 다른 데 있습니다. 프롬프트를 제가 원하는 대로 정확하게 따라온다는 점. Midjourney는 예쁘긴 한데 "듀얼 모니터"를 빼먹거나 "미니멀리스트"를 무시하는 경우가 종종 있었거든요.
 
- 아 그리고, 이전에 [LTX-2로 내 PC에서 4K AI 영상 만들기](https://daily-1-bite.tistory.com/entry/AI-%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%84%BC%ED%84%B0%EC%97%90-1%EC%A1%B0-%EB%8B%AC%EB%9F%AC-NVIDIA-Vera-Rubin%EA%B3%BC-%EC%9D%B8%ED%94%84%EB%9D%BC-%ED%88%AC%EC%9E%90-%EB%B6%90%EC%9D%B4-%EA%B0%9C%EB%B0%9C%EC%9E%90%EC%97%90%EA%B2%8C-%EC%9D%98%EB%AF%B8%ED%95%98%EB%8A%94-%EA%B2%83)에서 로컬 AI 영상 생성을 다뤘는데, Firefly는 완전 반대 접근입니다. 로컬 GPU 없이 클라우드에서 모든 걸 처리하니까요.
+ 아 그리고, 이전에 [LTX-2로 내 PC에서 4K AI 영상 만들기](https://daily1bite.com/blog/dev-life/ai-1-nvidia-vera-rubin)에서 로컬 AI 영상 생성을 다뤘는데, Firefly는 완전 반대 접근입니다. 로컬 GPU 없이 클라우드에서 모든 걸 처리하니까요.
 
  
 ## 실험 2: 이미지 편집 — Generative Fill과 배경 제거
@@ -67,7 +67,7 @@ _Photo by [Jakob Owens](https://unsplash.com/@jakobowens1?utm\_source=daily-1-bi
 ## 결과 분석: 예상과 다른 점
     가설 예상 실제 결과    이미지 생성 퀄리티 Midjourney와 비슷할 것 85% 수준. 프롬프트 준수도는 오히려 높음   편집 워크플로우 별도 앱 필요할 것 웹에서 바로 편집 가능. 매우 편리   영상 제작 기본적인 수준일 것 Quick Cut은 초안 수준, 영상 생성은 꽤 괜찮음   무제한 생성 속도 제한 있을 것 10분간 40회 생성해도 속도 저하 없음   외부 모델 통합 품질 차이 클 것 Nano Banana Pro가 Adobe 기본 모델보다 나은 경우도 있음   가장 예상 밖이었던 건 외부 모델 통합 품질입니다. 특히 Google의 Nano Banana Pro 모델은 텍스트 렌더링에서 Adobe 자체 모델을 뛰어넘었습니다. CNBC 보도(2026년 2월 26일)에 따르면 Nano Banana 2는 "속도 향상, 텍스트 렌더링 개선, 더 정밀한 지시 따르기"가 핵심인데, 실제로 체감됩니다.
 
- 비개발자도 쉽게 AI를 활용할 수 있다는 점에서는 [Gamma AI 발표자료 가이드](https://daily-1-bite.tistory.com/entry/Gamma-AI%EB%A1%9C-10%EB%B6%84-%EB%A7%8C%EC%97%90-%EB%B0%9C%ED%91%9C-%EC%9E%90%EB%A3%8C-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EB%B9%84%EA%B0%9C%EB%B0%9C%EC%9E%90%EB%A5%BC-%EC%9C%84%ED%95%9C-AI-%ED%94%84%EB%A0%88%EC%A0%A0%ED%85%8C%EC%9D%B4%EC%85%98-%EA%B0%80%EC%9D%B4%EB%93%9C)에서 다뤘던 것과 비슷한 맥락인데요. Firefly는 좀 더 "전문 크리에이티브" 영역으로 확장된 느낌입니다.
+ 비개발자도 쉽게 AI를 활용할 수 있다는 점에서는 [Gamma AI 발표자료 가이드](https://daily1bite.com/blog/ai-tutorial/gamma-ai-10-ai)에서 다뤘던 것과 비슷한 맥락인데요. Firefly는 좀 더 "전문 크리에이티브" 영역으로 확장된 느낌입니다.
 
  
 ## 결론: "올인원"은 80점짜리, 하지만 실무에는 충분하다
@@ -83,4 +83,4 @@ _Photo by [Jakob Owens](https://unsplash.com/@jakobowens1?utm\_source=daily-1-bi
 
   [Adobe 공식 블로그 — Firefly 무제한 생성 발표 (2026.02.02)](https://blog.adobe.com/en/publish/2026/02/02/create-unlimited-generations-adobe-firefly-all-in-one-creative-ai-studio) [Adobe 공식 블로그 — Firefly 영상 Quick Cut 발표 (2026.02.25)](https://blog.adobe.com/en/publish/2026/02/25/putting-ideas-in-motion-redefining-ai-video-with-adobe-firefly) [CNBC — Google Nano Banana 2 출시 (2026.02.26)](https://www.cnbc.com/2026/02/26/google-launches-nano-banana-2-updating-its-viral-ai-image-generator.html) [Zapier — Best AI Video Generators 2026](https://zapier.com/blog/best-ai-video-generator/)   **함께 읽으면 좋은 글:**
 
-  [Gamma AI로 10분 만에 발표 자료 만들기: 비개발자를 위한 AI 프레젠테이션 가이드](https://daily-1-bite.tistory.com/entry/Gamma-AI%EB%A1%9C-10%EB%B6%84-%EB%A7%8C%EC%97%90-%EB%B0%9C%ED%91%9C-%EC%9E%90%EB%A3%8C-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EB%B9%84%EA%B0%9C%EB%B0%9C%EC%9E%90%EB%A5%BC-%EC%9C%84%ED%95%9C-AI-%ED%94%84%EB%A0%88%EC%A0%A0%ED%85%8C%EC%9D%B4%EC%85%98-%EA%B0%80%EC%9D%B4%EB%93%9C) - 비개발자도 쓸 수 있는 AI 크리에이티브 도구 [NotebookLM으로 긴 문서·유튜브 한입 요약하기](https://daily-1-bite.tistory.com/entry/NotebookLM%EC%9C%BC%EB%A1%9C-%EA%B8%B4-%EB%AC%B8%EC%84%9C%C2%B7%EC%9C%A0%ED%8A%9C%EB%B8%8C-%ED%95%9C%EC%9E%85-%EC%9A%94%EC%95%BD%ED%95%98%EA%B8%B0-%EB%B9%84%EA%B0%9C%EB%B0%9C%EC%9E%90%EB%8F%84-%EC%93%B0%EB%8A%94-AI-%EC%9A%94%EC%95%BD) - AI 생산성 도구 시리즈 
+  [Gamma AI로 10분 만에 발표 자료 만들기: 비개발자를 위한 AI 프레젠테이션 가이드](https://daily1bite.com/blog/ai-tutorial/gamma-ai-10-ai) - 비개발자도 쓸 수 있는 AI 크리에이티브 도구 [NotebookLM으로 긴 문서·유튜브 한입 요약하기](https://daily1bite.com/blog/ai-tutorial/notebooklm-ai) - AI 생산성 도구 시리즈 

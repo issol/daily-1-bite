@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation';
-import { getAllSlugs, getPostBySlug, CATEGORIES } from '@/lib/posts';
+import { getAllSlugs, getPostBySlug, getPostsByCategory, CATEGORIES } from '@/lib/posts';
 import MDXContent from '@/components/MDXContent';
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd';
+import RelatedPosts from '@/components/RelatedPosts';
+import TableOfContents from '@/components/TableOfContents';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -162,6 +164,9 @@ export default async function PostPage({ params }: Props) {
 
         <hr className="border-gray-100 mb-10" />
 
+        {/* 목차 — h2/h3 기반 자동 생성, SEO Featured Snippet 최적화 */}
+        <TableOfContents />
+
         {/* 본문 — article 시맨틱 태그로 감싸기 */}
         <article
           itemScope
@@ -173,6 +178,12 @@ export default async function PostPage({ params }: Props) {
           <meta itemProp="author" content="A꿀벌I" />
           <MDXContent source={post.content} />
         </article>
+
+        {/* 관련 글 추천 — 체류 시간 증가 + 내부 링크 강화 */}
+        <RelatedPosts
+          currentSlug={fullSlug}
+          posts={getPostsByCategory(post.category)}
+        />
 
         <hr className="border-gray-100 mt-12 mb-8" />
 

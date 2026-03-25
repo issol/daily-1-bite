@@ -47,7 +47,12 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
+    sitemap: [
+      `${BASE_URL}/sitemap.xml`,
+    ],
     host: BASE_URL,
+    // GEO: llms.txt — AI 크롤러용 사이트 설명
+    // See: https://llmstxt.org
+    // Available at: ${BASE_URL}/llms.txt
   };
 }

@@ -34,6 +34,7 @@ export const metadata: Metadata = {
     canonical: BASE_URL,
     types: {
       'application/rss+xml': `${BASE_URL}/feed.xml`,
+      'application/atom+xml': `${BASE_URL}/atom.xml`,
     },
   },
   openGraph: {
@@ -74,6 +75,8 @@ export const metadata: Metadata = {
   verification: {
     // Google Search Console 소유권 확인 시 여기에 추가
     // google: 'VERIFICATION_TOKEN',
+    // Naver Search Advisor 소유권 확인 시 여기에 추가
+    // other: { 'naver-site-verification': 'NAVER_VERIFICATION_TOKEN' },
   },
 };
 
@@ -86,6 +89,8 @@ export default function RootLayout({
     <html lang="ko">
       <head>
         <WebSiteJsonLd />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#f59e0b" />
       </head>
       <body className={`${notoSansKR.className} bg-gray-50 text-gray-900 antialiased`}>
         <Header />

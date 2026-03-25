@@ -27,7 +27,7 @@ _출처: [Manus 공식 블로그](https://manus.im/blog/manus-my-computer-deskto
 ## 해결책을 찾은 과정: 클라우드 AI로는 안 되는 이유
  처음에는 ChatGPT에 파일을 올려봤습니다. 10개씩 끊어서 업로드하고, 분류 결과를 받아서 수동으로 옮기는 방식. 20개쯤 하다가 포기했습니다. 이건 자동화가 아니라 노가다에 AI 옷을 입힌 거예요.
 
- 이전에 [MCP(Model Context Protocol)로 AI 에이전트 연결하기](https://daily-1-bite.tistory.com/entry/MCPModel-Context-Protocol%EB%A1%9C-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8) 글을 쓰면서 에이전트가 외부 도구를 직접 다루는 개념을 다뤘었는데요. Manus의 My Computer는 그 개념을 "내 컴퓨터 전체"로 확장한 겁니다. 파일을 올리는 게 아니라 AI가 내 폴더에 직접 접근해서 읽고, 분석하고, 옮기는 방식.
+ 이전에 [MCP(Model Context Protocol)로 AI 에이전트 연결하기](https://daily1bite.com/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026) 글을 쓰면서 에이전트가 외부 도구를 직접 다루는 개념을 다뤘었는데요. Manus의 My Computer는 그 개념을 "내 컴퓨터 전체"로 확장한 겁니다. 파일을 올리는 게 아니라 AI가 내 폴더에 직접 접근해서 읽고, 분석하고, 옮기는 방식.
 
  
 ![Manus My Computer 워크플로우 다이어그램](https://files.manuscdn.com/assets/dashboard/materials/2026/03/13/9df4d458bc665ac8718bc41f468bb3e7132535d5dcfc2b5e74d22bd088568e69.webp)
@@ -57,7 +57,7 @@ _출처: [Manus 공식 블로그](https://manus.im/blog/manus-my-computer-deskto
 ## 다른 대안과 비교: 왜 Manus를 골랐는지 (그리고 한계)
  사실 로컬 파일을 다루는 AI 에이전트는 Manus만 있는 게 아닙니다. OpenAI의 OpenClaw, Perplexity의 Personal Computer도 비슷한 방향을 잡고 있고요. 근데 2026년 3월 현재 기준으로 **macOS+Windows 양쪽 다 지원하면서 실제 다운로드 가능한 건 Manus가 먼저**입니다.
 
- [SnapApp으로 30분 만에 업무용 AI 앱 만들기](https://daily-1-bite.tistory.com/entry/SnapApp%EC%9C%BC%EB%A1%9C-30%EB%B6%84-%EB%A7%8C%EC%97%90) 글에서도 느꼈지만, AI 도구는 "되는 것"보다 "안 되는 것"을 아는 게 더 중요합니다. Manus 데스크톱의 한계를 정리하면:
+ [SnapApp으로 30분 만에 업무용 AI 앱 만들기](https://daily1bite.com/blog/dev-life/snapapp-30-ai-ai) 글에서도 느꼈지만, AI 도구는 "되는 것"보다 "안 되는 것"을 아는 게 더 중요합니다. Manus 데스크톱의 한계를 정리하면:
 
     비교 항목 Manus Desktop ChatGPT (파일 업로드) Claude Code (터미널)    로컬 파일 직접 접근 O X (업로드 필요) O   GUI 앱 제어 O X X   이미지 내용 분석 후 분류 O O (수동 업로드) X   코딩 작업 보통 보통 우수   복잡한 멀티스텝 안정성 낮음 중간 높음   가격 (월) $20\~ $20\~ 사용량 기반   
 ## 실전 팁 4가지 (공식 문서에 안 나오는 것들)
@@ -92,4 +92,4 @@ _Photo by [Daniil Komov](https://unsplash.com/@dkomow?utm\_source=daily-1-bite&u
 
   [Introducing My Computer: When Manus Meets Your Desktop](https://manus.im/blog/manus-my-computer-desktop) — Manus 공식 블로그 [Meta's Manus launches 'My Computer' to turn your Mac into an AI agent](https://9to5mac.com/2026/03/17/metas-manus-launches-my-computer-to-turn-your-mac-into-an-ai-agent/) — 9to5Mac [Manus AI Review 2026: Pros, Cons, and Who It's Best For](https://www.lindy.ai/blog/manus-ai-review) — Lindy.ai [Manus AI Review in 2026 – Features, Performance, and Pricing](https://cybernews.com/ai-tools/manus-ai-review/) — CyberNews   **함께 읽으면 좋은 글:**
 
-  [MCP(Model Context Protocol)로 AI 에이전트 연결하기: 2026년 표준 프로토콜 실전 입문](https://daily-1-bite.tistory.com/entry/MCPModel-Context-Protocol%EB%A1%9C-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8) - AI 에이전트가 외부 도구를 연결하는 표준 프로토콜 [SnapApp으로 30분 만에 업무용 AI 앱 만들기: 노코드 AI 앱 빌더 실전 체험기](https://daily-1-bite.tistory.com/entry/SnapApp%EC%9C%BC%EB%A1%9C-30%EB%B6%84-%EB%A7%8C%EC%97%90) - 또 다른 AI 자동화 도구 체험기 
+  [MCP(Model Context Protocol)로 AI 에이전트 연결하기: 2026년 표준 프로토콜 실전 입문](https://daily1bite.com/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026) - AI 에이전트가 외부 도구를 연결하는 표준 프로토콜 [SnapApp으로 30분 만에 업무용 AI 앱 만들기: 노코드 AI 앱 빌더 실전 체험기](https://daily1bite.com/blog/dev-life/snapapp-30-ai-ai) - 또 다른 AI 자동화 도구 체험기 

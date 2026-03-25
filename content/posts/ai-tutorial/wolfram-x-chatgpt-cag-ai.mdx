@@ -25,7 +25,7 @@ _Photo by [Igor Omilaev](https://unsplash.com/@omilaev?utm\_source=daily-1-bite&
 
     항목 RAG (검색 증강 생성) CAG (계산 증강 생성)    데이터 소스 사전 저장된 문서/벡터DB Wolfram 계산 엔진 (실시간)   응답 방식 기존 문서에서 관련 구절 검색 쿼리에 맞게 즉석 계산   한계 문서에 없으면 답 못 함 계산 가능한 영역에 한정   환각 대응 관련 문서로 맥락 보강 정확한 계산 결과로 대체   적합한 질문 "이 문서에서 X는?" "X의 값은?", "A와 B의 차이는?"   솔직히 처음엔 "그냥 Wolfram Alpha API 갖다 쓰는 거 아닌가?" 싶었습니다. 근데 좀 다릅니다. CAG는 LLM이 "아, 여기서 계산이 필요하겠다"고 판단하면 자동으로 Wolfram 엔진을 호출하고, 그 결과를 자연어 응답에 녹여내는 구조입니다. 개발자가 일일이 "여기선 API 호출해" 같은 분기를 짤 필요가 없어요.
 
- [이전에 GPT-5.2의 40만 토큰 컨텍스트를 다뤘을 때](https://daily-1-bite.tistory.com/entry/GPT-52%EC%9D%98-40%EB%A7%8C-%ED%86%A0%ED%81%B0-%EC%BB%A8%ED%85%8D%EC%8A%A4%ED%8A%B8-%EC%8B%9C%EB%8C%80-%EA%B8%B4-%EB%AC%B8%EC%84%9C-%EC%B2%98%EB%A6%AC-%EC%A0%95%EB%A7%90-%EB%8B%AC%EB%9D%BC%EC%A1%8C%EC%9D%84%EA%B9%8C)도 느꼈지만, 컨텍스트 윈도우가 아무리 커져도 "계산 정확성"은 별개의 문제입니다. 토큰을 100만 개 넣는다고 1+1=3이 되지 않는 것처럼요.
+ [이전에 GPT-5.2의 40만 토큰 컨텍스트를 다뤘을 때](https://daily1bite.com/blog/ai-tools/gpt-52-40)도 느꼈지만, 컨텍스트 윈도우가 아무리 커져도 "계산 정확성"은 별개의 문제입니다. 토큰을 100만 개 넣는다고 1+1=3이 되지 않는 것처럼요.
 
  
 ## 사전 준비 — 환경 세팅
@@ -93,7 +93,7 @@ _Photo by [Daniil Komov](https://unsplash.com/@dkomow?utm\_source=daily-1-bite&u
 
  messages=\[ \{ "role": "system", "content": "사용자의 한국어 질문에서 계산이 필요한 부분은 " "영어 수학 표현으로 변환하여 Wolfram에 전달하고, " "결과는 한국어로 설명해줘." \}, \{"role": "user", "content": "원주율의 소수점 100자리까지 알려줘"\} \] 
 ### 문제 3: 응답 지연
- CAG는 외부 API를 호출하기 때문에 순수 LLM 응답보다 0.5\~2초 정도 느립니다. 실시간 채팅에서는 체감될 수 있는 지연입니다. 스트리밍 응답을 활성화하면 사용자 체감을 줄일 수 있습니다. [NotebookLM 요약 기능을 다뤘을 때](https://daily-1-bite.tistory.com/entry/NotebookLM%EC%9C%BC%EB%A1%9C-%EA%B8%B4-%EB%AC%B8%EC%84%9C%C2%B7%EC%9C%A0%ED%8A%9C%EB%B8%8C-%ED%95%9C%EC%9E%85-%EC%9A%94%EC%95%BD%ED%95%98%EA%B8%B0-%EB%B9%84%EA%B0%9C%EB%B0%9C%EC%9E%90%EB%8F%84-%EC%93%B0%EB%8A%94-AI-%EC%9A%94%EC%95%BD)도 비슷한 지연 이슈가 있었는데, AI 서비스에서 정확성과 속도는 항상 트레이드오프 관계입니다.
+ CAG는 외부 API를 호출하기 때문에 순수 LLM 응답보다 0.5\~2초 정도 느립니다. 실시간 채팅에서는 체감될 수 있는 지연입니다. 스트리밍 응답을 활성화하면 사용자 체감을 줄일 수 있습니다. [NotebookLM 요약 기능을 다뤘을 때](https://daily1bite.com/blog/ai-tutorial/notebooklm-ai)도 비슷한 지연 이슈가 있었는데, AI 서비스에서 정확성과 속도는 항상 트레이드오프 관계입니다.
 
  
 ## RAG + CAG 하이브리드 — 실무에서의 조합
@@ -122,4 +122,4 @@ _Photo by [John Salzarulo](https://unsplash.com/@johnsalzarulo?utm\_source=daily
 
   [Making Wolfram Tech Available as a Foundation Tool for LLM Systems — Stephen Wolfram](https://writings.stephenwolfram.com/2026/02/making-wolfram-tech-available-as-a-foundation-tool-for-llm-systems/) [Wolfram AI Ecosystem — Foundation Tool 공식 페이지](https://www.wolfram.com/artificial-intelligence/foundation-tool/) [It's 2026\. Why Are LLMs Still Hallucinating? — Duke University Libraries Blog](https://blogs.library.duke.edu/blog/2026/01/05/its-2026-why-are-llms-still-hallucinating/) [Beyond Retrieval: The Expanding Universe of Augmented Generation in AI — IEEE Computer Society](https://www.computer.org/publications/tech-news/trends/augmented-generation-in-ai)   **함께 읽으면 좋은 글:**
 
-  [GPT-5.2의 40만 토큰 컨텍스트 시대: 긴 문서 처리, 정말 달라졌을까?](https://daily-1-bite.tistory.com/entry/GPT-52%EC%9D%98-40%EB%A7%8C-%ED%86%A0%ED%81%B0-%EC%BB%A8%ED%85%8D%EC%8A%A4%ED%8A%B8-%EC%8B%9C%EB%8C%80-%EA%B8%B4-%EB%AC%B8%EC%84%9C-%EC%B2%98%EB%A6%AC-%EC%A0%95%EB%A7%90-%EB%8B%AC%EB%9D%BC%EC%A1%8C%EC%9D%84%EA%B9%8C) - LLM 컨텍스트 확장이 정확성 문제를 해결하는지 분석 [NotebookLM으로 긴 문서·유튜브 한입 요약하기](https://daily-1-bite.tistory.com/entry/NotebookLM%EC%9C%BC%EB%A1%9C-%EA%B8%B4-%EB%AC%B8%EC%84%9C%C2%B7%EC%9C%A0%ED%8A%9C%EB%B8%8C-%ED%95%9C%EC%9E%85-%EC%9A%94%EC%95%BD%ED%95%98%EA%B8%B0-%EB%B9%84%EA%B0%9C%EB%B0%9C%EC%9E%90%EB%8F%84-%EC%93%B0%EB%8A%94-AI-%EC%9A%94%EC%95%BD) - AI 정확성과 요약 품질에 대한 실전 리뷰 
+  [GPT-5.2의 40만 토큰 컨텍스트 시대: 긴 문서 처리, 정말 달라졌을까?](https://daily1bite.com/blog/ai-tools/gpt-52-40) - LLM 컨텍스트 확장이 정확성 문제를 해결하는지 분석 [NotebookLM으로 긴 문서·유튜브 한입 요약하기](https://daily1bite.com/blog/ai-tutorial/notebooklm-ai) - AI 정확성과 요약 품질에 대한 실전 리뷰 

@@ -31,7 +31,7 @@ _출처: [Apidog GPT-5.4 가이드](https://apidog.com/blog/what-is-gpt-5-4/) | 
 
  import openai import json client = openai.OpenAI() def ask\_model(model: str, question: str) -> str: response = client.chat.completions.create( model=model, messages=\[ \{"role": "system", "content": "기술 질문에 정확하게 답변하세요. 확실하지 않은 정보는 '확인 필요'라고 표시하세요."\}, \{"role": "user", "content": question\} \], temperature=0.1 ) return response.choices\[0\].message.content # 30개 질문에 대해 양쪽 모델 응답 수집 questions = load\_questions("tech\_questions\_30.json") results = \{\} for q in questions: results\[q\["id"\]\] = \{ "question": q\["text"\], "ground\_truth": q\["answer"\], "gpt\_5\_2": ask\_model("gpt-5.2", q\["text"\]), "gpt\_5\_4": ask\_model("gpt-5.4", q\["text"\]), \} 결과가 좀 흥미로웠습니다. GPT-5.2는 30개 중 7개(23.3%)에서 사실 오류가 있었고, GPT-5.4는 4개(13.3%)로 줄었습니다. OpenAI가 말한 33% 감소와 거의 일치하는 수치더라고요. 다만 4개도 실무에서는 꽤 큰 문제입니다. 기술 문서에 잘못된 정보가 섞이면 디버깅에 몇 시간을 날릴 수도 있으니까요.
 
- 이 주제와 관련해서, 이전에 [Wolfram × ChatGPT '계산 증강 생성(CAG)': AI 환각을 수학으로 잡는 새 접근법](https://daily-1-bite.tistory.com/entry/Wolfram-%C3%97-ChatGPT-%EA%B3%84%EC%82%B0-%EC%A6%9D%EA%B0%95-%EC%83%9D%EC%84%B1CAG-AI-%ED%99%98%EA%B0%81%EC%9D%84-%EC%88%98%ED%95%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EB%8A%94-%EC%83%88-%EC%A0%91%EA%B7%BC%EB%B2%95)에서 수학적 접근법으로 환각을 줄이는 방법을 다뤘는데요, 이번엔 코드 레벨에서 검증 파이프라인을 만드는 쪽으로 가보겠습니다.
+ 이 주제와 관련해서, 이전에 [Wolfram × ChatGPT '계산 증강 생성(CAG)': AI 환각을 수학으로 잡는 새 접근법](https://daily1bite.com/blog/ai-tutorial/wolfram-x-chatgpt-cag-ai)에서 수학적 접근법으로 환각을 줄이는 방법을 다뤘는데요, 이번엔 코드 레벨에서 검증 파이프라인을 만드는 쪽으로 가보겠습니다.
 
  
 ![AI 환각 검증을 상징하는 타자기와 백지](https://images.unsplash.com/photo-1591696331111-ef9586a5b17a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwdmVyaWZpY2F0aW9ufGVufDB8MHx8fDE3NzMxNDI3NDl8MA&ixlib=rb-4.1.0&q=80&w=1080)
@@ -75,7 +75,7 @@ _출처: [Apidog GPT-5.4 가이드](https://apidog.com/blog/what-is-gpt-5-4/) | 
 
     항목 GPT-5.4 단독 전체 파이프라인    평균 응답 시간 1.2초 4.8초   평균 토큰 사용량 \~800 토큰 \~3,200 토큰   질문당 비용 (추정) \~$0.008 \~$0.032   4배 정도 비용이 늘어나는데, 이게 부담스러울 수도 있습니다. 하지만 기술 문서 작성이나 고객 대면 콘텐츠처럼 정확도가 중요한 작업에서는 충분히 투자할 만한 비용이라고 봅니다. 모든 응답에 이 파이프라인을 돌릴 필요는 없고, 중요한 팩트만 선별적으로 검증하면 됩니다. TMI인데 저는 응답에서 수치나 날짜가 포함된 문장만 골라서 검증하는 식으로 비용을 절반 이하로 줄였습니다.
 
- 이전에 [Memobase: ChatGPT·Claude 기억을 하나로 잇는 AI 유니버설 메모리](https://daily-1-bite.tistory.com/entry/Memobase-ChatGPT%C2%B7Claude-%EA%B8%B0%EC%96%B5%EC%9D%84-%ED%95%98%EB%82%98%EB%A1%9C-%EC%9E%87%EB%8A%94-AI-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%8D%A8%EB%B3%BC-%EB%A7%8C%ED%95%A0%EA%B9%8C)에서도 다뤘듯이, AI 도구를 실무에 통합할 때는 항상 "어디까지 자동화하고, 어디서 사람이 개입할지" 경계를 정하는 게 중요합니다.
+ 이전에 [Memobase: ChatGPT·Claude 기억을 하나로 잇는 AI 유니버설 메모리](https://daily1bite.com/blog/ai-tools/memobase-chatgpt-claude-ai)에서도 다뤘듯이, AI 도구를 실무에 통합할 때는 항상 "어디까지 자동화하고, 어디서 사람이 개입할지" 경계를 정하는 게 중요합니다.
 
  
 ## 실무 적용 가이드: 이 결과를 프로젝트에서 어떻게 쓸까
@@ -108,4 +108,4 @@ _Photo by [Zach M](https://unsplash.com/@zachmmalin?utm\_source=daily-1-bite&utm
 
   [Introducing GPT-5.4 | OpenAI 공식 블로그](https://openai.com/index/introducing-gpt-5-4/) (2026년 3월) [GPT-5.4 Complete Guide | Apidog](https://apidog.com/blog/what-is-gpt-5-4/) (2026년 3월) [OpenAI Prompt Guidance for GPT-5.4](https://developers.openai.com/api/docs/guides/prompt-guidance/) (2026년 3월) [OpenAI launches GPT-5.4 | Fortune](https://fortune.com/2026/03/05/openai-new-model-gpt5-4-enterprise-agentic-anthropic/) (2026년 3월 5일) [Marked reduction in hallucination rates with GPT-5 | PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC12701941/) (2026년)   **함께 읽으면 좋은 글:**
 
-  [Wolfram × ChatGPT '계산 증강 생성(CAG)': AI 환각을 수학으로 잡는 새 접근법](https://daily-1-bite.tistory.com/entry/Wolfram-%C3%97-ChatGPT-%EA%B3%84%EC%82%B0-%EC%A6%9D%EA%B0%95-%EC%83%9D%EC%84%B1CAG-AI-%ED%99%98%EA%B0%81%EC%9D%84-%EC%88%98%ED%95%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EB%8A%94-%EC%83%88-%EC%A0%91%EA%B7%BC%EB%B2%95) - AI 환각 해결의 또 다른 접근, 수학적 검증 [Memobase: ChatGPT·Claude 기억을 하나로 잇는 AI 유니버설 메모리, 써볼 만할까?](https://daily-1-bite.tistory.com/entry/Memobase-ChatGPT%C2%B7Claude-%EA%B8%B0%EC%96%B5%EC%9D%84-%ED%95%98%EB%82%98%EB%A1%9C-%EC%9E%87%EB%8A%94-AI-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%8D%A8%EB%B3%BC-%EB%A7%8C%ED%95%A0%EA%B9%8C) - AI 도구를 실무 워크플로우에 통합하는 전략 
+  [Wolfram × ChatGPT '계산 증강 생성(CAG)': AI 환각을 수학으로 잡는 새 접근법](https://daily1bite.com/blog/ai-tutorial/wolfram-x-chatgpt-cag-ai) - AI 환각 해결의 또 다른 접근, 수학적 검증 [Memobase: ChatGPT·Claude 기억을 하나로 잇는 AI 유니버설 메모리, 써볼 만할까?](https://daily1bite.com/blog/ai-tools/memobase-chatgpt-claude-ai) - AI 도구를 실무 워크플로우에 통합하는 전략 

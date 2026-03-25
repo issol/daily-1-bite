@@ -31,7 +31,7 @@ _Photo by [Jo Lin](https://unsplash.com/@jolin974658?utm\_source=daily-1-bite&ut
 
  저도 지난달에 비슷한 경험을 했습니다. 회사에서 고객 문의 자동 분류 에이전트를 만들려고 했는데, 문제는 고객 데이터가 10년 된 Oracle DB에 있고, 티켓 시스템은 온프레미스 Jira에, 슬랙 봇과 연결하려니 방화벽 정책까지 걸리더라고요. AI 모델을 호출하는 건 API 한 줄이면 되는데, **데이터를 꺼내서 에이전트에 넘기는 파이프라인**을 만드는 데 2주가 걸렸습니다.
 
- 이전에 [MCP(Model Context Protocol)로 AI 에이전트 연결하기](https://daily-1-bite.tistory.com/entry/MCPModel-Context-Protocol%EC%9C%BC%EB%A1%9C-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8-%EC%97%B0%EA%B2%B0%ED%95%98%EA%B8%B0-2026%EB%85%84-%ED%91%9C%EC%A4%80-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C-%EC%8B%A4%EC%A0%84-%EC%9E%85%EB%AC%B8)를 다뤘는데요, MCP 같은 표준 프로토콜이 이 문제를 해결하려는 시도지만, 아직 레거시 시스템 어댑터가 충분하지 않습니다. 97M+ 다운로드를 기록한 MCP도 결국 "새로운 시스템 간 연결"에 특화되어 있지, 10년 된 Oracle 프로시저를 감싸는 건 결국 사람 손이 필요합니다.
+ 이전에 [MCP(Model Context Protocol)로 AI 에이전트 연결하기](https://daily1bite.com/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026)를 다뤘는데요, MCP 같은 표준 프로토콜이 이 문제를 해결하려는 시도지만, 아직 레거시 시스템 어댑터가 충분하지 않습니다. 97M+ 다운로드를 기록한 MCP도 결국 "새로운 시스템 간 연결"에 특화되어 있지, 10년 된 Oracle 프로시저를 감싸는 건 결국 사람 손이 필요합니다.
 
  
 ![데이터 분석 대시보드가 표시된 노트북 화면](https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxkYXRhJTIwYW5hbHl0aWNzJTIwZGFzaGJvYXJkfGVufDB8MHx8fDE3NzQxNzc5NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080)
@@ -54,7 +54,7 @@ _Photo by [Luke Chesser](https://unsplash.com/@lukechesser?utm\_source=daily-1-b
 
  "에이전트가 보낸 리마인더가 틀리면 누가 책임지나요?"
 
- 이 질문에 답을 못 하면 프로덕션에 못 갑니다. 최근 [Meta Manus 데스크톱](https://daily-1-bite.tistory.com/entry/Meta-Manus-%EB%8D%B0%EC%8A%A4%ED%81%AC%ED%86%B1-%EB%82%B4-PC-%ED%8C%8C%EC%9D%BC%EC%9D%84-%EC%A7%81%EC%A0%91-%EB%8B%A4%EB%A3%A8%EB%8A%94-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8-%EC%8D%A8%EB%B3%BC-%EB%A7%8C%ED%95%A0%EA%B9%8C)을 리뷰하면서도 느낀 건데, 개인용 AI 에이전트는 실수해도 본인이 감수하면 됩니다. 기업용은 다릅니다. 항공사가 AI 에이전트로 고객 재예약을 처리한다는 사례도 보고서에 있는데, 잘못된 재예약 한 건이 얼마의 비용을 발생시킬지 생각해보면 거버넌스가 왜 필수인지 이해됩니다.
+ 이 질문에 답을 못 하면 프로덕션에 못 갑니다. 최근 [Meta Manus 데스크톱](https://daily1bite.com/blog/ai-tools/meta-manus-pc-ai)을 리뷰하면서도 느낀 건데, 개인용 AI 에이전트는 실수해도 본인이 감수하면 됩니다. 기업용은 다릅니다. 항공사가 AI 에이전트로 고객 재예약을 처리한다는 사례도 보고서에 있는데, 잘못된 재예약 한 건이 얼마의 비용을 발생시킬지 생각해보면 거버넌스가 왜 필수인지 이해됩니다.
 
  
 ## 그래도 가속은 시작됐다
@@ -83,4 +83,4 @@ _Photo by [Jakub Żerdzicki](https://unsplash.com/@jakubzerdzicki?utm\_source=da
 ## 참고 자료
   Deloitte, [State of AI in the Enterprise 2026](https://www.deloitte.com/global/en/issues/generative-ai/state-of-ai-in-enterprise.html) — 3,235명 리더 설문, 24개국 (2025년 8-9월 조사) Lucidworks, [Enterprise AI Adoption in 2026: Trends, Gaps & Strategic Insights](https://lucidworks.com/blog/enterprise-ai-adoption-in-2026-trends-gaps-and-strategic-insights) — 1,600명 AI 리더 대상 벤치마크 스터디 Bernard Marr, [AI Agents Lead The 8 Tech Trends Transforming Enterprise In 2026](https://bernardmarr.com/ai-agents-lead-the-8-tech-trends-transforming-enterprise-in-2026/) ZDNet, "4 tips for building better AI agents that your business can trust" (2026년 3월 21일) Codewave, [The State of AI Enterprise Adoption in 2026](https://codewave.com/insights/ai-enterprise-adoption-2026/) — 12만 명 설문 기반 분석   **함께 읽으면 좋은 글:**
 
-  [Meta Manus 데스크톱: 내 PC 파일을 직접 다루는 AI 에이전트, 써볼 만할까?](https://daily-1-bite.tistory.com/entry/Meta-Manus-%EB%8D%B0%EC%8A%A4%ED%81%AC%ED%86%B1-%EB%82%B4-PC-%ED%8C%8C%EC%9D%BC%EC%9D%84-%EC%A7%81%EC%A0%91-%EB%8B%A4%EB%A3%A8%EB%8A%94-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8-%EC%8D%A8%EB%B3%BC-%EB%A7%8C%ED%95%A0%EA%B9%8C) - 개인용 AI 에이전트의 현주소 [AI 코딩 도구 비용 전쟁 2026: 크레딧 태워도 괜찮을까?](https://daily-1-bite.tistory.com/entry/AI-%EC%BD%94%EB%94%A9-%EB%8F%84%EA%B5%AC-%EB%B9%84%EC%9A%A9-%EC%A0%84%EC%9F%81-2026-%ED%81%AC%EB%A0%88%EB%94%A7-%ED%83%9C%EC%9B%8C%EB%8F%84-%EA%B4%9C%EC%B0%AE%EC%9D%84%EA%B9%8C) - AI 도구 비용 관리의 현실 
+  [Meta Manus 데스크톱: 내 PC 파일을 직접 다루는 AI 에이전트, 써볼 만할까?](https://daily1bite.com/blog/ai-tools/meta-manus-pc-ai) - 개인용 AI 에이전트의 현주소 [AI 코딩 도구 비용 전쟁 2026: 크레딧 태워도 괜찮을까?](https://daily1bite.com/blog/dev-life/ai-2026) - AI 도구 비용 관리의 현실 

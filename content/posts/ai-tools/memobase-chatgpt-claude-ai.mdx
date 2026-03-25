@@ -27,7 +27,7 @@ _Photo by [Zach M](https://unsplash.com/@zachmmalin?utm\_source=daily-1-bite&utm
 
  마침 2026년 3월 초, Anthropic이 [ChatGPT 메모리 임포트 기능](https://www.macrumors.com/2026/03/02/anthropic-memory-import-tool/)을 출시했다는 뉴스를 봤는데요. 이건 ChatGPT → Claude 방향의 일회성 이관이라 근본적인 해결은 아니었습니다. 그러다 Hacker News에서 Memobase를 발견했어요. [Show HN 글](https://news.ycombinator.com/item?id=47237920)에 달린 댓글 반응이 꽤 괜찮길래 직접 테스트해 보기로 했습니다.
 
- 이전에 [relaxAI 리뷰](https://daily-1-bite.tistory.com/entry/relaxAI-%EB%A6%AC%EB%B7%B0-%ED%94%84%EB%9D%BC%EC%9D%B4%EB%B2%84%EC%8B%9C-%EC%9A%B0%EC%84%A0-AI-%EC%96%B4%EC%8B%9C%EC%8A%A4%ED%84%B4%ED%8A%B8-%EC%98%81%EA%B5%AD-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%A3%BC%EA%B6%8C%EC%9D%B4%EB%9E%80)에서 AI 서비스의 데이터 프라이버시를 다뤘었는데, Memobase를 볼 때도 "내 대화 데이터가 어디에 저장되는지"가 가장 먼저 궁금했습니다.
+ 이전에 [relaxAI 리뷰](https://daily1bite.com/blog/ai-tools/relaxai-ai)에서 AI 서비스의 데이터 프라이버시를 다뤘었는데, Memobase를 볼 때도 "내 대화 데이터가 어디에 저장되는지"가 가장 먼저 궁금했습니다.
 
  
 ## 설치부터 첫 사용까지: 5분이면 된다
@@ -105,7 +105,7 @@ _Photo by [Fernando Hernandez](https://unsplash.com/@\_ferh97?utm\_source=daily-
 
   ChatGPT + Claude + Cursor를 번갈아 쓰는 개발자. 프로젝트 컨텍스트가 세 도구에 걸쳐 공유되는 경험은 생각보다 강력합니다 사이드 프로젝트를 여러 개 관리하면서 AI에게 매번 "이 프로젝트는 이런 구조야"를 반복 설명하는 분 MCP 생태계에 관심 있는 얼리어답터. Memobase를 세팅하면서 MCP가 어떻게 동작하는지 자연스럽게 배울 수 있습니다  **이런 상황이면 굳이:**
 
-  AI 도구를 하나만 사용하는 경우. 각 플랫폼 내장 메모리로 충분합니다 보안이 극도로 민감한 업무. PostgreSQL RLS로 격리된다고는 하지만, 결국 제3자 서버에 대화 맥락이 저장되는 건 사실입니다. 금융이나 의료 데이터를 다루는 분이라면 신중하게 판단하세요 무료 플랜으로만 쓰려는 경우. 500크레딧은 2주 정도면 소진됩니다. 이후 한 달 내내 못 쓰게 되면 오히려 워크플로우가 끊겨요  이전에 [NotebookLM으로 AI 요약 도구를 리뷰](https://daily-1-bite.tistory.com/entry/NotebookLM%EC%9C%BC%EB%A1%9C-%EA%B8%B4-%EB%AC%B8%EC%84%9C%C2%B7%EC%9C%A0%ED%8A%9C%EB%B8%8C-%ED%95%9C%EC%9E%85-%EC%9A%94%EC%95%BD%ED%95%98%EA%B8%B0-%EB%B9%84%EA%B0%9C%EB%B0%9C%EC%9E%90%EB%8F%84-%EC%93%B0%EB%8A%94-AI-%EC%9A%94%EC%95%BD)했을 때도 느꼈지만, AI 생산성 도구의 진짜 가치는 "내가 이미 쓰고 있는 워크플로우에 자연스럽게 끼어드느냐"에 달려 있습니다. Memobase는 그 부분에서 합격점입니다.
+  AI 도구를 하나만 사용하는 경우. 각 플랫폼 내장 메모리로 충분합니다 보안이 극도로 민감한 업무. PostgreSQL RLS로 격리된다고는 하지만, 결국 제3자 서버에 대화 맥락이 저장되는 건 사실입니다. 금융이나 의료 데이터를 다루는 분이라면 신중하게 판단하세요 무료 플랜으로만 쓰려는 경우. 500크레딧은 2주 정도면 소진됩니다. 이후 한 달 내내 못 쓰게 되면 오히려 워크플로우가 끊겨요  이전에 [NotebookLM으로 AI 요약 도구를 리뷰](https://daily1bite.com/blog/ai-tutorial/notebooklm-ai)했을 때도 느꼈지만, AI 생산성 도구의 진짜 가치는 "내가 이미 쓰고 있는 워크플로우에 자연스럽게 끼어드느냐"에 달려 있습니다. Memobase는 그 부분에서 합격점입니다.
 
  
 ## 대안과의 비교: Mem0, 플랫폼 내장 메모리
@@ -151,4 +151,4 @@ _Photo by [Mirella Callage](https://unsplash.com/@mcallage?utm\_source=daily-1-b
 ### 참고 자료
   [Memobase 공식 사이트](https://memobase.ai/) (2026년 3월 기준) [Memobase GitHub 리포지토리](https://github.com/memodb-io/memobase) [Show HN: Memobase – Universal memory that works across all your AI tools](https://news.ycombinator.com/item?id=47237920) (Hacker News) [Anthropic, Claude 메모리 임포트 기능 출시](https://www.macrumors.com/2026/03/02/anthropic-memory-import-tool/) (MacRumors, 2026년 3월) [Claude Memory 무료 전환 및 ChatGPT 사용자 유치 전략](https://www.digitaltrends.com/computing/claude-makes-its-ai-memory-feature-free-for-all-users-in-battle-against-chatgpt/) (Digital Trends, 2026년 3월) [Mem0 – The Memory Layer for AI Apps](https://mem0.ai/)   **함께 읽으면 좋은 글:**
 
-  [GPT-5.2의 40만 토큰 컨텍스트 시대: 긴 문서 처리, 정말 달라졌을까?](https://daily-1-bite.tistory.com/entry/GPT-52%EC%9D%98-40%EB%A7%8C-%ED%86%A0%ED%81%B0-%EC%BB%A8%ED%85%8D%EC%8A%A4%ED%8A%B8-%EC%8B%9C%EB%8C%80-%EA%B8%B4-%EB%AC%B8%EC%84%9C-%EC%B2%98%EB%A6%AC-%EC%A0%95%EB%A7%90-%EB%8B%AC%EB%9D%BC%EC%A1%8C%EC%9D%84%EA%B9%8C) - 컨텍스트 윈도우 확장과 메모리, 결국 같은 문제를 다른 방향에서 풀고 있습니다 [relaxAI 리뷰: 프라이버시 우선 AI 어시스턴트, 영국 데이터 주권이란?](https://daily-1-bite.tistory.com/entry/relaxAI-%EB%A6%AC%EB%B7%B0-%ED%94%84%EB%9D%BC%EC%9D%B4%EB%B2%84%EC%8B%9C-%EC%9A%B0%EC%84%A0-AI-%EC%96%B4%EC%8B%9C%EC%8A%A4%ED%84%B4%ED%8A%B8-%EC%98%81%EA%B5%AD-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%A3%BC%EA%B6%8C%EC%9D%B4%EB%9E%80) - AI 서비스의 데이터 프라이버시가 걱정된다면 함께 읽어보세요 
+  [GPT-5.2의 40만 토큰 컨텍스트 시대: 긴 문서 처리, 정말 달라졌을까?](https://daily1bite.com/blog/ai-tools/gpt-52-40) - 컨텍스트 윈도우 확장과 메모리, 결국 같은 문제를 다른 방향에서 풀고 있습니다 [relaxAI 리뷰: 프라이버시 우선 AI 어시스턴트, 영국 데이터 주권이란?](https://daily1bite.com/blog/ai-tools/relaxai-ai) - AI 서비스의 데이터 프라이버시가 걱정된다면 함께 읽어보세요 
