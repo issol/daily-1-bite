@@ -134,9 +134,9 @@ export default async function PostPage({ params }: Props) {
             {post.title}
           </h1>
 
-          {/* GEO: .post-description 클래스 — speakable 스키마 타겟 */}
+          {/* GEO: .post-description — 시각적으로 숨기되 AI 크롤러용 speakable 타겟 유지 */}
           {post.description && (
-            <p className="post-description text-gray-500 text-base leading-relaxed mb-4">
+            <p className="post-description sr-only">
               {post.description}
             </p>
           )}
