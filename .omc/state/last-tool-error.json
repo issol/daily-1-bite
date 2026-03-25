@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"git config credential.helper \\\"\\\" && GH_TOKEN=$(gh auth token) git -c \\\"url.https://issol:${GH_TOKEN}@github.com/.insteadOf=https://github.com/\\\" push origin main 2>&1\",\"description\":\"Push...",
+  "error": "Exit code 128\nremote: Invalid username or token. Password authentication is not supported for Git operations.\nfatal: Authentication failed for 'https://github.com/issol/daily-1-bite.git/'",
+  "timestamp": "2026-03-25T07:19:06.849Z",
+  "retry_count": 3
+}
