@@ -122,7 +122,7 @@ export default async function PostPage({ params }: Props) {
             >
               {categoryLabel}
             </Link>
-            <span className="text-xs text-gray-400">{post.readingTime} 소요</span>
+            <span className="text-xs text-gray-400">📖 {post.readingTime} 읽기</span>
           </div>
 
           {/* h1은 페이지당 하나 — SEO 핵심 */}
@@ -143,7 +143,7 @@ export default async function PostPage({ params }: Props) {
             <span aria-hidden="true">·</span>
             <time dateTime={post.date}>{post.date}</time>
             <span aria-hidden="true">·</span>
-            <span>{post.readingTime} 소요</span>
+            <span>📖 {post.readingTime} 읽기</span>
           </div>
 
           {post.tags.length > 0 && (
