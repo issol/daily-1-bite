@@ -1,0 +1,154 @@
+---
+title: "Memobase: ChatGPT&amp;middot;Claude 기억을 하나로 잇는 AI 유니버설 메모리, 써볼 만할까?"
+date: "2026-03-05"
+description: "솔직히 말씀드리면, \"AI 메모리 통합\"이라는 말을 처음 들었을 때 저는 콧방귀를 꼈습니다. 아니, ChatGPT에도 메모리 있고 Claude에도 메모리 생겼는데, 굳이 또 뭘 끼워넣어야 하나? 그냥 마케팅용 래퍼 아닌가 싶었거든요. Photo by Zach M on Unsplash..."
+category: "ai-tools"
+tags: ["AI 도구 리뷰", "ai 메모리", "ai 생산성", "ChatGPT Claude 연동", "MCP"]
+---
+
+솔직히 말씀드리면, "AI 메모리 통합"이라는 말을 처음 들었을 때 저는 콧방귀를 꼈습니다. 아니, ChatGPT에도 메모리 있고 Claude에도 메모리 생겼는데, 굳이 또 뭘 끼워넣어야 하나? 그냥 마케팅용 래퍼 아닌가 싶었거든요.
+
+ 
+![AI와 인간 두뇌의 연결을 상징하는 디지털 아트](https://images.unsplash.com/photo-1770233621425-5d9ee7a0a700?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwbWVtb3J5fGVufDB8MHx8fDE3NzI2NzI4MzJ8MA&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Zach M](https://unsplash.com/@zachmmalin?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | AI 메모리의 개념을 시각화한 이미지_
+
+ 근데 막상 써보니까 생각이 바뀌더라고요. 2주 정도 실제로 사용해 본 후기를 공유합니다.
+
+ > **TL;DR**: Memobase는 MCP(Model Context Protocol) 기반으로 ChatGPT·Claude·Cursor의 대화 기억을 하나의 시맨틱 메모리 레이어로 통합하는 도구입니다. 여러 AI 도구를 번갈아 쓰는 개발자라면 "아, 이거 아까 ChatGPT한테 말했는데..." 하는 순간이 확 줄어듭니다. 무료 플랜(500크레딧/월)으로 체험 가능.
+> 
+>  
+> 
+> 
+## Memobase를 왜 찾게 됐나
+ 저는 평소에 AI 도구를 3개 이상 동시에 씁니다. 코딩할 때는 Claude Code, 가벼운 질문은 ChatGPT, 에디터에서는 Cursor. 문제는 이 셋이 각각 따로 놀아요.
+
+ 예를 들면 이런 상황입니다. Claude에게 "우리 프로젝트는 Next.js 15 + Supabase 조합이야"라고 알려줬는데, 30분 뒤 ChatGPT한테 같은 걸 또 설명하고 있는 거죠. Cursor는 또 별도로 프로젝트 컨텍스트를 세팅해야 하고요. 하루에 이런 "AI한테 내 상황 다시 설명하기"에 쓰는 시간이 체감상 20분은 됐습니다.
+
+ 마침 2026년 3월 초, Anthropic이 [ChatGPT 메모리 임포트 기능](https://www.macrumors.com/2026/03/02/anthropic-memory-import-tool/)을 출시했다는 뉴스를 봤는데요. 이건 ChatGPT → Claude 방향의 일회성 이관이라 근본적인 해결은 아니었습니다. 그러다 Hacker News에서 Memobase를 발견했어요. [Show HN 글](https://news.ycombinator.com/item?id=47237920)에 달린 댓글 반응이 꽤 괜찮길래 직접 테스트해 보기로 했습니다.
+
+ 이전에 [relaxAI 리뷰](https://daily-1-bite.tistory.com/entry/relaxAI-%EB%A6%AC%EB%B7%B0-%ED%94%84%EB%9D%BC%EC%9D%B4%EB%B2%84%EC%8B%9C-%EC%9A%B0%EC%84%A0-AI-%EC%96%B4%EC%8B%9C%EC%8A%A4%ED%84%B4%ED%8A%B8-%EC%98%81%EA%B5%AD-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%A3%BC%EA%B6%8C%EC%9D%B4%EB%9E%80)에서 AI 서비스의 데이터 프라이버시를 다뤘었는데, Memobase를 볼 때도 "내 대화 데이터가 어디에 저장되는지"가 가장 먼저 궁금했습니다.
+
+ 
+## 설치부터 첫 사용까지: 5분이면 된다
+ Memobase는 MCP(Model Context Protocol) 기반이라 설치가 놀라울 정도로 간단합니다.
+
+ **Claude Desktop 설정 (제가 사용한 방법):**
+
+ Settings → Connectors → Add custom connector로 들어가서 아래 URL 하나만 붙여넣으면 끝입니다.
+
+ https://mcp.memobase.aiOAuth 인증 팝업이 뜨고, 승인하면 바로 연결됩니다. 소요 시간? 정확히 2분 걸렸습니다.
+
+ **Cursor 설정:**
+
+ MCP 설정 파일에 서버 정보를 추가하는 방식인데, 마찬가지로 URL 하나 넣고 인증하면 됩니다.
+
+ \{ "mcpServers": \{ "memobase": \{ "url": "https://mcp.memobase.ai/sse" \} \} \} **ChatGPT 설정:**
+
+ ChatGPT는 MCP를 네이티브로 지원하지 않아서 조금 다릅니다. Developer Mode를 켜고 Custom GPT를 만들어야 하는데, 솔직히 이 과정은 좀 번거로웠어요. Memobase 측에서 제공하는 [사전 구성된 Memobase GPT](https://memobase.ai/)를 쓰면 설정 없이 바로 사용할 수 있긴 합니다.
+
+ 
+## 실제 사용: "이걸 기억하고 있네?"
+ 
+![데이터 연결과 네트워크를 상징하는 3D 그래픽](https://images.unsplash.com/photo-1738082956220-a1f20a8632ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxkYXRhJTIwY29ubmVjdGlvbiUyMG5ldHdvcmt8ZW58MHwwfHx8MTc3MjY3MjgzNHww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Logan Voss](https://unsplash.com/@loganvoss?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | AI 도구 간 데이터가 연결되는 모습을 상상하며_
+
+ Memobase의 핵심은 세 가지 도구입니다: store\_memory, search\_memory, forget\_memory. 사용자가 직접 호출할 필요 없이, 시스템 프롬프트에 의해 AI가 알아서 중요한 정보를 저장하고 검색합니다.
+
+ 제가 실제로 테스트한 시나리오를 공유하겠습니다.
+
+ **시나리오 1: 프로젝트 컨텍스트 공유**
+
+ Claude Desktop에서 이렇게 말했습니다:
+
+ "현재 프로젝트는 Next.js 15 App Router + Supabase + TailwindCSS 4 조합이야. DB 스키마에 users, posts, comments 테이블이 있고, 인증은 Supabase Auth를 쓰고 있어."Memobase가 이 정보를 자동으로 저장했고, 20분 뒤 Cursor에서 새 파일을 작성할 때 "현재 프로젝트 스택이 뭐였지?" 하고 물으니까 방금 Claude에 말한 내용이 그대로 나왔습니다. 이건 좀 놀랐습니다.
+
+ **시나리오 2: 개인 선호도 기억**
+
+ ChatGPT에서 "저는 코드 작성 시 함수형 스타일을 선호하고, 변수명은 camelCase를 씁니다"라고 한 적이 있는데, 이후 Claude에서 코드를 요청했을 때 자연스럽게 그 스타일이 반영됐습니다. 다만 이건 100% 일관되지는 않았어요. 10번 중 7번 정도? 아직 완벽하지는 않다는 뜻입니다.
+
+ **시나리오 3: 디버깅 이력 추적**
+
+ 이건 기대 이상이었는데요. 화요일에 ChatGPT에서 "Supabase RLS 정책 설정 시 service\_role 키 사용하면 우회된다"는 사실을 확인했는데, 목요일에 Claude에서 비슷한 작업을 하다가 Memobase가 그 맥락을 끌고 왔습니다. 기억이 1536차원 시맨틱 임베딩으로 저장되기 때문에 키워드가 아니라 "의미"로 검색되는 거죠.
+
+ 
+## 기술적으로 어떻게 동작하는가
+ Memobase 공식 문서에 따르면(2026년 3월 기준), 메모리는 1536차원 벡터 임베딩으로 저장됩니다. IVFFlat 코사인 인덱싱을 사용해서 수백만 개의 메모리에서도 서브초 단위로 검색이 가능하다고 합니다.
+
+ 핵심 아키텍처를 정리하면:
+
+    구성 요소 기술 역할    저장 PostgreSQL + pgvector 메모리 영구 저장   검색 IVFFlat 코사인 인덱싱 의미 기반 유사도 검색   보안 Row-Level Security (RLS) 사용자별 데이터 격리   프로토콜 MCP (Model Context Protocol) AI 도구 간 표준 연결   인증 OAuth 2.0 안전한 접근 제어   메모리는 시맨틱(의미), 에피소딕(사건), 절차적(방법), 결정 기반의 네 가지 유형으로 분류됩니다. 이게 단순한 키-밸류 저장소가 아니라는 뜻인데요.
+
+ TMI인데, v0.0.40 업데이트에서 LLM 호출 횟수를 기존 310회에서 고정 3회로 줄여서 토큰 비용이 약 4050% 절감됐다고 합니다. 이 부분은 개발자로서 꽤 인상적이었어요.
+
+ 
+![개발자의 코딩 작업 환경과 모니터](https://images.unsplash.com/photo-1566915896913-549d796d2166?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxkZXZlbG9wZXIlMjB3b3Jrc3BhY2UlMjBjb2Rpbmd8ZW58MHwwfHx8MTc3MjY3MjgzNXww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Fernando Hernandez](https://unsplash.com/@\_ferh97?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | 여러 AI 도구를 오가며 코딩하는 일상_
+
+ 
+## 요금제: 무료로 충분한가
+ (2026년 3월 기준, [Memobase 공식 사이트](https://memobase.ai/) 기준)
+
+    플랜 가격 크레딧/월 대상    Free $0 500 체험, 가벼운 개인 사용   Pro $9/월 5,000 파워 유저, 소규모 팀   Unlimited $29/월 무제한 팀, 고빈도 워크플로우   크레딧 소비 구조가 재미있습니다. 저장(store)은 10크레딧, 검색(search)은 1크레딧, 삭제(forget)는 무료입니다. 즉, 무료 플랜 500크레딧이면 메모리 50개 저장 + 검색은 거의 무제한으로 가능합니다.
+
+ 제 체감으로는 하루 평균 저장 35건, 검색 1520건 정도 발생했습니다. 한 달이면 저장 약 100건(1,000크레딧) + 검색 약 500건(500크레딧) = 1,500크레딧. 무료 플랜으로는 부족하고, Pro($9/월)면 넉넉합니다.
+
+ 솔직히 $9면 커피 두 잔 값인데, 매일 AI 컨텍스트 재설명에 쓰는 20분을 아낄 수 있다면 나쁘지 않다고 봅니다.
+
+ 
+## 누구에게 추천하고, 누구에게 비추천하나
+ 이 도구의 가치는 "AI 도구를 몇 개나 쓰느냐"에 정비례합니다. 공식 문서에 없는 팁을 하나 드리자면, AI 도구를 하나만 쓰는 분이라면 Memobase는 사실상 필요 없습니다. ChatGPT든 Claude든 자체 메모리 기능이 이미 있으니까요.
+
+ **이런 상황이면 강력 추천:**
+
+  ChatGPT + Claude + Cursor를 번갈아 쓰는 개발자. 프로젝트 컨텍스트가 세 도구에 걸쳐 공유되는 경험은 생각보다 강력합니다 사이드 프로젝트를 여러 개 관리하면서 AI에게 매번 "이 프로젝트는 이런 구조야"를 반복 설명하는 분 MCP 생태계에 관심 있는 얼리어답터. Memobase를 세팅하면서 MCP가 어떻게 동작하는지 자연스럽게 배울 수 있습니다  **이런 상황이면 굳이:**
+
+  AI 도구를 하나만 사용하는 경우. 각 플랫폼 내장 메모리로 충분합니다 보안이 극도로 민감한 업무. PostgreSQL RLS로 격리된다고는 하지만, 결국 제3자 서버에 대화 맥락이 저장되는 건 사실입니다. 금융이나 의료 데이터를 다루는 분이라면 신중하게 판단하세요 무료 플랜으로만 쓰려는 경우. 500크레딧은 2주 정도면 소진됩니다. 이후 한 달 내내 못 쓰게 되면 오히려 워크플로우가 끊겨요  이전에 [NotebookLM으로 AI 요약 도구를 리뷰](https://daily-1-bite.tistory.com/entry/NotebookLM%EC%9C%BC%EB%A1%9C-%EA%B8%B4-%EB%AC%B8%EC%84%9C%C2%B7%EC%9C%A0%ED%8A%9C%EB%B8%8C-%ED%95%9C%EC%9E%85-%EC%9A%94%EC%95%BD%ED%95%98%EA%B8%B0-%EB%B9%84%EA%B0%9C%EB%B0%9C%EC%9E%90%EB%8F%84-%EC%93%B0%EB%8A%94-AI-%EC%9A%94%EC%95%BD)했을 때도 느꼈지만, AI 생산성 도구의 진짜 가치는 "내가 이미 쓰고 있는 워크플로우에 자연스럽게 끼어드느냐"에 달려 있습니다. Memobase는 그 부분에서 합격점입니다.
+
+ 
+## 대안과의 비교: Mem0, 플랫폼 내장 메모리
+ Memobase만 있는 건 아닙니다. 비슷한 시도를 하는 서비스가 몇 개 더 있어요.
+
+ 
+![디지털 두뇌와 뉴럴 네트워크를 표현한 추상 이미지](https://images.unsplash.com/photo-1737505599159-5ffc1dcbc08f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxicmFpbiUyMG5ldXJhbCUyMGRpZ2l0YWx8ZW58MHwwfHx8MTc3MjY3MjgzNnww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Ecliptic Graphic](https://unsplash.com/@eclipticgraphic?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | AI의 기억 구조, 점점 더 인간의 뇌를 닮아가고 있다_
+
+    비교 항목 Memobase Mem0 ChatGPT 내장 Claude 내장    크로스 플랫폼 O (MCP 기반) O (API 기반) X (ChatGPT 전용) X (Claude 전용)   시맨틱 검색 O (1536d 임베딩) O 제한적 제한적   무료 플랜 500크레딧/월 1,000 메모리 무제한 무제한   설치 난이도 매우 쉬움 (MCP URL) 보통 (API 키) 없음 없음   지식 그래프 O X X X   메모리 삭제 O (forget\_memory) O O O   자체 호스팅 O (오픈소스) O X X   Mem0([mem0.ai](https://mem0.ai/))도 괜찮은 대안입니다. API 기반이라 MCP보다는 통합이 좀 더 번거롭지만, 무료 티어가 1,000 메모리로 Memobase보다 여유 있습니다.
+
+ 그런데 핵심 차이점은 MCP 네이티브 지원 여부입니다. Claude Desktop과 Cursor가 MCP를 기본 지원하기 때문에 Memobase는 설치가 URL 하나로 끝납니다. 이 차이가 생각보다 큽니다.
+
+ 플랫폼 내장 메모리(ChatGPT Memory, Claude Memory)는 각자의 울타리 안에서는 잘 동작하지만 "다리"가 없습니다. Anthropic이 최근 ChatGPT 메모리 임포트 기능을 출시한 것도([Digital Trends, 2026년 3월 기준](https://www.digitaltrends.com/computing/claude-makes-its-ai-memory-feature-free-for-all-users-in-battle-against-chatgpt/)) 이 문제를 인식하고 있다는 방증이지만, 일회성 이관이지 실시간 동기화는 아닙니다.
+
+ 
+## 솔직한 아쉬운 점
+ 칭찬만 하면 광고 같으니까 불편했던 점도 적겠습니다.
+
+ **첫째, ChatGPT 연동이 번거롭습니다.** Claude와 Cursor는 MCP 네이티브라 매끄러운 반면, ChatGPT는 Custom GPT를 만들어야 합니다. OpenAI가 MCP를 공식 채택하지 않는 한 이 불편함은 계속될 것 같아요.
+
+ **둘째, 메모리 "과잉 저장" 문제.** 시스템 프롬프트 세팅을 안 하면 AI가 너무 많은 정보를 저장하려 해서 크레딧이 빠르게 소진됩니다. "내 프로젝트 기술 스택과 코딩 선호도만 저장해"라고 시스템 프롬프트를 커스텀하니까 괜찮아졌는데, 이걸 알아내는 데 시행착오가 있었습니다.
+
+ **셋째, 가끔 엉뚱한 기억을 불러옵니다.** 시맨틱 검색의 한계인데, "React 상태 관리"에 대해 물었더니 3주 전에 저장한 "Vue Pinia 상태 관리" 관련 메모리가 같이 딸려 왔습니다. 의미적으로는 비슷하니까 이해는 되지만, 맥락이 완전히 다른 건데...
+
+ 
+## 결론: "여러 AI 도구를 쓴다면" 한번 써볼 만하다
+ 
+![빛나는 추상적 빛줄기가 두뇌 형상을 이루는 이미지](https://images.unsplash.com/photo-1764336312138-14a5368a6cd3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxicmFpbiUyMG5ldXJhbCUyMGRpZ2l0YWx8ZW58MHwwfHx8MTc3MjY3MjgzNnww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Mirella Callage](https://unsplash.com/@mcallage?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | AI 기억의 미래, 도구 간 경계가 사라지고 있다_
+
+ Memobase는 "AI 도구 간 기억의 사일로"라는 현실적인 문제를 MCP라는 표준 프로토콜로 풀어낸 서비스입니다. 완벽하진 않습니다. ChatGPT 연동은 아직 매끄럽지 않고, 시맨틱 검색이 가끔 엉뚱한 기억을 불러오기도 합니다.
+
+ 하지만 저처럼 Claude + ChatGPT + Cursor를 번갈아 쓰는 사람에게는 확실히 체감되는 가치가 있었습니다. "아까 다른 AI한테 말했는데..."라는 순간이 2주 동안 거의 사라졌거든요.
+
+ 제 판단으로는, 멀티 AI 사용자라면 무료 플랜으로 2주 정도 써보시고 $9/월의 가치가 있는지 직접 판단하시는 걸 추천합니다. 반대로, AI 도구를 하나만 쓰신다면 지금 당장은 필요 없습니다.
+
+ MCP 생태계가 확장되면서 이런 "AI 도구 간 다리" 역할의 서비스가 점점 더 중요해질 거라는 건 확실합니다. Memobase가 그 첫 번째 물결의 선두에 있는 건 맞습니다.
+
+ 
+### 참고 자료
+  [Memobase 공식 사이트](https://memobase.ai/) (2026년 3월 기준) [Memobase GitHub 리포지토리](https://github.com/memodb-io/memobase) [Show HN: Memobase – Universal memory that works across all your AI tools](https://news.ycombinator.com/item?id=47237920) (Hacker News) [Anthropic, Claude 메모리 임포트 기능 출시](https://www.macrumors.com/2026/03/02/anthropic-memory-import-tool/) (MacRumors, 2026년 3월) [Claude Memory 무료 전환 및 ChatGPT 사용자 유치 전략](https://www.digitaltrends.com/computing/claude-makes-its-ai-memory-feature-free-for-all-users-in-battle-against-chatgpt/) (Digital Trends, 2026년 3월) [Mem0 – The Memory Layer for AI Apps](https://mem0.ai/)   **함께 읽으면 좋은 글:**
+
+  [GPT-5.2의 40만 토큰 컨텍스트 시대: 긴 문서 처리, 정말 달라졌을까?](https://daily-1-bite.tistory.com/entry/GPT-52%EC%9D%98-40%EB%A7%8C-%ED%86%A0%ED%81%B0-%EC%BB%A8%ED%85%8D%EC%8A%A4%ED%8A%B8-%EC%8B%9C%EB%8C%80-%EA%B8%B4-%EB%AC%B8%EC%84%9C-%EC%B2%98%EB%A6%AC-%EC%A0%95%EB%A7%90-%EB%8B%AC%EB%9D%BC%EC%A1%8C%EC%9D%84%EA%B9%8C) - 컨텍스트 윈도우 확장과 메모리, 결국 같은 문제를 다른 방향에서 풀고 있습니다 [relaxAI 리뷰: 프라이버시 우선 AI 어시스턴트, 영국 데이터 주권이란?](https://daily-1-bite.tistory.com/entry/relaxAI-%EB%A6%AC%EB%B7%B0-%ED%94%84%EB%9D%BC%EC%9D%B4%EB%B2%84%EC%8B%9C-%EC%9A%B0%EC%84%A0-AI-%EC%96%B4%EC%8B%9C%EC%8A%A4%ED%84%B4%ED%8A%B8-%EC%98%81%EA%B5%AD-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%A3%BC%EA%B6%8C%EC%9D%B4%EB%9E%80) - AI 서비스의 데이터 프라이버시가 걱정된다면 함께 읽어보세요 

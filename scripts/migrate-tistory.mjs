@@ -26,34 +26,50 @@ const RSS_URL = `https://${TISTORY_BLOG}.tistory.com/rss`;
 const TISTORY_BASE = `https://${TISTORY_BLOG}.tistory.com`;
 
 // Tistory 카테고리 → 로컬 카테고리 슬러그 매핑
+// RSS의 첫 번째 <category> 값 (디코딩 후) → 로컬 슬러그
 const CATEGORY_MAP = {
+  // ── AI 일반 ──────────────────────────────────────
   'ai': 'ai',
   'ai 뉴스': 'ai',
   'ai뉴스': 'ai',
   'ai 트렌드': 'ai',
   'ai트렌드': 'ai',
   '인공지능': 'ai',
+  // ── AI Tools & Review ────────────────────────────
+  'ai tools & review': 'ai-tools',   // Tistory 실제 카테고리명 (디코딩)
+  'ai tools &amp; review': 'ai-tools',
+  'ai tools': 'ai-tools',
   'ai 도구': 'ai-tools',
   'ai도구': 'ai-tools',
-  'ai tools': 'ai-tools',
   'ai 리뷰': 'ai-tools',
   'ai리뷰': 'ai-tools',
   '도구 리뷰': 'ai-tools',
   '도구리뷰': 'ai-tools',
+  // ── AI Tutorial & How-to ─────────────────────────
+  'ai tutorial & how-to': 'ai-tutorial',  // Tistory 실제 카테고리명 (디코딩)
+  'ai tutorial &amp; how-to': 'ai-tutorial',
+  'ai tutorial': 'ai-tutorial',
   'ai 튜토리얼': 'ai-tutorial',
   'ai튜토리얼': 'ai-tutorial',
-  'ai tutorial': 'ai-tutorial',
   'how to': 'ai-tutorial',
+  'how-to': 'ai-tutorial',
   '활용법': 'ai-tutorial',
+  // ── Dev Life & Opinion ───────────────────────────
+  'dev life & opinion': 'dev-life',   // Tistory 실제 카테고리명 (디코딩)
+  'dev life &amp; opinion': 'dev-life',
+  'dev life': 'dev-life',
+  '개발': 'dev-life',
+  '개발자': 'dev-life',
+  '의견': 'dev-life',
+  'opinion': 'dev-life',
+  // ── SEO ──────────────────────────────────────────
   'seo': 'seo',
+  // ── Blog Info ────────────────────────────────────
   '블로그': 'blog-info',
   '블로그 정보': 'blog-info',
   '블로그정보': 'blog-info',
   'blog info': 'blog-info',
-  '개발': 'dev-life',
-  '개발자': 'dev-life',
-  'dev life': 'dev-life',
-  '의견': 'dev-life',
+  'blog': 'blog-info',
 };
 
 const DEFAULT_CATEGORY = 'ai';
@@ -62,8 +78,16 @@ const DEFAULT_CATEGORY = 'ai';
 
 function mapCategory(rawCategory) {
   if (!rawCategory) return DEFAULT_CATEGORY;
-  const key = rawCategory.trim().toLowerCase();
-  return CATEGORY_MAP[key] ?? DEFAULT_CATEGORY;
+  // RSS가 &amp;amp; 이중 인코딩을 사용하므로 원본 문자열로 포함 여부 검사
+  const raw = rawCategory.toLowerCase();
+  if (raw.includes('dev life') || raw.includes('opinion')) return 'dev-life';
+  if (raw.includes('ai tools') || raw.includes('review')) return 'ai-tools';
+  if (raw.includes('ai tutorial') || raw.includes('how-to') || raw.includes('how to')) return 'ai-tutorial';
+  if (raw.includes('seo')) return 'seo';
+  if (raw.includes('blog info') || raw.includes('블로그')) return 'blog-info';
+  // CATEGORY_MAP도 병행 시도 (단순 매핑용)
+  const simple = raw.replace(/&[a-z]+;/gi, '').replace(/\s+/g, ' ').trim();
+  return CATEGORY_MAP[simple] ?? DEFAULT_CATEGORY;
 }
 
 function decodeHtmlEntities(str) {
@@ -162,11 +186,21 @@ function parseRSS(xml) {
     const link = get('link') || get('guid');
     const pubDate = get('pubDate');
     const description = get('description');
-    const category = get('category');
-    const keywords = get('media:keywords') || get('keywords') || '';
+
+    // Tistory RSS: <category> 첫 번째 = 실제 카테고리, 나머지 = 태그
+    const allCategories = [...block.matchAll(
+      /<category(?:[^>]*)><!\[CDATA\[([\s\S]*?)\]\]><\/category>|<category(?:[^>]*)>([\s\S]*?)<\/category>/gi
+    )].map(m => (m[1] ?? m[2] ?? '').trim()).filter(Boolean);
+
+    const category = allCategories[0] || '';
+    // 나머지를 태그로 활용 (HTML 엔티티 디코딩 후)
+    const tagCandidates = allCategories.slice(1)
+      .map(t => decodeHtmlEntities(t).trim())
+      .filter(t => t.length > 0 && t.length < 30) // 너무 긴 것 제외
+      .slice(0, 5);
 
     if (title && description) {
-      items.push({ title, link, pubDate, description, category, keywords });
+      items.push({ title, link, pubDate, description, category, keywords: tagCandidates.join(',') });
     }
   }
 
