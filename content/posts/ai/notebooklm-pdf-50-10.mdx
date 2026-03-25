@@ -1,7 +1,7 @@
 ---
 title: "NotebookLM 실전 활용법: PDF 50개를 10분 만에 요약하는 방법"
 date: "2026-02-11"
-description: "&lt;p data-ke-size=&quot;size16&quot;&gt;Google NotebookLM으로 대량의 PDF 문서를 빠르게 요약하고 분석하는 실전 가이드. Deep Research, 오디오 요약,..."
+description: "Google NotebookLM으로 대량의 PDF 문서를 빠르게 요약하고 분석하는 실전 가이드. Deep Research, 오디오 요약, 데이터 테이블 추출까지 개발자 관점에서 직접 써본 활용법을 정리했습니다. 이 글에서 다루는 것 저는 지난달에 회사에서 기술 스펙 문서 48개를 3일..."
 category: "ai"
 tags: []
 ---
@@ -38,7 +38,7 @@ Google NotebookLM으로 대량의 PDF 문서를 빠르게 요약하고 분석하
 
  방법 1: Google Drive 일괄 추가 (추천)
 
-  Google Drive에 폴더를 만들고 PDF를 전부 업로드합니다 NotebookLM에서 "소스 추가" &gt; "Google Drive" 선택 해당 폴더에서 Ctrl+A (또는 Cmd+A)로 전체 선택 "추가" 클릭  제 경험상 48개 PDF를 이 방법으로 올렸을 때 약 90초 정도 걸렸습니다. 파일 크기에 따라 다르겠지만, 평균 20\~30페이지짜리 기준으로 그 정도입니다.
+  Google Drive에 폴더를 만들고 PDF를 전부 업로드합니다 NotebookLM에서 "소스 추가" > "Google Drive" 선택 해당 폴더에서 Ctrl+A (또는 Cmd+A)로 전체 선택 "추가" 클릭  제 경험상 48개 PDF를 이 방법으로 올렸을 때 약 90초 정도 걸렸습니다. 파일 크기에 따라 다르겠지만, 평균 20\~30페이지짜리 기준으로 그 정도입니다.
 
  방법 2: 웹 URL 일괄 추가
 
@@ -104,7 +104,7 @@ Google NotebookLM으로 대량의 PDF 문서를 빠르게 요약하고 분석하
 
  원인과 해결:
 
-  스캔 PDF (이미지 기반) &rarr; Adobe Acrobat이나 온라인 OCR 도구로 텍스트 변환 후 재업로드 암호 보호된 PDF &rarr; 암호 해제 후 재업로드 파일 크기 초과 (200MB 이상) &rarr; PDF 분할 도구로 나눈 후 업로드 손상된 PDF &rarr; 다른 PDF 뷰어에서 열리는지 먼저 확인  
+  스캔 PDF (이미지 기반)  Adobe Acrobat이나 온라인 OCR 도구로 텍스트 변환 후 재업로드 암호 보호된 PDF  암호 해제 후 재업로드 파일 크기 초과 (200MB 이상)  PDF 분할 도구로 나눈 후 업로드 손상된 PDF  다른 PDF 뷰어에서 열리는지 먼저 확인  
 ### 요약 결과가 부정확할 때
  NotebookLM이 문맥을 잘못 잡을 때가 있습니다. 특히 전문 용어가 많은 기술 문서에서 그렇습니다.
 

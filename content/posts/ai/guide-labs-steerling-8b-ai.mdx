@@ -1,62 +1,65 @@
 ---
 title: "Guide Labs Steerling-8B: '설명 가능한 AI'를 오픈소스로, 왜 주목해야 하나"
 date: "2026-03-07"
-description: "&lt;p&gt;EU AI Act에 따르면 2026년 8월 2일부터 고위험 AI 시스템은 &amp;quot;의사결정 과정을 충분히 투명하게&amp;quot; 설명해야 합니다. 그런데 지금 우리가 쓰는 LLM 중에..."
+description: "EU AI Act에 따르면 2026년 8월 2일부터 고위험 AI 시스템은 \"의사결정 과정을 충분히 투명하게\" 설명해야 합니다. 그런데 지금 우리가 쓰는 LLM 중에 \"이 답변이 왜 나왔는지\" 제대로 설명할 수 있는 모델이 몇 개나 될까요? 솔직히 말하면, 거의 없었습니다. 적어도..."
 category: "ai"
 tags: []
 ---
 
-EU AI Act에 따르면 2026년 8월 2일부터 고위험 AI 시스템은 &quot;의사결정 과정을 충분히 투명하게&quot; 설명해야 합니다. 그런데 지금 우리가 쓰는 LLM 중에 &quot;이 답변이 왜 나왔는지&quot; 제대로 설명할 수 있는 모델이 몇 개나 될까요? 솔직히 말하면, 거의 없었습니다. 적어도 2026년 2월까지는요.
+EU AI Act에 따르면 2026년 8월 2일부터 고위험 AI 시스템은 "의사결정 과정을 충분히 투명하게" 설명해야 합니다. 그런데 지금 우리가 쓰는 LLM 중에 "이 답변이 왜 나왔는지" 제대로 설명할 수 있는 모델이 몇 개나 될까요? 솔직히 말하면, 거의 없었습니다. 적어도 2026년 2월까지는요.
 
- _검은 표면 위 흰색 AI 글자, 인공지능 투명성을 상징하는 이미지_
+ 
+![검은 표면 위 흰색 AI 글자, 인공지능 투명성을 상징하는 이미지](https://images.unsplash.com/photo-1646583288948-24548aedffd8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwdHJhbnNwYXJlbmN5fGVufDB8MHx8fDE3NzI4NzI3NTZ8MA&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | AI 투명성, 이제 선택이 아닌 의무가 되고 있다_
+_Photo by [Markus Spiske](https://unsplash.com/@markusspiske?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | AI 투명성, 이제 선택이 아닌 의무가 되고 있다_
 
- Guide Labs라는 샌프란시스코 스타트업이 [Steerling-8B](https://www.guidelabs.ai/post/steerling-8b-base-model-release/)를 오픈소스로 공개했습니다. 80억 파라미터짜리 LLM인데, 이 모델의 핵심 주장은 간단합니다. **&quot;내가 생성한 모든 토큰을 학습 데이터까지 역추적할 수 있다.&quot;** 진짜로요? 기존 블랙박스 LLM과 뭐가 다른 건지, 개발자 입장에서 왜 신경 써야 하는지 파헤쳐봤습니다.
+ Guide Labs라는 샌프란시스코 스타트업이 [Steerling-8B](https://www.guidelabs.ai/post/steerling-8b-base-model-release/)를 오픈소스로 공개했습니다. 80억 파라미터짜리 LLM인데, 이 모델의 핵심 주장은 간단합니다. **"내가 생성한 모든 토큰을 학습 데이터까지 역추적할 수 있다."** 진짜로요? 기존 블랙박스 LLM과 뭐가 다른 건지, 개발자 입장에서 왜 신경 써야 하는지 파헤쳐봤습니다.
 
  
 ## TL;DR
- Steerling-8B는 기존 LLM의 90% 성능을 유지하면서, 모든 출력 토큰의 출처를 추적하고 특정 개념을 추론 시점에 증폭·억제할 수 있는 최초의 &quot;내재적으로 해석 가능한&quot; 오픈소스 LLM입니다. Y Combinator 출신 Guide Labs가 개발했고, HuggingFace에서 바로 받을 수 있습니다.
+ Steerling-8B는 기존 LLM의 90% 성능을 유지하면서, 모든 출력 토큰의 출처를 추적하고 특정 개념을 추론 시점에 증폭·억제할 수 있는 최초의 "내재적으로 해석 가능한" 오픈소스 LLM입니다. Y Combinator 출신 Guide Labs가 개발했고, HuggingFace에서 바로 받을 수 있습니다.
 
  
 ## 해석 가능 AI vs 블랙박스 AI, 무엇이 다른가
- 먼저 용어를 정리하겠습니다. 기존에도 &quot;설명 가능한 AI(XAI)&quot;라는 개념은 있었습니다. SHAP, LIME, Attention Visualization 같은 사후 분석(post-hoc) 도구들이요. 근데 이것들은 모델 바깥에서 &quot;아마 이 부분이 중요했을 거야&quot;라고 추측하는 겁니다. 모델 자체가 설명하는 게 아닙니다.
+ 먼저 용어를 정리하겠습니다. 기존에도 "설명 가능한 AI(XAI)"라는 개념은 있었습니다. SHAP, LIME, Attention Visualization 같은 사후 분석(post-hoc) 도구들이요. 근데 이것들은 모델 바깥에서 "아마 이 부분이 중요했을 거야"라고 추측하는 겁니다. 모델 자체가 설명하는 게 아닙니다.
 
- Steerling-8B가 다른 건 이 지점입니다. 사후 분석이 아니라 **아키텍처 자체에 해석 가능성을 내장**했습니다. [TechCrunch의 2026년 2월 보도](https://techcrunch.com/2026/02/23/guide-labs-debuts-a-new-kind-of-interpretable-llm/)에 따르면, Guide Labs는 이를 &quot;내재적 해석 가능성(inherent interpretability)&quot;이라 부릅니다.
+ Steerling-8B가 다른 건 이 지점입니다. 사후 분석이 아니라 **아키텍처 자체에 해석 가능성을 내장**했습니다. [TechCrunch의 2026년 2월 보도](https://techcrunch.com/2026/02/23/guide-labs-debuts-a-new-kind-of-interpretable-llm/)에 따르면, Guide Labs는 이를 "내재적 해석 가능성(inherent interpretability)"이라 부릅니다.
 
-    비교 항목 기존 블랙박스 LLM (Llama 2, GPT 등) Steerling-8B    해석 방식 사후 분석 (SHAP, Attention 등) 아키텍처 내장   출력 추적 불가능 학습 데이터까지 역추적   개념 제어 파인튜닝 필요 추론 시점 실시간 제어   파라미터 7B\~70B+ 8B   성능 (벤치마크) 100% 기준선 \~90%   학습 데이터 2\~15조 토큰 1.35조 토큰   라이선스 모델별 상이 오픈소스   이전에 [Wolfram × ChatGPT의 계산 증강 생성(CAG)](https://daily-1-bite.tistory.com/entry/Wolfram-%C3%97-ChatGPT-%EA%B3%84%EC%82%B0-%EC%A6%9D%EA%B0%95-%EC%83%9D%EC%84%B1CAG-AI-%ED%99%98%EA%B0%81%EC%9D%84-%EC%88%98%ED%95%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EB%8A%94-%EC%83%88-%EC%A0%91%EA%B7%BC%EB%B2%95)에서 AI 환각을 줄이는 접근법을 다뤘었는데요. CAG가 &quot;수학적으로 검증 가능한 답변&quot;에 초점을 뒀다면, Steerling-8B는 &quot;왜 그 답변이 나왔는지&quot;에 초점을 맞춥니다. 방향은 다르지만 둘 다 AI 신뢰성이라는 같은 문제를 풀고 있습니다.
+    비교 항목 기존 블랙박스 LLM (Llama 2, GPT 등) Steerling-8B    해석 방식 사후 분석 (SHAP, Attention 등) 아키텍처 내장   출력 추적 불가능 학습 데이터까지 역추적   개념 제어 파인튜닝 필요 추론 시점 실시간 제어   파라미터 7B\~70B+ 8B   성능 (벤치마크) 100% 기준선 \~90%   학습 데이터 2\~15조 토큰 1.35조 토큰   라이선스 모델별 상이 오픈소스   이전에 [Wolfram × ChatGPT의 계산 증강 생성(CAG)](https://daily-1-bite.tistory.com/entry/Wolfram-%C3%97-ChatGPT-%EA%B3%84%EC%82%B0-%EC%A6%9D%EA%B0%95-%EC%83%9D%EC%84%B1CAG-AI-%ED%99%98%EA%B0%81%EC%9D%84-%EC%88%98%ED%95%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EB%8A%94-%EC%83%88-%EC%A0%91%EA%B7%BC%EB%B2%95)에서 AI 환각을 줄이는 접근법을 다뤘었는데요. CAG가 "수학적으로 검증 가능한 답변"에 초점을 뒀다면, Steerling-8B는 "왜 그 답변이 나왔는지"에 초점을 맞춥니다. 방향은 다르지만 둘 다 AI 신뢰성이라는 같은 문제를 풀고 있습니다.
 
  
 ## 세 갈래 임베딩 아키텍처: 어떻게 작동하나
- _회로 기판 위의 두뇌, 뉴럴 네트워크 아키텍처를 상징_
+ 
+![회로 기판 위의 두뇌, 뉴럴 네트워크 아키텍처를 상징](https://images.unsplash.com/photo-1737505599159-5ffc1dcbc08f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxuZXVyYWwlMjBuZXR3b3JrJTIwYnJhaW58ZW58MHwwfHx8MTc3Mjg3Mjc2NXww&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by [Ecliptic Graphic](https://unsplash.com/@eclipticgraphic?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | 세 갈래로 분해되는 임베딩 구조가 핵심이다_
+_Photo by [Ecliptic Graphic](https://unsplash.com/@eclipticgraphic?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | 세 갈래로 분해되는 임베딩 구조가 핵심이다_
 
  Steerling-8B의 핵심은 임베딩을 세 가지 경로로 분해하는 것입니다. [Guide Labs 공식 블로그](https://www.guidelabs.ai/post/steerling-8b-base-model-release/)의 설명을 정리하면 이렇습니다:
 
-  **알려진 개념(Known Concepts)**: \~33,000개. 사람이 직접 라벨링한 개념들입니다. &quot;감정&quot;, &quot;코드 스타일&quot;, &quot;전문 용어&quot; 같은 것들이요. **발견된 개념(Discovered Concepts)**: \~100,000개. 모델이 학습 과정에서 스스로 찾아낸 패턴입니다. 사람이 이름 붙이지 않았지만, 의미 있는 클러스터로 존재합니다. **잔여(Residual)**: 위 두 경로로 설명되지 않는 나머지입니다.  이게 왜 중요하냐면요. 기존 LLM은 임베딩이 하나의 거대한 벡터 공간에 뒤섞여 있습니다. &quot;이 토큰이 왜 나왔는지&quot;를 알려면 수십억 개 파라미터의 상호작용을 역으로 추적해야 하는데, 사실상 불가능합니다. Steerling은 처음부터 개념 단위로 분리해두니까 추적이 됩니다.
+  **알려진 개념(Known Concepts)**: \~33,000개. 사람이 직접 라벨링한 개념들입니다. "감정", "코드 스타일", "전문 용어" 같은 것들이요. **발견된 개념(Discovered Concepts)**: \~100,000개. 모델이 학습 과정에서 스스로 찾아낸 패턴입니다. 사람이 이름 붙이지 않았지만, 의미 있는 클러스터로 존재합니다. **잔여(Residual)**: 위 두 경로로 설명되지 않는 나머지입니다.  이게 왜 중요하냐면요. 기존 LLM은 임베딩이 하나의 거대한 벡터 공간에 뒤섞여 있습니다. "이 토큰이 왜 나왔는지"를 알려면 수십억 개 파라미터의 상호작용을 역으로 추적해야 하는데, 사실상 불가능합니다. Steerling은 처음부터 개념 단위로 분리해두니까 추적이 됩니다.
 
- 솔직히 처음에는 &quot;그래서 성능이 얼마나 떨어지는데?&quot;가 제일 궁금했습니다. [Dataconomy의 보도(2026년 2월)](https://dataconomy.com/2026/02/24/new-steerling-8b-model-can-trace-every-single-word-back-to-its-training-source/)에 따르면, 1.35조 토큰으로 학습했음에도 2\~7배 더 많은 데이터로 학습한 Llama2-7B와 DeepSeek-7B를 평균 벤치마크에서 앞섰다고 합니다. 물론 최신 대형 모델(GPT-5, Claude 등)과 비교하면 차이가 있겠지만, 8B 급에서 이 정도면 인상적입니다.
+ 솔직히 처음에는 "그래서 성능이 얼마나 떨어지는데?"가 제일 궁금했습니다. [Dataconomy의 보도(2026년 2월)](https://dataconomy.com/2026/02/24/new-steerling-8b-model-can-trace-every-single-word-back-to-its-training-source/)에 따르면, 1.35조 토큰으로 학습했음에도 2\~7배 더 많은 데이터로 학습한 Llama2-7B와 DeepSeek-7B를 평균 벤치마크에서 앞섰다고 합니다. 물론 최신 대형 모델(GPT-5, Claude 등)과 비교하면 차이가 있겠지만, 8B 급에서 이 정도면 인상적입니다.
 
  
 ## 실제 개념 조향(Steering) 시연
  이 모델의 가장 매력적인 기능은 추론 시점에 특정 개념을 증폭하거나 억제할 수 있다는 것입니다. [Guide Labs의 Steering 문서](https://www.guidelabs.ai/post/steerling-steering-8b/)에 따르면, 파인튜닝 없이 실시간으로 가능합니다.
 
- 예를 들어, &quot;공손함(politeness)&quot; 개념을 증폭시키면 같은 프롬프트에 대해 더 정중한 답변이 나옵니다. &quot;기술 전문성(technical depth)&quot; 개념을 올리면 더 깊은 설명이 나오고요.
+ 예를 들어, "공손함(politeness)" 개념을 증폭시키면 같은 프롬프트에 대해 더 정중한 답변이 나옵니다. "기술 전문성(technical depth)" 개념을 올리면 더 깊은 설명이 나오고요.
 
- from transformers import AutoModelForCausalLM, AutoTokenizer # HuggingFace에서 Steerling-8B 로드 model = AutoModelForCausalLM.from\_pretrained(&quot;guidelabs/steerling-8b&quot;) tokenizer = AutoTokenizer.from\_pretrained(&quot;guidelabs/steerling-8b&quot;) # 개념 조향 예시 (의사 코드 - 실제 API는 Guide Labs 문서 참고) prompt = &quot;Explain what a neural network is.&quot; # 기본 생성 output\_default = model.generate(tokenizer(prompt, return\_tensors=&quot;pt&quot;).input\_ids) # &quot;simplicity&quot; 개념 증폭 (concept\_id는 모델의 개념 사전에서 조회) output\_simple = model.generate( tokenizer(prompt, return\_tensors=&quot;pt&quot;).input\_ids, concept\_steering=\{&quot;simplicity&quot;: 0.8\} # 0\~1 스케일 ) # &quot;technical\_depth&quot; 개념 증폭 output\_technical = model.generate( tokenizer(prompt, return\_tensors=&quot;pt&quot;).input\_ids, concept\_steering=\{&quot;technical\_depth&quot;: 0.9\} ) Guide Labs 측 측정에 의하면, 조향 시 개념 점수(concept score)가 거의 0에서 0.783까지 올라가면서도 기존 생성 품질의 84%를 유지했습니다(2026년 2월 기준, Guide Labs 공식 발표). 파인튜닝 한 번 하려면 GPU 몇 시간을 태워야 하는데, 이걸 추론 시점에 바로 할 수 있다는 건 꽤 큰 차이입니다.
+ from transformers import AutoModelForCausalLM, AutoTokenizer # HuggingFace에서 Steerling-8B 로드 model = AutoModelForCausalLM.from\_pretrained("guidelabs/steerling-8b") tokenizer = AutoTokenizer.from\_pretrained("guidelabs/steerling-8b") # 개념 조향 예시 (의사 코드 - 실제 API는 Guide Labs 문서 참고) prompt = "Explain what a neural network is." # 기본 생성 output\_default = model.generate(tokenizer(prompt, return\_tensors="pt").input\_ids) # "simplicity" 개념 증폭 (concept\_id는 모델의 개념 사전에서 조회) output\_simple = model.generate( tokenizer(prompt, return\_tensors="pt").input\_ids, concept\_steering=\{"simplicity": 0.8\} # 0\~1 스케일 ) # "technical\_depth" 개념 증폭 output\_technical = model.generate( tokenizer(prompt, return\_tensors="pt").input\_ids, concept\_steering=\{"technical\_depth": 0.9\} ) Guide Labs 측 측정에 의하면, 조향 시 개념 점수(concept score)가 거의 0에서 0.783까지 올라가면서도 기존 생성 품질의 84%를 유지했습니다(2026년 2월 기준, Guide Labs 공식 발표). 파인튜닝 한 번 하려면 GPU 몇 시간을 태워야 하는데, 이걸 추론 시점에 바로 할 수 있다는 건 꽤 큰 차이입니다.
 
  
 ## 해석 가능성과 성능, 트레이드오프 분석
- _추상적인 파란색과 보라색 빛이 두뇌 형태를 이루는 AI 뉴럴 네트워크_
+ 
+![추상적인 파란색과 보라색 빛이 두뇌 형태를 이루는 AI 뉴럴 네트워크](https://images.unsplash.com/photo-1764336312138-14a5368a6cd3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxuZXVyYWwlMjBuZXR3b3JrJTIwYnJhaW58ZW58MHwwfHx8MTc3Mjg3Mjc2NXww&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by [Mirella Callage](https://unsplash.com/@mcallage?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | 해석 가능성을 얻으려면 무엇을 포기해야 하나_
+_Photo by [Mirella Callage](https://unsplash.com/@mcallage?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | 해석 가능성을 얻으려면 무엇을 포기해야 하나_
 
  완벽한 기술은 없습니다. Steerling-8B도 마찬가지입니다. 제가 보기에 핵심 트레이드오프는 세 가지입니다.
 
  **1\. 투명성을 얻으면 → 절대 성능은 포기해야 한다**
 
- 90% 성능이라는 건 뒤집어 말하면 10%를 잃는다는 뜻입니다. 코드 생성이나 수학 추론 같은 고난도 작업에서 이 10%는 체감이 클 수 있습니다. &quot;왜 이렇게 답했는지 알 수 있지만, 그 답이 살짝 덜 정확한&quot; 상황이 생길 수 있다는 거죠.
+ 90% 성능이라는 건 뒤집어 말하면 10%를 잃는다는 뜻입니다. 코드 생성이나 수학 추론 같은 고난도 작업에서 이 10%는 체감이 클 수 있습니다. "왜 이렇게 답했는지 알 수 있지만, 그 답이 살짝 덜 정확한" 상황이 생길 수 있다는 거죠.
 
  **2\. 개념 제어를 얻으면 → 추론 복잡도가 올라간다**
 
@@ -64,13 +67,13 @@ _Photo by [Mirella Callage](https://unsplash.com/@mcallage?utm\_source=daily-1-b
 
  **3\. 학습 데이터 추적을 얻으면 → 저작권 리스크가 오히려 명확해진다**
 
- 이건 재밌는 역설인데요. 출력을 학습 데이터까지 추적할 수 있다는 건, 동시에 &quot;이 출력이 특정 저작물에서 유래했다&quot;는 증거도 명확해진다는 뜻입니다. 이전에 [Memobase 리뷰](https://daily-1-bite.tistory.com/entry/Memobase-ChatGPT%C2%B7Claude-%EA%B8%B0%EC%96%B5%EC%9D%84-%ED%95%98%EB%82%98%EB%A1%9C-%EC%9E%87%EB%8A%94-AI-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%8B%A0%EA%B3%A0)에서도 AI의 데이터 처리 투명성 문제를 짚었었는데, Steerling은 이 투명성을 아예 기술적으로 구현한 셈입니다. 양날의 검이죠.
+ 이건 재밌는 역설인데요. 출력을 학습 데이터까지 추적할 수 있다는 건, 동시에 "이 출력이 특정 저작물에서 유래했다"는 증거도 명확해진다는 뜻입니다. 이전에 [Memobase 리뷰](https://daily-1-bite.tistory.com/entry/Memobase-ChatGPT%C2%B7Claude-%EA%B8%B0%EC%96%B5%EC%9D%84-%ED%95%98%EB%82%98%EB%A1%9C-%EC%9E%87%EB%8A%94-AI-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%8B%A0%EA%B3%A0)에서도 AI의 데이터 처리 투명성 문제를 짚었었는데, Steerling은 이 투명성을 아예 기술적으로 구현한 셈입니다. 양날의 검이죠.
 
  
 ## 규제 시대에 왜 중요한가
  2026년은 AI 규제의 전환점입니다. [Wilson Sonsini의 2026년 AI 규제 전망 보고서](https://www.wsgr.com/en/insights/2026-year-in-preview-ai-regulatory-developments-for-companies-to-watch-out-for.html)에 따르면:
 
-  **EU AI Act** 고위험 AI 시스템 규정: 2026년 8월 2일 시행 **Colorado AI Act**: 2026년 6월 30일 시행, 알고리즘 차별 방지 의무 **California ADMT 규정**: 자동화 의사결정 기술에 대한 소비자 고지·거부권  이 규제들의 공통점은 &quot;AI가 왜 그런 결정을 내렸는지 설명하라&quot;는 것입니다. 블랙박스 모델로는 이 요구를 충족하기 어렵습니다. Steerling-8B 같은 해석 가능 모델이 주목받는 이유가 바로 여기에 있습니다.
+  **EU AI Act** 고위험 AI 시스템 규정: 2026년 8월 2일 시행 **Colorado AI Act**: 2026년 6월 30일 시행, 알고리즘 차별 방지 의무 **California ADMT 규정**: 자동화 의사결정 기술에 대한 소비자 고지·거부권  이 규제들의 공통점은 "AI가 왜 그런 결정을 내렸는지 설명하라"는 것입니다. 블랙박스 모델로는 이 요구를 충족하기 어렵습니다. Steerling-8B 같은 해석 가능 모델이 주목받는 이유가 바로 여기에 있습니다.
 
  아 그리고, Guide Labs 자체도 이 점을 잘 알고 있는 것 같습니다. CEO Julius Adebayo는 MIT에서 기계 학습 해석 가능성으로 박사 학위를 받은 사람이고, Y Combinator 출신에 Initialized Capital에서 900만 달러 시드 투자를 받았습니다(2024년 11월 기준). 학계와 VC 양쪽에서 검증받은 팀이라는 뜻이죠.
 
@@ -84,11 +87,12 @@ _Photo by [Mirella Callage](https://unsplash.com/@mcallage?utm\_source=daily-1-b
 
   최고 수준의 코드 생성·수학 추론이 필요한 경우 → GPT-5, Claude 추천 초저지연 실시간 서빙이 필요한 대규모 챗봇 100B+ 급 모델의 범용 성능이 필요한 경우  
 ## 마무리: 블랙박스의 종말이 시작된 걸까
- _노트북으로 코딩하는 개발자, 오픈소스 AI 모델 활용 모습_
+ 
+![노트북으로 코딩하는 개발자, 오픈소스 AI 모델 활용 모습](https://images.unsplash.com/photo-1565687981296-535f09db714e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxvcGVuJTIwc291cmNlJTIwY29kZSUyMHByb2dyYW1taW5nfGVufDB8MHx8fDE3NzI4NzI3NjJ8MA&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by [Van Tay Media](https://unsplash.com/@vantaymedia?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | HuggingFace에서 바로 받아 실험할 수 있다_
+_Photo by [Van Tay Media](https://unsplash.com/@vantaymedia?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | HuggingFace에서 바로 받아 실험할 수 있다_
 
- 제 입장을 명확히 하겠습니다. Steerling-8B가 당장 GPT-5나 Claude를 대체할 수는 없습니다. 성능 격차가 있으니까요. 하지만 이 모델이 던지는 질문은 중요합니다. **&quot;AI가 왜 그렇게 대답했는지 모르면서 프로덕션에 배포해도 되는 건가?&quot;**
+ 제 입장을 명확히 하겠습니다. Steerling-8B가 당장 GPT-5나 Claude를 대체할 수는 없습니다. 성능 격차가 있으니까요. 하지만 이 모델이 던지는 질문은 중요합니다. **"AI가 왜 그렇게 대답했는지 모르면서 프로덕션에 배포해도 되는 건가?"**
 
  8B 파라미터 급에서 해석 가능성과 쓸 만한 성능을 동시에 보여줬다는 건, 앞으로 더 큰 모델에서도 같은 접근이 가능할 수 있다는 뜻입니다. 규제 환경이 강화되는 2026년 하반기를 생각하면, 지금부터 이런 모델의 존재를 알아두는 건 나쁘지 않은 투자라고 봅니다.
 
@@ -98,4 +102,4 @@ _Photo by [Van Tay Media](https://unsplash.com/@vantaymedia?utm\_source=daily-1-
 
   [Guide Labs 공식 블로그 - Steerling-8B Base Model Release](https://www.guidelabs.ai/post/steerling-8b-base-model-release/) [TechCrunch - Guide Labs debuts a new kind of interpretable LLM (2026.02.23)](https://techcrunch.com/2026/02/23/guide-labs-debuts-a-new-kind-of-interpretable-llm/) [Dataconomy - New Steerling-8B Model Can Trace Every Single Word Back To Its Training Source (2026.02.24)](https://dataconomy.com/2026/02/24/new-steerling-8b-model-can-trace-every-single-word-back-to-its-training-source/) [Guide Labs - Steering Interpretable Language Models](https://www.guidelabs.ai/post/steerling-steering-8b/) [Wilson Sonsini - 2026 Year in Preview: AI Regulatory Developments](https://www.wsgr.com/en/insights/2026-year-in-preview-ai-regulatory-developments-for-companies-to-watch-out-for.html) [HuggingFace - guidelabs/steerling-8b](https://huggingface.co/guidelabs/steerling-8b)   **함께 읽으면 좋은 글:**
 
-  [Wolfram × ChatGPT &#39;계산 증강 생성(CAG)&#39;: AI 환각을 수학으로 잡는 새 접근법](https://daily-1-bite.tistory.com/entry/Wolfram-%C3%97-ChatGPT-%EA%B3%84%EC%82%B0-%EC%A6%9D%EA%B0%95-%EC%83%9D%EC%84%B1CAG-AI-%ED%99%98%EA%B0%81%EC%9D%84-%EC%88%98%ED%95%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EB%8A%94-%EC%83%88-%EC%A0%91%EA%B7%BC%EB%B2%95) - AI 환각을 줄이는 또 다른 접근법 [Memobase: ChatGPT·Claude 기억을 하나로 잇는 AI 유니버설 메모리](https://daily-1-bite.tistory.com/entry/Memobase-ChatGPT%C2%B7Claude-%EA%B8%B0%EC%96%B5%EC%9D%84-%ED%95%98%EB%82%98%EB%A1%9C-%EC%9E%87%EB%8A%94-AI-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%8B%A0%EA%B3%A0) - AI 데이터 투명성에 대한 또 다른 관점 
+  [Wolfram × ChatGPT '계산 증강 생성(CAG)': AI 환각을 수학으로 잡는 새 접근법](https://daily-1-bite.tistory.com/entry/Wolfram-%C3%97-ChatGPT-%EA%B3%84%EC%82%B0-%EC%A6%9D%EA%B0%95-%EC%83%9D%EC%84%B1CAG-AI-%ED%99%98%EA%B0%81%EC%9D%84-%EC%88%98%ED%95%99%EC%9C%BC%EB%A1%9C-%EC%9E%A1%EB%8A%94-%EC%83%88-%EC%A0%91%EA%B7%BC%EB%B2%95) - AI 환각을 줄이는 또 다른 접근법 [Memobase: ChatGPT·Claude 기억을 하나로 잇는 AI 유니버설 메모리](https://daily-1-bite.tistory.com/entry/Memobase-ChatGPT%C2%B7Claude-%EA%B8%B0%EC%96%B5%EC%9D%84-%ED%95%98%EB%82%98%EB%A1%9C-%EC%9E%87%EB%8A%94-AI-%EC%9C%A0%EB%8B%88%EB%B2%84%EC%84%A4-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EC%8B%A0%EA%B3%A0) - AI 데이터 투명성에 대한 또 다른 관점 

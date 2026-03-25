@@ -1,22 +1,23 @@
 ---
 title: "SnapApp으로 30분 만에 업무용 AI 앱 만들기: 노코드 AI 앱 빌더 실전 체험기"
 date: "2026-03-15"
-description: "&lt;p&gt;지난 수요일 밤 11시쯤이었습니다. 팀 슬랙에 &amp;quot;이번 주 고객 피드백 정리 누가 하실 분?&amp;quot;이라는 메시지가 올라왔는데, 아무도 답을 안 하더라고요. 매주 스프레드시트..."
+description: "지난 수요일 밤 11시쯤이었습니다. 팀 슬랙에 \"이번 주 고객 피드백 정리 누가 하실 분?\"이라는 메시지가 올라왔는데, 아무도 답을 안 하더라고요. 매주 스프레드시트 복붙하고, 태그 달고, 우선순위 매기는 그 작업. 솔직히 저도 하기 싫었습니다. Photo by Matthew..."
 category: "ai"
 tags: []
 ---
 
-지난 수요일 밤 11시쯤이었습니다. 팀 슬랙에 &quot;이번 주 고객 피드백 정리 누가 하실 분?&quot;이라는 메시지가 올라왔는데, 아무도 답을 안 하더라고요. 매주 스프레드시트 복붙하고, 태그 달고, 우선순위 매기는 그 작업. 솔직히 저도 하기 싫었습니다.
+지난 수요일 밤 11시쯤이었습니다. 팀 슬랙에 "이번 주 고객 피드백 정리 누가 하실 분?"이라는 메시지가 올라왔는데, 아무도 답을 안 하더라고요. 매주 스프레드시트 복붙하고, 태그 달고, 우선순위 매기는 그 작업. 솔직히 저도 하기 싫었습니다.
 
- _노트북 위에서 코딩 작업을 하는 개발자의 책상_
+ 
+![노트북 위에서 코딩 작업을 하는 개발자의 책상](https://images.unsplash.com/photo-1540397106260-e24a507a08ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxzdGFydHVwJTIwY29kaW5nJTIwbGFwdG9wfGVufDB8MHx8fDE3NzM1NzI3OTF8MA&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by [Matthew Fournier](https://unsplash.com/@mattyfours?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | 야근의 시작은 언제나 단순 반복 작업_
+_Photo by [Matthew Fournier](https://unsplash.com/@mattyfours?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | 야근의 시작은 언제나 단순 반복 작업_
 
- &quot;이거 앱으로 만들면 안 되나?&quot;라는 생각이 스쳤는데, 마침 그날 오전에 본 뉴스가 떠올랐습니다. BlueVector AI라는 회사에서 SnapApp이라는 노코드 AI 앱 빌더를 출시했다는 소식. 프롬프트 한 줄로 업무용 앱을 만들 수 있다고요. 반신반의하면서 바로 가입해봤습니다.
+ "이거 앱으로 만들면 안 되나?"라는 생각이 스쳤는데, 마침 그날 오전에 본 뉴스가 떠올랐습니다. BlueVector AI라는 회사에서 SnapApp이라는 노코드 AI 앱 빌더를 출시했다는 소식. 프롬프트 한 줄로 업무용 앱을 만들 수 있다고요. 반신반의하면서 바로 가입해봤습니다.
 
  
 ## TL;DR: 30분은 과장이 아니었다 (조건부)
- 결론부터 말하면, 간단한 CRUD 앱은 정말 30분 안에 나옵니다. 고객 피드백을 입력받고, 카테고리별로 필터링하고, 대시보드로 보여주는 정도는 프롬프트 몇 번이면 충분했어요. 근데 &quot;고객 감정 분석을 자동으로 붙이고 싶다&quot;거나 &quot;슬랙 웹훅으로 알림 보내고 싶다&quot; 같은 요구가 들어가는 순간, 30분은 훌쩍 넘어갑니다. 결국 2시간 정도 걸렸습니다.
+ 결론부터 말하면, 간단한 CRUD 앱은 정말 30분 안에 나옵니다. 고객 피드백을 입력받고, 카테고리별로 필터링하고, 대시보드로 보여주는 정도는 프롬프트 몇 번이면 충분했어요. 근데 "고객 감정 분석을 자동으로 붙이고 싶다"거나 "슬랙 웹훅으로 알림 보내고 싶다" 같은 요구가 들어가는 순간, 30분은 훌쩍 넘어갑니다. 결국 2시간 정도 걸렸습니다.
 
  
 ## 프로젝트: 고객 피드백 트래커 만들기
@@ -24,37 +25,38 @@ _Photo by [Matthew Fournier](https://unsplash.com/@mattyfours?utm\_source=daily-
 ### 목표 vs 현실
  원래 계획은 이랬습니다:
 
-    항목 목표 현실    소요 시간 30분 약 2시간   기능 범위 CRUD + 감정 분석 + 슬랙 알림 CRUD + 대시보드 (감정 분석은 수동 설정)   코딩 필요도 0% 약 15% (커스텀 함수 일부)   배포 팀 공유 가능 공유 링크 생성 성공   PRNewswire의 공식 보도(2026년 3월 11일 기준)에 따르면, SnapApp은 &quot;소규모 비즈니스가 기존에 6자리 수(십만 달러 이상) 개발 예산이 필요했던 커스텀 도구를 14일 무료 체험 기간 내에 만들 수 있다&quot;고 합니다. 과장이긴 한데, 방향성은 맞는 말이에요.
+    항목 목표 현실    소요 시간 30분 약 2시간   기능 범위 CRUD + 감정 분석 + 슬랙 알림 CRUD + 대시보드 (감정 분석은 수동 설정)   코딩 필요도 0% 약 15% (커스텀 함수 일부)   배포 팀 공유 가능 공유 링크 생성 성공   PRNewswire의 공식 보도(2026년 3월 11일 기준)에 따르면, SnapApp은 "소규모 비즈니스가 기존에 6자리 수(십만 달러 이상) 개발 예산이 필요했던 커스텀 도구를 14일 무료 체험 기간 내에 만들 수 있다"고 합니다. 과장이긴 한데, 방향성은 맞는 말이에요.
 
  
 ## 가장 큰 삽질 TOP 3
  
-### 삽질 1: &quot;대화로 앱 만들기&quot;의 함정
- SnapApp의 핵심 철학은 &quot;Conversation, not Code&quot;입니다. Google Gemini를 기반으로 자연어 프롬프트를 앱으로 변환해주는 구조인데요.
+### 삽질 1: "대화로 앱 만들기"의 함정
+ SnapApp의 핵심 철학은 "Conversation, not Code"입니다. Google Gemini를 기반으로 자연어 프롬프트를 앱으로 변환해주는 구조인데요.
 
  처음에 이렇게 입력했습니다:
 
- 고객 피드백을 수집하고 관리하는 앱을 만들어줘. 피드백에는 고객명, 이메일, 내용, 카테고리(버그/기능요청/칭찬), 우선순위(높음/중간/낮음)가 있어. 대시보드에서 카테고리별 통계를 보여줘._SnapApp AI 앱 빌더의 메인 인터페이스 화면_
+ 고객 피드백을 수집하고 관리하는 앱을 만들어줘. 피드백에는 고객명, 이메일, 내용, 카테고리(버그/기능요청/칭찬), 우선순위(높음/중간/낮음)가 있어. 대시보드에서 카테고리별 통계를 보여줘.
+![SnapApp AI 앱 빌더의 메인 인터페이스 화면](https://storage.googleapis.com/bv-presto-prod-website-public/snapapp.png)
 
-_출처: [BlueVector AI 공식 페이지](https://bluevector.ai/page/snapapp) | SnapApp의 &quot;Clicks not Code&quot; 인터페이스_
+_출처: [BlueVector AI 공식 페이지](https://bluevector.ai/page/snapapp) | SnapApp의 "Clicks not Code" 인터페이스_
 
- 결과는... 꽤 괜찮았습니다. 데이터베이스 테이블이 자동으로 생성되고, 입력 폼과 리스트 뷰가 바로 나왔어요. 근데 문제는 대시보드였습니다. &quot;카테고리별 통계&quot;라고만 했더니 단순 카운트 테이블만 생성하더라고요. 차트가 아니라.
+ 결과는... 꽤 괜찮았습니다. 데이터베이스 테이블이 자동으로 생성되고, 입력 폼과 리스트 뷰가 바로 나왔어요. 근데 문제는 대시보드였습니다. "카테고리별 통계"라고만 했더니 단순 카운트 테이블만 생성하더라고요. 차트가 아니라.
 
  프롬프트를 좀 더 구체적으로 수정했습니다:
 
- 대시보드에 파이 차트로 카테고리별 비율을 보여주고, 최근 7일 접수된 피드백 수를 일별 바 차트로 표시해줘. 우선순위 &#39;높음&#39;인 미해결 피드백은 상단에 빨간색 배지로 강조해줘.이러니까 제대로 나왔습니다. 교훈: 노코드 AI 빌더라고 해서 &quot;알아서 해줘&quot;가 통하진 않습니다. 프롬프트 엔지니어링은 여기서도 핵심이에요.
+ 대시보드에 파이 차트로 카테고리별 비율을 보여주고, 최근 7일 접수된 피드백 수를 일별 바 차트로 표시해줘. 우선순위 '높음'인 미해결 피드백은 상단에 빨간색 배지로 강조해줘.이러니까 제대로 나왔습니다. 교훈: 노코드 AI 빌더라고 해서 "알아서 해줘"가 통하진 않습니다. 프롬프트 엔지니어링은 여기서도 핵심이에요.
 
  
 ### 삽질 2: 커스텀 로직의 벽
  감정 분석 기능을 붙이려고 했습니다. 피드백 텍스트를 입력하면 자동으로 긍정/부정/중립을 태깅하는 거요. SnapApp이 Google Gemini를 내장하고 있으니까 당연히 될 줄 알았는데...
 
- 안 됩니다. 적어도 제가 시도한 시점(2026년 3월 12일)에서는, Gemini AI 연동은 &quot;간단한 설정&quot;으로 가능하다고 공식 문서에 나와 있지만, 실제로는 커스텀 함수를 작성해야 했습니다. 이 부분에서 약 40분을 날렸어요.
+ 안 됩니다. 적어도 제가 시도한 시점(2026년 3월 12일)에서는, Gemini AI 연동은 "간단한 설정"으로 가능하다고 공식 문서에 나와 있지만, 실제로는 커스텀 함수를 작성해야 했습니다. 이 부분에서 약 40분을 날렸어요.
 
  결국 외부 API를 호출하는 방식으로 우회했는데, 이 정도면 솔직히 Bolt.new나 Lovable에서 직접 코드를 짜는 게 더 빨랐을 수도 있습니다.
 
  
 ### 삽질 3: 공유 설정의 미궁
- 앱을 팀원들에게 공유하려는데, 권한 설정이 직관적이지 않았습니다. &quot;Sharing Rules&quot;라는 메뉴가 있긴 한데, 이게 Enterprise 티어 기능이더라고요. $29/월 Professional에서는 기본 공유 링크만 됩니다.
+ 앱을 팀원들에게 공유하려는데, 권한 설정이 직관적이지 않았습니다. "Sharing Rules"라는 메뉴가 있긴 한데, 이게 Enterprise 티어 기능이더라고요. $29/월 Professional에서는 기본 공유 링크만 됩니다.
 
  TMI인데, 이 때 이미 새벽 1시였습니다.
 
@@ -66,13 +68,14 @@ _출처: [BlueVector AI 공식 페이지](https://bluevector.ai/page/snapapp) | 
 
  다시 한다면 바꿀 것:
 
-  **프롬프트를 처음부터 상세하게** - &quot;앱 만들어줘&quot;가 아니라, 데이터 스키마, UI 레이아웃, 비즈니스 로직을 한 번에 기술 **복잡한 AI 로직은 외부 API로** - SnapApp 내장 AI에 기대하지 말고, 감정 분석 같은 건 OpenAI API나 별도 서비스로 연결 **가격 티어 먼저 확인** - 공유 기능이 필요하면 Enterprise 티어를 고려해야 함  
+  **프롬프트를 처음부터 상세하게** - "앱 만들어줘"가 아니라, 데이터 스키마, UI 레이아웃, 비즈니스 로직을 한 번에 기술 **복잡한 AI 로직은 외부 API로** - SnapApp 내장 AI에 기대하지 말고, 감정 분석 같은 건 OpenAI API나 별도 서비스로 연결 **가격 티어 먼저 확인** - 공유 기능이 필요하면 Enterprise 티어를 고려해야 함  
 ## Bolt·Lovable·Replit과 뭐가 다른가
  NoCode MBA의 2026년 3월 비교 분석에 따르면, 현재 AI 앱 빌더 시장은 Bolt.new, Lovable, Replit Agent가 3강 체제입니다. SnapApp은 이 시장에 늦게 뛰어든 셈인데, 포지셔닝이 좀 다릅니다.
 
-    항목 SnapApp Bolt.new Lovable Replit Agent    주요 타깃 엔터프라이즈 업무 앱 빠른 프로토타이핑 초보자 친화 풀스택 개발자   AI 엔진 Google Gemini Anthropic Claude 자체 + 다중 자체 AI   가격(월) $29\~ $20\~ $20\~ $25\~   강점 DB 기반 업무 앱 프레임워크 유연성 Supabase 통합 다언어 지원   약점 프론트엔드 커스터마이징 제한 외부 서비스 별도 설정 복잡한 로직 한계 학습 곡선   _스마트폰 화면에 표시된 AI 어시스턴트 인터페이스_
+    항목 SnapApp Bolt.new Lovable Replit Agent    주요 타깃 엔터프라이즈 업무 앱 빠른 프로토타이핑 초보자 친화 풀스택 개발자   AI 엔진 Google Gemini Anthropic Claude 자체 + 다중 자체 AI   가격(월) $29\~ $20\~ $20\~ $25\~   강점 DB 기반 업무 앱 프레임워크 유연성 Supabase 통합 다언어 지원   약점 프론트엔드 커스터마이징 제한 외부 서비스 별도 설정 복잡한 로직 한계 학습 곡선   
+![스마트폰 화면에 표시된 AI 어시스턴트 인터페이스](https://images.unsplash.com/photo-1762330467572-5199bc772a20?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxuby1jb2RlJTIwYXBwJTIwZGV2ZWxvcG1lbnR8ZW58MHwwfHx8MTc3MzU3Mjc5MHww&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by [Zulfugar Karimov](https://unsplash.com/@zulfugarkarimov?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | AI 앱 빌더 춘추전국시대_
+_Photo by [Zulfugar Karimov](https://unsplash.com/@zulfugarkarimov?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | AI 앱 빌더 춘추전국시대_
 
  [AI 앱 시장이 21조에서 354조 원으로 성장한다는 이야기](https://daily-1-bite.tistory.com/entry/AI-%EC%95%B1-%EC%8B%9C%EC%9E%A5-21%EC%A1%B0%E2%86%92354%EC%A1%B0-%EC%9B%90-10%EB%85%84-%EB%A7%8C%EC%97%90-17%EB%B0%B0-%EA%B0%9C%EB%B0%9C%EC%9E%90%EA%B0%80-%EC%A7%80%EA%B8%88-%EC%98%AC%EB%9D%BC%ED%83%80%EC%95%BC-%ED%95%A0-%EA%B3%A8%EB%93%9C%EB%9F%AC%EC%8B%9C)를 이전 글에서 다뤘는데, 이런 노코드 AI 빌더들이 그 성장을 견인하는 핵심 동력인 셈입니다.
 
@@ -84,19 +87,20 @@ _Photo by [Zulfugar Karimov](https://unsplash.com/@zulfugarkarimov?utm\_source=d
 ## 이건 공식 문서에 없는 팁인데요
  SnapApp을 실제로 써보면서 알게 된 것 몇 가지:
 
-  **프롬프트에 &quot;테이블 스키마&quot;를 먼저 정의하면 결과가 훨씬 좋습니다.** &quot;앱 만들어줘&quot; 대신 &quot;feedback 테이블: id(auto), customer\_name(string), content(text), category(enum: bug, feature, praise), priority(enum: high, medium, low), created\_at(datetime)&quot; 이렇게 주면 DB 구조가 깔끔하게 나옵니다.
+  **프롬프트에 "테이블 스키마"를 먼저 정의하면 결과가 훨씬 좋습니다.** "앱 만들어줘" 대신 "feedback 테이블: id(auto), customer\_name(string), content(text), category(enum: bug, feature, praise), priority(enum: high, medium, low), created\_at(datetime)" 이렇게 주면 DB 구조가 깔끔하게 나옵니다.
 
-  **대시보드 차트를 요청할 때는 차트 타입을 명시하세요.** &quot;통계 보여줘&quot;라고 하면 텍스트 테이블이 나올 확률이 높습니다. &quot;파이 차트&quot;, &quot;바 차트&quot;, &quot;라인 차트&quot;를 콕 집어야 합니다.
+  **대시보드 차트를 요청할 때는 차트 타입을 명시하세요.** "통계 보여줘"라고 하면 텍스트 테이블이 나올 확률이 높습니다. "파이 차트", "바 차트", "라인 차트"를 콕 집어야 합니다.
 
   **한국어 프롬프트도 동작합니다.** Google Gemini 기반이라 한국어 이해도가 꽤 괜찮아요. 다만 필드명은 영문으로 쓰는 게 안전합니다.
 
-   _노트북과 헤드폰, 폰이 놓인 개발자 데스크 환경_
+   
+![노트북과 헤드폰, 폰이 놓인 개발자 데스크 환경](https://images.unsplash.com/photo-1763568258320-c954a19683e3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxzdGFydHVwJTIwY29kaW5nJTIwbGFwdG9wfGVufDB8MHx8fDE3NzM1NzI3OTF8MA&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by [Daniil Komov](https://unsplash.com/@dkomow?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | 노코드여도 개발자 감성은 필요하다_
+_Photo by [Daniil Komov](https://unsplash.com/@dkomow?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | 노코드여도 개발자 감성은 필요하다_
 
  
 ## 총평: 누구를 위한 도구인가
- SnapApp은 &quot;개발자가 빠르게 내부 도구를 만들 때&quot; 쓰기 좋습니다. 고객 관리, 재고 추적, 승인 워크플로우 같은 CRUD 기반 업무 앱에 최적화되어 있어요. Bolt.new나 Lovable이 &quot;외부 사용자를 위한 예쁜 웹앱&quot;에 강하다면, SnapApp은 &quot;팀 내부에서 쓸 업무 도구&quot;에 포커스하고 있습니다.
+ SnapApp은 "개발자가 빠르게 내부 도구를 만들 때" 쓰기 좋습니다. 고객 관리, 재고 추적, 승인 워크플로우 같은 CRUD 기반 업무 앱에 최적화되어 있어요. Bolt.new나 Lovable이 "외부 사용자를 위한 예쁜 웹앱"에 강하다면, SnapApp은 "팀 내부에서 쓸 업무 도구"에 포커스하고 있습니다.
 
  [AI 코딩 도구 비용 전쟁](https://daily-1-bite.tistory.com/entry/AI-%EC%BD%94%EB%94%A9-%EB%8F%84%EA%B5%AC-%EB%B9%84%EC%9A%A9-%EC%A0%84%EC%9F%81-2026-%ED%81%AC%EB%A0%88%EB%94%A7-%ED%83%9C%EC%9B%8C%EB%8F%84-%EA%B4%9C%EC%B0%AE%EC%9D%84%EA%B9%8C) 글에서도 다뤘듯이, 이런 도구들의 가격 경쟁이 치열해지고 있는데, $29/월이면 사이드 프로젝트용으로는 살짝 부담이고, 회사 업무 도구로는 납득 가능한 수준입니다.
 

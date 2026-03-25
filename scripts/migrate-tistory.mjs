@@ -101,9 +101,27 @@ function formatDate(dateStr) {
   }
 }
 
-function extractDescription(htmlContent, maxLen = 120) {
+function extractDescription(htmlContent, maxLen = 160) {
   const text = htmlContent
+    // 1) 먼저 HTML 엔티티를 디코딩 (RSS가 &lt;p&gt; 형태로 이중 인코딩하는 경우)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&middot;/g, '·')
+    .replace(/&[a-z]+;/gi, '')
+    .replace(/&#\d+;/g, '')
+    // 2) 디코딩 후 HTML 태그 제거 (실제 <p>, <img> 등 포함)
     .replace(/<[^>]+>/g, ' ')
+    // 3) 한번 더 엔티티 정리 (중첩된 경우)
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&[a-z]+;/gi, '')
+    // 4) 공백 정리
     .replace(/\s+/g, ' ')
     .trim();
   return text.length > maxLen ? text.substring(0, maxLen).replace(/\s+\S*$/, '') + '...' : text;
@@ -205,8 +223,10 @@ function htmlToMarkdown(html) {
 
   // 3) 변환 후 남은 HTML 태그를 MDX 안전하게 처리
   markdown = markdown
-    // img → alt 텍스트
-    .replace(/<img[^>]*alt="([^"]*)"[^>]*>/gi, (_, alt) => alt ? `_${alt}_` : '')
+    // img → 마크다운 이미지 (src와 alt 모두 보존)
+    .replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*\/?>/gi, (_, src, alt) => `\n![${alt}](${src})\n`)
+    .replace(/<img[^>]*alt="([^"]*)"[^>]*src="([^"]*)"[^>]*\/?>/gi, (_, alt, src) => `\n![${alt}](${src})\n`)
+    .replace(/<img[^>]*src="([^"]*)"[^>]*\/?>/gi, (_, src) => `\n![이미지](${src})\n`)
     .replace(/<img[^>]*>/gi, '')
     // br → 줄바꿈
     .replace(/<br\s*\/?>/gi, '\n\n')
@@ -224,13 +244,34 @@ function htmlToMarkdown(html) {
     .replace(/<a\s[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '[$2]($1)')
     // blockquote
     .replace(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/gi, (_, t) => t.replace(/<[^>]+>/g, '').split('\n').map(l => `> ${l}`).join('\n'))
+    // HTML 주석 제거 (MDX에서 <!-- --> 은 오류)
+    .replace(/<!--[\s\S]*?-->/g, '')
     // 나머지 모든 HTML 태그 제거
     .replace(/<[^>]+>/g, '');
 
   // 4) MDX 위험 문자 이스케이프
   markdown = sanitizeForMdx(markdown);
 
-  // 5) 연속 빈 줄 정리
+  // 5) 마크다운에 남은 HTML 엔티티 디코딩
+  markdown = markdown
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&middot;/g, '·')
+    .replace(/&[a-z]+;/gi, '')
+    .replace(/&#\d+;/g, '');
+
+  // 6) 엔티티 디코딩 후 생성된 HTML 재제거 (<!--, <script> 등)
+  markdown = markdown
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, '');
+
+  // 7) 연속 빈 줄 정리
   markdown = markdown.replace(/\n{3,}/g, '\n\n');
 
   return markdown;

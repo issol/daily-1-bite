@@ -1,23 +1,24 @@
 ---
 title: "Meta Manus 데스크톱: 내 PC 파일을 직접 다루는 AI 에이전트, 써볼 만할까?"
 date: "2026-03-21"
-description: "&lt;p&gt;&amp;quot;You are the commander; Manus is the executor.&amp;quot; Manus 공식 블로그에 적힌 이 문장이 이 도구의 철학을 압축합니다. 근데..."
+description: "\"You are the commander; Manus is the executor.\" Manus 공식 블로그에 적힌 이 문장이 이 도구의 철학을 압축합니다. 근데 정말 그런지, 직접 써보기 전까진 알 수 없는 거잖아요. 출처: Manus 공식 블로그 | Manus My Computer..."
 category: "ai"
 tags: []
 ---
 
-&quot;You are the commander; Manus is the executor.&quot; Manus 공식 블로그에 적힌 이 문장이 이 도구의 철학을 압축합니다. 근데 정말 그런지, 직접 써보기 전까진 알 수 없는 거잖아요.
+"You are the commander; Manus is the executor." Manus 공식 블로그에 적힌 이 문장이 이 도구의 철학을 압축합니다. 근데 정말 그런지, 직접 써보기 전까진 알 수 없는 거잖아요.
 
- _Manus My Computer 데스크톱 앱 소개 화면_
+ 
+![Manus My Computer 데스크톱 앱 소개 화면](https://files.manuscdn.com/assets/dashboard/materials/2026/03/13/3a99649b74151aefe6da4624f696165ef84775ab30d4cf97f8cca7df9a0c3b25.webp)
 
 _출처: [Manus 공식 블로그](https://manus.im/blog/manus-my-computer-desktop) | Manus My Computer 데스크톱 앱 공식 소개 이미지_
 
- 3월 16일, Meta가 인수한 AI 에이전트 스타트업 Manus가 데스크톱 앱을 출시했습니다. 이름은 **&#39;My Computer&#39;**. 기존 클라우드 기반 AI 에이전트들과 달리 내 맥북이나 윈도우 PC의 로컬 파일, 터미널, 설치된 앱을 AI가 직접 조작할 수 있다는 게 핵심입니다. ChatGPT나 Claude가 &quot;파일을 업로드해주세요&quot;라고 하는 동안, Manus는 &quot;제가 직접 찾아서 할게요&quot;라고 말하는 셈이죠.
+ 3월 16일, Meta가 인수한 AI 에이전트 스타트업 Manus가 데스크톱 앱을 출시했습니다. 이름은 **'My Computer'**. 기존 클라우드 기반 AI 에이전트들과 달리 내 맥북이나 윈도우 PC의 로컬 파일, 터미널, 설치된 앱을 AI가 직접 조작할 수 있다는 게 핵심입니다. ChatGPT나 Claude가 "파일을 업로드해주세요"라고 하는 동안, Manus는 "제가 직접 찾아서 할게요"라고 말하는 셈이죠.
 
  **TL;DR**: 반복적인 파일 정리, 일괄 리네이밍 같은 단순 로컬 작업에는 꽤 쓸만합니다. 하지만 복잡한 멀티스텝 작업에서는 중간에 삐끗하는 경우가 잦고, 실패해도 크레딧이 날아갑니다. 월 $20 유료 플랜 기준으로, 용도를 명확히 정해두고 쓰면 괜찮은 도구입니다.
 
  
-## 제가 겪은 문제: &quot;이 폴더 좀 정리해줘&quot;의 늪
+## 제가 겪은 문제: "이 폴더 좀 정리해줘"의 늪
  솔직히 Manus 데스크톱을 써보게 된 건 거창한 이유가 아니었습니다. 사이드 프로젝트 하나에서 스크린샷, 로그 파일, 임시 CSV가 뒤섞인 폴더가 하나 있었거든요. 한 300개쯤 되는 파일이 Downloads/project-dump/에 날짜도, 분류도 없이 쌓여 있었습니다.
 
  보통이면 Python 스크립트를 짜거나 쉘 원라이너를 돌렸을 텐데, 문제는 파일 이름만으로는 분류가 안 된다는 거였어요. 스크린샷 내용을 봐야 어떤 기능 관련인지 알 수 있고, CSV는 열어봐야 어떤 데이터인지 구분이 됩니다. 이걸 수작업으로? 생각만 해도 지치더라고요.
@@ -26,9 +27,10 @@ _출처: [Manus 공식 블로그](https://manus.im/blog/manus-my-computer-deskto
 ## 해결책을 찾은 과정: 클라우드 AI로는 안 되는 이유
  처음에는 ChatGPT에 파일을 올려봤습니다. 10개씩 끊어서 업로드하고, 분류 결과를 받아서 수동으로 옮기는 방식. 20개쯤 하다가 포기했습니다. 이건 자동화가 아니라 노가다에 AI 옷을 입힌 거예요.
 
- 이전에 [MCP(Model Context Protocol)로 AI 에이전트 연결하기](https://daily-1-bite.tistory.com/entry/MCPModel-Context-Protocol%EB%A1%9C-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8) 글을 쓰면서 에이전트가 외부 도구를 직접 다루는 개념을 다뤘었는데요. Manus의 My Computer는 그 개념을 &quot;내 컴퓨터 전체&quot;로 확장한 겁니다. 파일을 올리는 게 아니라 AI가 내 폴더에 직접 접근해서 읽고, 분석하고, 옮기는 방식.
+ 이전에 [MCP(Model Context Protocol)로 AI 에이전트 연결하기](https://daily-1-bite.tistory.com/entry/MCPModel-Context-Protocol%EB%A1%9C-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8) 글을 쓰면서 에이전트가 외부 도구를 직접 다루는 개념을 다뤘었는데요. Manus의 My Computer는 그 개념을 "내 컴퓨터 전체"로 확장한 겁니다. 파일을 올리는 게 아니라 AI가 내 폴더에 직접 접근해서 읽고, 분석하고, 옮기는 방식.
 
- _Manus My Computer 워크플로우 다이어그램_
+ 
+![Manus My Computer 워크플로우 다이어그램](https://files.manuscdn.com/assets/dashboard/materials/2026/03/13/9df4d458bc665ac8718bc41f468bb3e7132535d5dcfc2b5e74d22bd088568e69.webp)
 
 _출처: [Manus 공식 블로그](https://manus.im/blog/manus-my-computer-desktop) | My Computer의 로컬-클라우드 연동 워크플로우_
 
@@ -36,17 +38,18 @@ _출처: [Manus 공식 블로그](https://manus.im/blog/manus-my-computer-deskto
 ## Manus 데스크톱으로 실제 해본 것: Before/After
  
 ### 설치와 첫 인상
- macOS 기준, 공식 사이트에서 .dmg 다운로드 후 설치. Apple Silicon 맥에서 바로 실행됩니다. 첫 실행 시 터미널 접근 권한을 요청하는데, 여기서 &quot;Allow Once&quot;와 &quot;Always Allow&quot; 중 선택할 수 있습니다. 저는 일단 Allow Once로 시작했습니다. 아무리 Meta가 인수했다고 해도 내 터미널에 프리패스를 주긴 좀 꺼림칙하니까요.
+ macOS 기준, 공식 사이트에서 .dmg 다운로드 후 설치. Apple Silicon 맥에서 바로 실행됩니다. 첫 실행 시 터미널 접근 권한을 요청하는데, 여기서 "Allow Once"와 "Always Allow" 중 선택할 수 있습니다. 저는 일단 Allow Once로 시작했습니다. 아무리 Meta가 인수했다고 해도 내 터미널에 프리패스를 주긴 좀 꺼림칙하니까요.
 
  
 ### 파일 정리 작업: Before
  # 정리 전 상태 ls \~/Downloads/project-dump/ | head -10 # Screenshot 2026-03-01 at 14.23.45.png # data\_export\_final\_v2.csv # data\_export\_final\_FINAL.csv # meeting\_notes.txt # IMG\_4821.png # debug\_log\_0301.txt # Screenshot 2026-02-28 at 09.11.02.png # api\_response\_sample.json # ... # 총 312개 파일 
 ### 파일 정리 작업: After
- Manus에 이렇게 요청했습니다: &quot;\~/Downloads/project-dump/ 폴더의 파일들을 내용 기반으로 분류해서 하위 폴더로 정리해줘. 스크린샷은 내용을 분석해서 카테고리를 나눠줘.&quot;
+ Manus에 이렇게 요청했습니다: "\~/Downloads/project-dump/ 폴더의 파일들을 내용 기반으로 분류해서 하위 폴더로 정리해줘. 스크린샷은 내용을 분석해서 카테고리를 나눠줘."
 
  # Manus 실행 후 결과 (약 8분 소요) ls \~/Downloads/project-dump/ # screenshots/ # ├── ui-design/ (47개) # ├── error-logs/ (23개) # └── misc/ (12개) # data/ # ├── exports/ (34개) # └── api-samples/ (8개) # documents/ # ├── meeting-notes/ (15개) # └── specs/ (6개) # logs/ (28개) # uncategorized/ (19개) 312개 파일 중 293개가 합리적으로 분류됐습니다. uncategorized/에 빠진 19개는 파일명도 내용도 애매한 것들이라 납득이 갔어요. 다만 실행 중간에 터미널 명령어 승인 팝업이 한 40번 정도 떴습니다. Allow Once 모드였거든요. 이건 좀... 피로했습니다.
 
- _Manus 데스크톱 인보이스 정리 사용 사례_
+ 
+![Manus 데스크톱 인보이스 정리 사용 사례](https://files.manuscdn.com/assets/dashboard/materials/2026/03/13/36e4643d16cb036d774d8cafdaaeafd1e061daef0875fbf861e35b15fc277229.webp)
 
 _출처: [Manus 공식 블로그](https://manus.im/blog/manus-my-computer-desktop) | 대량 파일 일괄 정리 사용 사례_
 
@@ -54,38 +57,39 @@ _출처: [Manus 공식 블로그](https://manus.im/blog/manus-my-computer-deskto
 ## 다른 대안과 비교: 왜 Manus를 골랐는지 (그리고 한계)
  사실 로컬 파일을 다루는 AI 에이전트는 Manus만 있는 게 아닙니다. OpenAI의 OpenClaw, Perplexity의 Personal Computer도 비슷한 방향을 잡고 있고요. 근데 2026년 3월 현재 기준으로 **macOS+Windows 양쪽 다 지원하면서 실제 다운로드 가능한 건 Manus가 먼저**입니다.
 
- [SnapApp으로 30분 만에 업무용 AI 앱 만들기](https://daily-1-bite.tistory.com/entry/SnapApp%EC%9C%BC%EB%A1%9C-30%EB%B6%84-%EB%A7%8C%EC%97%90) 글에서도 느꼈지만, AI 도구는 &quot;되는 것&quot;보다 &quot;안 되는 것&quot;을 아는 게 더 중요합니다. Manus 데스크톱의 한계를 정리하면:
+ [SnapApp으로 30분 만에 업무용 AI 앱 만들기](https://daily-1-bite.tistory.com/entry/SnapApp%EC%9C%BC%EB%A1%9C-30%EB%B6%84-%EB%A7%8C%EC%97%90) 글에서도 느꼈지만, AI 도구는 "되는 것"보다 "안 되는 것"을 아는 게 더 중요합니다. Manus 데스크톱의 한계를 정리하면:
 
     비교 항목 Manus Desktop ChatGPT (파일 업로드) Claude Code (터미널)    로컬 파일 직접 접근 O X (업로드 필요) O   GUI 앱 제어 O X X   이미지 내용 분석 후 분류 O O (수동 업로드) X   코딩 작업 보통 보통 우수   복잡한 멀티스텝 안정성 낮음 중간 높음   가격 (월) $20\~ $20\~ 사용량 기반   
 ## 실전 팁 4가지 (공식 문서에 안 나오는 것들)
- **1\. &quot;Always Allow&quot;는 단순 작업에만 쓰세요.** 파일 이동이나 리네이밍 같은 비파괴적 작업에는 Always Allow가 편합니다. 하지만 삭제나 덮어쓰기가 포함된 작업에서는 반드시 Allow Once로. 한 번 날리면 복구가 안 됩니다.
+ **1\. "Always Allow"는 단순 작업에만 쓰세요.** 파일 이동이나 리네이밍 같은 비파괴적 작업에는 Always Allow가 편합니다. 하지만 삭제나 덮어쓰기가 포함된 작업에서는 반드시 Allow Once로. 한 번 날리면 복구가 안 됩니다.
 
- **2\. 작업 범위를 좁게 지정하세요.** &quot;내 컴퓨터 전체를 정리해줘&quot;보다 &quot;\~/Downloads/project-dump/ 폴더만 정리해줘&quot;가 성공률이 훨씬 높습니다. 범위가 넓을수록 중간에 멈추는 빈도가 올라가요.
+ **2\. 작업 범위를 좁게 지정하세요.** "내 컴퓨터 전체를 정리해줘"보다 "\~/Downloads/project-dump/ 폴더만 정리해줘"가 성공률이 훨씬 높습니다. 범위가 넓을수록 중간에 멈추는 빈도가 올라가요.
 
  **3\. 무료 플랜으로 먼저 테스트.** 유료 결제 전에 무료 크레딧으로 본인의 주요 유스케이스를 꼭 돌려보세요. 복잡한 작업에서 실패하면 크레딧이 그냥 날아가거든요. Lindy.ai 리뷰에서도 이 점이 가장 큰 불만으로 꼽혔습니다 (2026년 3월 기준, Lindy.ai 블로그).
 
  **4\. GPU 활용은 아직 제한적.** 공식 블로그에서 로컬 GPU로 ML 모델 학습이 가능하다고 했는데, 실제로 해보면 간단한 파인튜닝 정도만 돌아갑니다. 본격적인 학습은 아직 클라우드가 낫습니다.
 
- _노트북에서 AI 워크플로우를 실행하는 작업 환경_
+ 
+![노트북에서 AI 워크플로우를 실행하는 작업 환경](https://images.unsplash.com/photo-1763568258474-7c2330c1a893?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxjb21wdXRlciUyMGFydGlmaWNpYWwlMjBpbnRlbGxpZ2VuY2UlMjB3b3Jrc3BhY2V8ZW58MHwwfHx8MTc3NDA5OTYyMXww&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by [Daniil Komov](https://unsplash.com/@dkomow?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | AI 에이전트와 함께하는 개발 환경_
+_Photo by [Daniil Komov](https://unsplash.com/@dkomow?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | AI 에이전트와 함께하는 개발 환경_
 
  
 ## 총평: 이런 상황이면 추천, 이런 상황이면 비추
  
 ### 추천하는 경우
-  **파일 수백 개를 반복적으로 정리·리네이밍해야 할 때.** 사진 정리, 인보이스 분류, 로그 파일 아카이빙 등. 이 용도에서는 정말 시간을 아껴줍니다. **비개발자인데 로컬 자동화가 필요할 때.** 쉘 스크립트를 못 짜는 분이 &quot;매주 이 폴더 정리해줘&quot; 같은 반복 작업을 맡기기에 좋습니다. **간단한 프로토타입을 빠르게 만들 때.** Manus 공식 블로그에 따르면 Swift로 실시간 회의 번역 앱을 20분 만에 만든 사례가 있습니다 (2026년 3월, Manus 공식 블로그). 물론 프로덕션 수준은 아니겠지만요.  
+  **파일 수백 개를 반복적으로 정리·리네이밍해야 할 때.** 사진 정리, 인보이스 분류, 로그 파일 아카이빙 등. 이 용도에서는 정말 시간을 아껴줍니다. **비개발자인데 로컬 자동화가 필요할 때.** 쉘 스크립트를 못 짜는 분이 "매주 이 폴더 정리해줘" 같은 반복 작업을 맡기기에 좋습니다. **간단한 프로토타입을 빠르게 만들 때.** Manus 공식 블로그에 따르면 Swift로 실시간 회의 번역 앱을 20분 만에 만든 사례가 있습니다 (2026년 3월, Manus 공식 블로그). 물론 프로덕션 수준은 아니겠지만요.  
 ### 비추천하는 경우
-  **복잡한 분기 로직이 포함된 자동화.** &quot;만약 A면 B하고, 아니면 C하되 D 조건이면 E해줘&quot; 같은 작업에서는 높은 확률로 중간에 엉뚱한 방향으로 갑니다. **민감한 데이터가 있는 환경.** 터미널 접근 권한을 AI에게 주는 건 결국 보안 트레이드오프입니다. 회사 업무용 맥에서 쓸 건지는 보안팀과 상의하세요. **이미 CLI에 능숙한 개발자가 단순 스크립팅용으로.** find . -name &quot;\*.csv&quot; -exec mv \{\} ./data/ \\; 한 줄이면 끝날 일에 월 $20을 쓸 이유는 없습니다. 솔직히. **크레딧 소모에 민감한 분.** 작업 실패 시에도 크레딧이 차감됩니다. CyberNews 리뷰에서도 이 점을 주요 단점으로 지적했고 (2026년 3월 기준, CyberNews), 저도 동의합니다.  
+  **복잡한 분기 로직이 포함된 자동화.** "만약 A면 B하고, 아니면 C하되 D 조건이면 E해줘" 같은 작업에서는 높은 확률로 중간에 엉뚱한 방향으로 갑니다. **민감한 데이터가 있는 환경.** 터미널 접근 권한을 AI에게 주는 건 결국 보안 트레이드오프입니다. 회사 업무용 맥에서 쓸 건지는 보안팀과 상의하세요. **이미 CLI에 능숙한 개발자가 단순 스크립팅용으로.** find . -name "\*.csv" -exec mv \{\} ./data/ \\; 한 줄이면 끝날 일에 월 $20을 쓸 이유는 없습니다. 솔직히. **크레딧 소모에 민감한 분.** 작업 실패 시에도 크레딧이 차감됩니다. CyberNews 리뷰에서도 이 점을 주요 단점으로 지적했고 (2026년 3월 기준, CyberNews), 저도 동의합니다.  
 ### 10점 스코어카드
     항목 점수 한줄평    설치/설정 용이성 9/10 드래그 앤 드롭 설치, 권한 설정도 직관적   단순 작업 성능 8/10 파일 정리·리네이밍은 훌륭   복잡 작업 성능 5/10 멀티스텝에서 자주 실패, 재실행 필요   보안/프라이버시 7/10 승인 시스템은 있으나 터미널 풀액세스는 불안   가격 대비 가치 6/10 $20/월, 실패 시 크레딧 소모가 아쉬움   **총점** **7.0/10** **용도를 좁히면 쓸만한 로컬 AI 에이전트**   
 ## 마무리
- Manus 데스크톱의 My Computer는 &quot;AI 에이전트가 내 컴퓨터를 직접 다룬다&quot;는 개념을 현실로 보여준 첫 번째 제품 중 하나입니다. 9to5Mac에 따르면 Meta는 이를 OpenAI의 OpenClaw, Perplexity의 Personal Computer에 대항하는 전략적 제품으로 포지셔닝하고 있습니다 (2026년 3월 17일, 9to5Mac). 아 그리고 Manus가 중국 AI 스타트업이었다가 Meta에 인수된 배경도 흥미로운데, 이건 다음에 따로 다뤄볼게요.
+ Manus 데스크톱의 My Computer는 "AI 에이전트가 내 컴퓨터를 직접 다룬다"는 개념을 현실로 보여준 첫 번째 제품 중 하나입니다. 9to5Mac에 따르면 Meta는 이를 OpenAI의 OpenClaw, Perplexity의 Personal Computer에 대항하는 전략적 제품으로 포지셔닝하고 있습니다 (2026년 3월 17일, 9to5Mac). 아 그리고 Manus가 중국 AI 스타트업이었다가 Meta에 인수된 배경도 흥미로운데, 이건 다음에 따로 다뤄볼게요.
 
  지금 당장 쓸만한가? 파일 정리나 단순 반복 자동화 용도라면 **네**. 복잡한 워크플로우 자동화를 기대한다면 **아직은 아닙니다**. 하지만 이 카테고리 자체가 빠르게 진화하고 있으니, 무료 플랜으로 한번 체험해보는 건 추천합니다.
 
   **참고 자료:**
 
-  [Introducing My Computer: When Manus Meets Your Desktop](https://manus.im/blog/manus-my-computer-desktop) — Manus 공식 블로그 [Meta&#39;s Manus launches &#39;My Computer&#39; to turn your Mac into an AI agent](https://9to5mac.com/2026/03/17/metas-manus-launches-my-computer-to-turn-your-mac-into-an-ai-agent/) — 9to5Mac [Manus AI Review 2026: Pros, Cons, and Who It&#39;s Best For](https://www.lindy.ai/blog/manus-ai-review) — Lindy.ai [Manus AI Review in 2026 – Features, Performance, and Pricing](https://cybernews.com/ai-tools/manus-ai-review/) — CyberNews   **함께 읽으면 좋은 글:**
+  [Introducing My Computer: When Manus Meets Your Desktop](https://manus.im/blog/manus-my-computer-desktop) — Manus 공식 블로그 [Meta's Manus launches 'My Computer' to turn your Mac into an AI agent](https://9to5mac.com/2026/03/17/metas-manus-launches-my-computer-to-turn-your-mac-into-an-ai-agent/) — 9to5Mac [Manus AI Review 2026: Pros, Cons, and Who It's Best For](https://www.lindy.ai/blog/manus-ai-review) — Lindy.ai [Manus AI Review in 2026 – Features, Performance, and Pricing](https://cybernews.com/ai-tools/manus-ai-review/) — CyberNews   **함께 읽으면 좋은 글:**
 
   [MCP(Model Context Protocol)로 AI 에이전트 연결하기: 2026년 표준 프로토콜 실전 입문](https://daily-1-bite.tistory.com/entry/MCPModel-Context-Protocol%EB%A1%9C-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8) - AI 에이전트가 외부 도구를 연결하는 표준 프로토콜 [SnapApp으로 30분 만에 업무용 AI 앱 만들기: 노코드 AI 앱 빌더 실전 체험기](https://daily-1-bite.tistory.com/entry/SnapApp%EC%9C%BC%EB%A1%9C-30%EB%B6%84-%EB%A7%8C%EC%97%90) - 또 다른 AI 자동화 도구 체험기 
