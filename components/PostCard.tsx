@@ -23,8 +23,8 @@ export default function PostCard({ post }: PostCardProps) {
             {post.description}
           </p>
         )}
-        <div className="flex items-center justify-between">
-          <time className="text-xs text-gray-400">{post.date}</time>
+        <div className="flex items-start justify-between gap-2">
+          <time className="text-xs text-gray-400 whitespace-nowrap shrink-0">{post.date}</time>
           {post.tags.length > 0 && (
             <div className="flex gap-1 flex-wrap justify-end">
               {post.tags.slice(0, 3).map((tag) => (
