@@ -75,8 +75,7 @@ export const metadata: Metadata = {
   verification: {
     // Google Search Console 소유권 확인 시 여기에 추가
     // google: 'VERIFICATION_TOKEN',
-    // Naver Search Advisor 소유권 확인 시 여기에 추가
-    // other: { 'naver-site-verification': 'NAVER_VERIFICATION_TOKEN' },
+    other: { 'naver-site-verification': 'df304bda19da5080e0fc42e56de4dd425715f552' },
   },
 };
 
