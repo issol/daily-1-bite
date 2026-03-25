@@ -1,6 +1,6 @@
 import { getAllPosts, CATEGORIES } from '@/lib/posts';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily-1-bite.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
 // RSS 2.0 피드 — AI 검색엔진(Perplexity, ChatGPT 등)과 구독 도구가 활용
 export async function GET() {
@@ -20,7 +20,7 @@ export async function GET() {
       <pubDate>${new Date(post.date).toUTCString()}</pubDate>
       <category><![CDATA[${category}]]></category>
       ${post.tags.map((tag) => `<category><![CDATA[${tag}]]></category>`).join('\n      ')}
-      <author>noreply@daily-1-bite.com (A꿀벌I)</author>
+      <author>noreply@daily1bite.com (A꿀벌I)</author>
       <dc:creator><![CDATA[A꿀벌I]]></dc:creator>
     </item>`.trim();
     })

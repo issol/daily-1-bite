@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 import { getAllPosts, CATEGORIES } from '@/lib/posts';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily-1-bite.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const posts = getAllPosts();

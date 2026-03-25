@@ -12,7 +12,7 @@ const notoSansKR = Noto_Sans_KR({
   display: 'swap',
 });
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily-1-bite.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),

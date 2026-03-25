@@ -5,7 +5,7 @@ import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily-1-bite.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
 interface Props {
   params: Promise<{ slug: string[] }>;

@@ -8,7 +8,7 @@ export const revalidate = 3600; // 1시간마다 갱신
 export const metadata: Metadata = {
   title: '방문 통계 | 매일 한입',
   description: '매일 한입 블로그 방문 통계 및 인기 글 TOP 10',
-  alternates: { canonical: 'https://daily-1-bite.com/stats' },
+  alternates: { canonical: 'https://daily1bite.com/stats' },
 };
 
 function formatNumber(n: number): string {

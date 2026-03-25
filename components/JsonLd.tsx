@@ -1,7 +1,7 @@
 // JSON-LD 구조화 데이터 컴포넌트
 // SEO + GEO (Generative Engine Optimization) 모두 커버
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily-1-bite.com';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
 export function WebSiteJsonLd() {
   const schema = {

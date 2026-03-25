@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: '문의하기 | 매일 한입',
   description: '매일 한입 블로그에 문의사항, 제보, 협업 제안을 보내주세요.',
   alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://daily-1-bite.com'}/contact`,
+    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com'}/contact`,
   },
 };
 
