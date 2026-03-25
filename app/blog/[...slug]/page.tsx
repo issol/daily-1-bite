@@ -4,7 +4,9 @@ import MDXContent from '@/components/MDXContent';
 import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd';
 import RelatedPosts from '@/components/RelatedPosts';
 import TableOfContents from '@/components/TableOfContents';
+import Comments from '@/components/Comments';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
@@ -184,6 +186,11 @@ export default async function PostPage({ params }: Props) {
           currentSlug={fullSlug}
           posts={getPostsByCategory(post.category)}
         />
+
+        {/* 댓글 — Giscus (GitHub Discussions 기반) */}
+        <Suspense fallback={null}>
+          <Comments />
+        </Suspense>
 
         <hr className="border-gray-100 mt-12 mb-8" />
 
