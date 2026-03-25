@@ -56,7 +56,16 @@ export default function PrivacyPolicyPage() {
         <section>
           <h2 className="text-base font-bold text-gray-900 mb-2">5. 문의</h2>
           <p>
-            개인정보처리방침에 관한 문의는 블로그 소개 페이지를 통해 연락하실 수 있습니다.
+            개인정보처리방침에 관한 문의는 아래 이메일로 연락하실 수 있습니다.
+          </p>
+          <p className="mt-2">
+            이메일:{' '}
+            <a
+              href="mailto:isolatorv@gmail.com"
+              className="text-amber-600 underline"
+            >
+              isolatorv@gmail.com
+            </a>
           </p>
         </section>
 

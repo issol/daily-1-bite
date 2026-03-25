@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Noto_Sans_KR } from 'next/font/google';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -91,6 +92,7 @@ export default function RootLayout({
         <main className="min-h-screen">{children}</main>
         <Footer />
       </body>
+      <GoogleAnalytics gaId="G-1YMK79BX3G" />
     </html>
   );
 }

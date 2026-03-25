@@ -13,6 +13,9 @@ export default function Footer() {
           <Link href="/about" className="hover:text-amber-500 transition-colors">
             소개
           </Link>
+          <Link href="/contact" className="hover:text-amber-500 transition-colors">
+            문의
+          </Link>
           <Link href="/privacy-policy" className="hover:text-amber-500 transition-colors">
             개인정보처리방침
           </Link>

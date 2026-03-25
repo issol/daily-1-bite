@@ -1,0 +1,61 @@
+---
+title: "NotebookLM으로 긴 문서&amp;middot;유튜브 한입 요약하기: 비개발자도 쓰는 AI 요약"
+date: "2026-02-26"
+description: "&lt;p&gt;지난주에 50페이지짜리 기술 스펙 PDF를 읽어야 했습니다. 마감은 이틀 뒤고, 문서는 영어라서 눈이 휘둥그레졌어요. 그냥 ChatGPT에 붙여넣자니 컨텍스트 한계가 있고, 직접 요약하자니 시간이..."
+category: "ai"
+tags: []
+---
+
+지난주에 50페이지짜리 기술 스펙 PDF를 읽어야 했습니다. 마감은 이틀 뒤고, 문서는 영어라서 눈이 휘둥그레졌어요. 그냥 ChatGPT에 붙여넣자니 컨텍스트 한계가 있고, 직접 요약하자니 시간이 너무 부족하더라고요. 그때 동료가 &quot;NotebookLM 써봐. PDF 통째로 넣고 &#39;한 장 요약해줘&#39; 하면 돼&quot;라고 해서 처음 써봤습니다.
+
+ **한 줄 요약:** NotebookLM은 PDF, Google Docs, 웹페이지, 유튜브 링크를 넣으면 그걸 기반으로 질문에 답하고, 요약하고, 오디오 개요(Audio Overview)까지 만들어 주는 Google의 무료 AI 도구입니다. 이 글에서는 2026년 2월 기준으로 **사전 준비 → 노트 만들기 → 소스 추가 → 채팅 요약 → 오디오 개요**까지 단계별로 다룹니다. 비개발자도 5분 안에 &quot;긴 문서 한입 요약&quot;을 만들 수 있습니다.
+
+ _노트북과 문서를 읽는 모습을 상징하는 이미지_
+
+_Photo by [Thought Catalog](https://unsplash.com/@thoughtcatalog?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | 긴 문서를 한입에 요약하는 AI의 시작_
+
+  
+## 이 글에서 다루는 것
+  NotebookLM이란 무엇인지, 어떤 소스를 넣을 수 있는지 새 노트 만들기 → PDF·유튜브 소스 추가 → 채팅으로 한입 요약 요청하는 순서 Audio Overview로 &quot;들리는 요약&quot; 만드는 방법 자주 생기는 문제와 해결(업로드 실패, 소스 한도, 답변 한계) 실무에서 쓰는 팁(회의 전 복기, 유튜브 학습, 오디오 활용)  Google의 2025년 3월 [Workspace 업데이트](https://workspaceupdates.googleblog.com/2025/03/new-features-available-in-notebooklm.html)에 따르면, NotebookLM에는 오디오·비디오 개요, 50개 이상 언어 지원, NotebookLM Plus 유료 플랜이 추가되었습니다. 아래는 무료 버전 기준입니다.
+
+  
+## 사전 준비: 환경과 지원 형식
+  **접속:** [NotebookLM](https://notebooklm.google.com) (웹 전용, 2026년 2월 기준). Chrome 등 최신 브라우저 권장. **계정:** Google 계정 하나면 됩니다. 개인·Workspace 둘 다 가능하고, [공식 도움말](https://support.google.com/notebooklm/answer/15724458)에 상세 안내가 있습니다. **지원 형식:** PDF, Google Docs 링크, 웹 URL, 유튜브 URL, 텍스트 붙여넣기. 한 노트에 여러 소스를 묶을 수 있어요.  제가 테스트한 환경은 Chrome 최신, macOS였고, PDF 2개(20\~50페이지)와 유튜브 15분 영상 1개를 넣었습니다.
+
+  
+## 단계별 진행: 노트 만들기 → 한입 요약 → 오디오
+ 
+### 1단계: 노트북 만들고 소스 추가
+ NotebookLM에 들어가면 **&quot;New notebook&quot;**으로 새 노트를 만듭니다. 여기에 **소스(Source)**를 추가하는데, 드래그 앤 드롭으로 PDF를 올리거나, &quot;Add source&quot;에서 유튜브·웹 URL을 넣거나, Google Docs 링크를 붙일 수 있어요. 업로드 후 처리되는 데 보통 1\~2분 걸리고, 완료되면 왼쪽에 제목이 뜹니다.
+
+ _노트북과 디지털 문서 정리_
+
+_Photo by [Gabriel Beaudry](https://unsplash.com/@gbeaudry?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | 소스를 모아두고 질문하는 NotebookLM의 워크플로우_
+
+ 
+### 2단계: 채팅으로 &quot;한 장 요약해줘&quot; 요청
+ 오른쪽 채팅 창에 **&quot;이 노트 전체를 한 페이지 분량으로 요약해줘&quot;**처럼 입력하면 됩니다. 답변에 **인용 번호**가 붙어서, 어느 PDF의 어느 부분을 참고했는지 클릭해 확인할 수 있어요. 요약 품질은 괜찮았고, 핵심 용어와 절 구조가 빠지지 않았습니다. 긴 문서를 다른 AI 도구와 비교해보고 싶다면, [GPT-5.2의 40만 토큰 컨텍스트 시대](https://daily-1-bite.tistory.com/entry/GPT-52%EC%9D%98-40%EB%A7%8C-%ED%86%A0%ED%81%B0-%EC%BB%A8%ED%85%8D%EC%8A%A4%ED%8A%B8-%EC%8B%9C%EB%8C%80-%EA%B8%B4-%EB%AC%B8%EC%84%9C-%EC%B2%98%EB%A6%AC-%EC%A0%95%EB%A7%90-%EB%8B%AC%EB%9D%BC%EC%A1%8C%EC%9D%84%EA%B9%8C)에서 긴 문서 처리 관점을 정리한 글을 참고해 보시면 좋아요.
+
+ 
+### 3단계: 유튜브 넣고 오디오 개요 만들기
+ 같은 노트에 **유튜브 영상 URL**을 소스로 추가할 수 있어요. 처리 후 채팅에서 &quot;이 영상의 핵심 메시지를 3문장으로 요약해줘&quot;라고 물어보면 됩니다. **Audio Overview**는 상단 &quot;Generate audio overview&quot; 버튼을 누르면, 올려둔 소스들을 바탕으로 내레이터가 이야기하듯 요약해 주는 오디오가 생성됩니다. [2025년 7월 Google 블로그](https://blog.google/technology/google-labs/notebooklm-audio-video-overviews-more-languages-longer-content/)에 따르면 Video Overview(슬라이드형)도 추가되었고, 오디오는 50개 이상 언어를 지원합니다. 코딩 없이 AI로 결과물을 만드는 다른 예시는 [Gamma AI로 10분 만에 발표 자료 만들기](https://daily-1-bite.tistory.com/entry/Gamma-AI%EB%A1%9C-10%EB%B6%84-%EB%A7%8C%EC%97%90-%EB%B0%9C%ED%91%9C-%EC%9E%90%EB%A3%8C-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EB%B9%84%EA%B0%9C%EB%B0%9C%EC%9E%90%EB%A5%BC-%EC%9C%84%ED%95%9C-AI-%ED%94%84%EB%A0%88%EC%A0%A0%ED%85%8C%EC%9D%B4%EC%85%98-%EA%B0%80%EC%9D%B4%EB%93%9C)에서도 다루고 있어요.
+
+ _동영상 시청과 콘텐츠 소비를 상징하는 이미지_
+
+_Photo by [Mikhail Fesenko](https://unsplash.com/@mikhail\_fesenko?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | 유튜브 같은 영상 콘텐츠도 NotebookLM 소스로 넣을 수 있다_
+
+  
+## 자주 발생하는 문제와 해결법
+    상황 원인·해결    PDF 업로드가 안 됨 용량·페이지 수 제한이 있을 수 있음. 50\~100페이지 단위로 나누거나, 일부 페이지만 내보내서 올려 보세요.   &quot;노트에 없는 내용이라 답할 수 없어요&quot; 답변은 **올린 소스 안에서만** 나옵니다. 외부 지식이 필요하면 Perplexity·ChatGPT를 쓰는 게 맞아요.   소스를 많이 넣으니 느리거나 실패 무료 한도(소스 수·노트 수)가 있어서, Plus 유료 플랜이 필요하거나 노트를 나눠 쓰는 수밖에 없습니다.   100페이지가 넘는 PDF를 한 번에 넣기보다는, &quot;목차 기준으로 챕터별 PDF&quot;로 나눠서 노트를 여러 개 만드는 걸 권합니다.
+
+  
+## 정리 + 다음 단계
+ NotebookLM은 **이미 가진 문서·유튜브를 올려두고, 그걸 기반으로 요약·질문·오디오 개요**를 만드는 데 특화된 도구입니다. 비개발자도 링크나 파일만 넣으면 5분 안에 한입 요약을 만들 수 있어요.
+
+ **실무 팁 (공식 문서에 없는 제 체감):** 회의 전에 스펙서·제안서 PDF를 한 노트에 모아 &quot;핵심 결정 사항 5개만 요약해줘&quot;로 복기하거나, 유튜브 강의 URL을 넣고 &quot;키 포인트 + 복습용 질문 3개 만들어줘&quot;로 활용할 수 있습니다. Audio Overview는 통근 중에 듣고 전체 흐름만 파악한 뒤, 필요할 때 채팅으로 디테일을 물어보면 됩니다.
+
+ 최신 지원 형식과 기능은 [Google NotebookLM 공식 도움말](https://support.google.com/notebooklm/answer/15724458)과 [Google 블로그의 NotebookLM 업데이트](https://blog.google/technology/google-labs/notebooklm-video-overviews-studio-upgrades/)에서 확인할 수 있습니다.
+
+  **함께 읽으면 좋은 글:**
+
+  [GPT-5.2의 40만 토큰 컨텍스트 시대: 긴 문서 처리, 정말 달라졌을까?](https://daily-1-bite.tistory.com/entry/GPT-52%EC%9D%98-40%EB%A7%8C-%ED%86%A0%ED%81%B0-%EC%BB%A8%ED%85%8D%EC%8A%A4%ED%8A%B8-%EC%8B%9C%EB%8C%80-%EA%B8%B4-%EB%AC%B8%EC%84%9C-%EC%B2%98%EB%A6%AC-%EC%A0%95%EB%A7%90-%EB%8B%AC%EB%9D%BC%EC%A1%8C%EC%9D%84%EA%B9%8C) — 긴 문서를 다룰 때 다른 AI 도구와의 차이 [Gamma AI로 10분 만에 발표 자료 만들기: 비개발자를 위한 AI 프레젠테이션 가이드](https://daily-1-bite.tistory.com/entry/Gamma-AI%EB%A1%9C-10%EB%B6%84-%EB%A7%8C%EC%97%90-%EB%B0%9C%ED%91%9C-%EC%9E%90%EB%A3%8C-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EB%B9%84%EA%B0%9C%EB%B0%9C%EC%9E%90%EB%A5%BC-%EC%9C%84%ED%95%9C-AI-%ED%94%84%EB%A0%88%EC%A0%A0%ED%85%8C%EC%9D%B4%EC%85%98-%EA%B0%80%EC%9D%B4%EB%93%9C) — 코딩 없이 쓰는 AI 도구 하나 더 

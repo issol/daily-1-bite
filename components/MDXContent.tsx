@@ -1,4 +1,5 @@
 import { MDXRemote } from 'next-mdx-remote/rsc';
+import rehypeRaw from 'rehype-raw';
 
 interface MDXContentProps {
   source: string;
@@ -72,7 +73,15 @@ const components = {
 export default function MDXContent({ source }: MDXContentProps) {
   return (
     <div className="prose-custom">
-      <MDXRemote source={source} components={components} />
+      <MDXRemote
+        source={source}
+        components={components}
+        options={{
+          mdxOptions: {
+            rehypePlugins: [rehypeRaw],
+          },
+        }}
+      />
     </div>
   );
 }

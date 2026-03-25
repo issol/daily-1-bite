@@ -1,0 +1,87 @@
+---
+title: "Cursor가 자체 AI 모델을 만든다: Composer 2의 등장과 코딩 AI 시장 판도 변화"
+date: "2026-03-20"
+description: "&lt;p&gt;솔직히 말씀드리면, Cursor가 자체 AI 모델을 만든다는 소식을 처음 들었을 때 &amp;quot;무모하다&amp;quot;고 생각했습니다. Anthropic과 OpenAI라는 거인의 어깨..."
+category: "ai"
+tags: []
+---
+
+솔직히 말씀드리면, Cursor가 자체 AI 모델을 만든다는 소식을 처음 들었을 때 &quot;무모하다&quot;고 생각했습니다. Anthropic과 OpenAI라는 거인의 어깨 위에서 편하게 수익을 올리던 회사가, 왜 굳이 수천억 원짜리 모델 훈련에 뛰어드는 걸까요. 근데 3월 19일 Bloomberg 보도와 함께 공개된 Composer 2의 벤치마크를 보고 나서, 생각이 완전히 바뀌었습니다.
+
+ _Cursor Composer 2 발표를 보도한 The Decoder 기사의 Cursor 로고_
+
+_출처: [The Decoder](https://the-decoder.com/cursor-takes-on-openai-and-anthropic-with-composer-2-a-code-only-model-built-to-match-rivals-at-a-fraction-of-the-cost/) | Cursor가 자체 AI 모델 Composer 2로 Anthropic·OpenAI에 도전장을 내밀었다_
+
+ **TL;DR**: Cursor의 모회사 Anysphere가 코딩 특화 자체 모델 Composer 2를 출시했습니다. CursorBench 61.3점으로 Claude Opus 4.6(58.2점)을 앞서고, 가격은 입력 토큰 기준 1/10 수준입니다. 다만 GPT-5.4 Thinking(63.9점)에는 아직 미치지 못하며, 코딩 외 범용 작업에서의 성능은 미지수입니다.
+
+ 
+## Composer 2 vs Claude Opus 4.6 vs GPT-5.4: 숫자로 보는 비교
+ 코딩 AI 모델의 성능을 한 눈에 비교하겠습니다. 아래 표는 2026년 3월 기준 주요 벤치마크 점수와 가격입니다.
+
+    항목 Composer 2 Claude Opus 4.6 GPT-5.4 Thinking    **CursorBench** 61.3 58.2 63.9   **Terminal-Bench 2.0** 61.7 58.0 75.1   **SWE-bench** 비공개 75.6 70.2   **컨텍스트 윈도우** 200K 1M (베타) 400K   **입력 토큰 ($/1M)** $0.50 $5.00 $2.50   **출력 토큰 ($/1M)** $1.50 $25.00 $15.00   **개발사** Anysphere Anthropic OpenAI   (2026년 3월 기준, [The Decoder](https://the-decoder.com/cursor-takes-on-openai-and-anthropic-with-composer-2-a-code-only-model-built-to-match-rivals-at-a-fraction-of-the-cost/), [VentureBeat](https://venturebeat.com/technology/cursors-new-coding-model-composer-2-is-here-it-beats-claude-opus-4-6-but/) 종합)
+
+ 숫자만 보면 Composer 2가 꽤 인상적입니다. CursorBench에서 Claude Opus 4.6을 5% 이상 앞서면서, 가격은 입력 기준 10배 저렴합니다. 이전에 [AI 코딩 도구 비용 전쟁 2026](https://daily-1-bite.tistory.com/entry/AI-%EC%BD%94%EB%94%A9-%EB%8F%84%EA%B5%AC-%EB%B9%84%EC%9A%A9-%EC%A0%84%EC%9F%81-2026-%ED%81%AC%EB%A0%88%EB%94%A7-%ED%83%9C%EC%9B%8C%EB%8F%84-%EA%B4%9C%EC%B0%AE%EC%9D%84%EA%B9%8C)에서 다뤘던 크레딧 소진 문제를 생각하면, 이 가격 차이는 실무에서 체감이 클 수밖에 없습니다.
+
+ 
+## 왜 Cursor는 직접 모델을 만들어야 했나
+ _AI 코딩 도구의 경쟁 구도를 보여주는 개발 환경 이미지_
+
+_Photo by [Daniil Komov](https://unsplash.com/@dkomow?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | AI 코딩 도구 시장의 경쟁이 그 어느 때보다 치열하다_
+
+ 여기서 짚어야 할 포인트가 있습니다. Cursor는 Anthropic의 Claude와 OpenAI의 GPT를 쓰면서 동시에 이들과 경쟁하는 모순적인 위치에 있었습니다. Anthropic은 Claude Code를, OpenAI는 Codex를 직접 밀고 있거든요.
+
+ [10x.pub의 분석](https://tianpan.co/forum/t/85-of-devs-now-use-ai-coding-tools-but-claude-code-overtook-copilot-in-less-than-a-year-what-shifted/2402)에 따르면, 2026년 초 기준 Claude Code의 &quot;가장 선호하는 도구&quot; 비율이 46%로 Cursor(19%)를 크게 앞섰습니다. 공급사가 곧 경쟁자인 상황에서, 가격 협상력도 제한적이고 모델 업데이트 일정도 통제할 수 없죠.
+
+ Anysphere가 선택한 해법은 명확합니다. 코딩만 잘하면 되는 특화 모델을 직접 만드는 것. [Bloomberg 보도](https://www.bloomberg.com/news/articles/2026-03-19/ai-coding-startup-cursor-plans-new-model-to-rival-anthropic-openai)에 의하면, Composer 2는 Mixture-of-Experts(MoE) 아키텍처에 강화학습(RL)을 결합하고, 커스텀 MXFP8 양자화 커널로 추론 비용을 대폭 낮췄습니다. 범용 LLM을 만드는 것보다 훨씬 현실적인 접근이에요.
+
+ 
+## Composer 2의 비밀 무기: Self-Summarization
+ 기술적으로 가장 흥미로운 부분은 &quot;Self-Summarization&quot;이라는 기법입니다. 긴 코딩 세션에서 모델이 스스로 컨텍스트를 압축하는 건데, 이게 왜 중요하냐면 — 실제 개발에서 200K 토큰 컨텍스트가 꽉 차는 상황이 생각보다 빈번하기 때문입니다.
+
+ 예를 들어, 대규모 리팩토링 작업을 하다 보면 파일 10-20개를 동시에 참조해야 하는 경우가 많습니다. 기존 모델은 컨텍스트가 길어지면 앞부분 정보를 &quot;잊어버리는&quot; 문제가 있었는데, Composer 2는 이 과정에서 에러율을 50% 줄였다고 합니다. (2026년 3월, Anysphere 공식 발표 기준)
+
+ 솔직히 이 부분은 직접 대규모 프로젝트에서 테스트해봐야 체감할 수 있을 것 같습니다. 벤치마크 수치와 실무 체감은 다를 수 있으니까요.
+
+ # Composer 2의 Self-Summarization 개념을 단순화한 예시 # 실제 구현은 모델 내부에서 자동으로 수행됨 class ContextManager: def \_\_init\_\_(self, max\_tokens=200\_000): self.max\_tokens = max\_tokens self.context = \[\] def add\_file(self, filepath: str, content: str): &quot;&quot;&quot;파일 추가 시 컨텍스트 압축 여부 판단&quot;&quot;&quot; tokens = self.\_count\_tokens(content) if self.\_total\_tokens() + tokens &gt; self.max\_tokens \* 0.8: # 80% 이상 차면 이전 컨텍스트를 요약으로 압축 self.\_self\_summarize() self.context.append(\{&quot;file&quot;: filepath, &quot;content&quot;: content\}) def \_self\_summarize(self): &quot;&quot;&quot;오래된 컨텍스트를 핵심 정보만 남기고 압축&quot;&quot;&quot; # 변수명, 함수 시그니처, 의존 관계만 보존 # 구현 세부사항은 요약으로 대체 oldest = self.context\[:len(self.context)//2\] for item in oldest: item\[&quot;content&quot;\] = self.\_extract\_signatures(item\[&quot;content&quot;\]) 
+## 트레이드오프 분석: 무엇을 얻고 무엇을 잃는가
+ _개발자 워크스테이션에서 AI 코딩 도구를 활용하는 모습_
+
+_Photo by [Safar Safarov](https://unsplash.com/@safarslife?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | 코딩 AI의 선택은 결국 트레이드오프의 문제다_
+
+ Composer 2를 쓴다는 건 결국 교환의 문제입니다. 뭘 얻고 뭘 포기하는지 정리해봤습니다.
+
+ **가격을 얻으려면, 범용성을 포기해야 합니다.** Composer 2는 코딩에 특화된 모델입니다. 코드 리뷰, 리팩토링, 버그 수정에서는 뛰어나지만, 기술 문서 작성이나 사용자 대면 텍스트 생성 같은 작업은 여전히 Claude나 GPT가 낫습니다. 프로젝트에서 코딩 외 작업 비중이 30% 이상이라면, 결국 두 모델을 병행해야 합니다.
+
+ **Cursor 생태계 최적화를 얻으려면, 도구 종속을 감수해야 합니다.** Composer 2는 Cursor IDE 안에서 최적으로 동작하도록 설계됐습니다. Tab 모델과의 연계, 프로젝트 인덱싱, 에이전트 워크플로우까지 통합되어 있죠. 반면 Claude Code는 터미널 기반이라 어떤 에디터든 쓸 수 있고, GitHub Copilot은 VS Code·JetBrains·Neovim 어디서든 동작합니다.
+
+ **자체 모델 개선 속도를 얻으려면, 커뮤니티 검증 부족을 감수해야 합니다.** Anthropic이나 OpenAI의 모델은 수백만 개발자가 다양한 시나리오에서 테스트한 결과물입니다. Composer 2는 아직 출시 초기라 엣지 케이스에서 어떤 문제가 터질지 모릅니다. 이건 좀 불안한 부분이에요.
+
+ 이전에 [GPT-5.4 활용법 글](https://daily-1-bite.tistory.com/entry/GPT-54-%EA%B0%80%EC%9E%A5-%EC%A0%95%ED%99%95%ED%95%9C-%EB%AA%A8%EB%8D%B8-%ED%99%9C%EC%9A%A9%EB%B2%95-%ED%99%98%EA%B0%81-33-%EA%B0%90%EC%86%8C-%EC%8B%A4%EB%AC%B4-%ED%8C%A9%ED%8A%B8%EC%B2%B4%ED%82%B9-%EC%9B%8C%ED%81%AC%ED%94%8C%EB%A1%9C%EC%9A%B0-%EB%A7%8C%EB%93%A4%EA%B8%B0)에서도 다뤘지만, 모델 선택에서 벤치마크 점수보다 중요한 건 실제 워크플로우와의 궁합입니다.
+
+ 
+## 코딩 AI 시장의 판이 바뀌고 있다
+ 이번 Composer 2 출시가 시사하는 더 큰 그림이 있습니다. AI 코딩 도구 시장이 &quot;모델 소비자&quot; 단계에서 &quot;모델 제작자&quot; 단계로 넘어가고 있다는 것.
+
+ [SiliconANGLE](https://siliconangle.com/2026/03/19/vibe-coding-startup-cursor-launches-programming-optimized-composer-2-model/)에 따르면 Cursor의 연간 반복 매출(ARR)은 5억 달러를 돌파했습니다. 이 정도 규모면 자체 모델 훈련에 투자할 여력이 충분합니다. GitHub Copilot이 42%의 시장 점유율로 여전히 1위지만, Cursor(18%)와 Claude Code의 급성장이 시장을 3파전으로 만들고 있죠.
+
+ 여기서 제 생각을 좀 보태자면 — Composer 2가 당장 Claude Code나 GPT-5.4를 대체하진 않을 겁니다. Terminal-Bench에서 GPT-5.4(75.1)와 13포인트 이상 차이가 나는 건 무시할 수 없는 격차니까요. 하지만 &quot;가격 대비 성능&quot;이라는 축에서는 확실히 새로운 선택지가 생겼습니다.
+
+ 
+## 결론: 누가 Composer 2를 써야 하는가
+ _AI 코딩 도구 선택의 갈림길을 상징하는 개발 환경_
+
+_Photo by [Boitumelo](https://unsplash.com/@writecodenow?utm\_source=daily-1-bite&amp;utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&amp;utm\_medium=referral) | 결국 도구 선택은 자신의 워크플로우에 달려 있다_
+
+ 명확하게 정리하겠습니다.
+
+ **Composer 2가 맞는 사람**: 이미 Cursor를 메인 에디터로 쓰고 있고, 월 AI 비용이 부담되는 개인 개발자·소규모 팀. 코딩 중심 작업이 전체의 70% 이상인 경우. 특히 대규모 리팩토링이나 멀티파일 수정이 잦다면 Self-Summarization의 혜택을 볼 수 있습니다.
+
+ **아직 Claude Code/GPT-5.4가 나은 사람**: 에디터에 종속되기 싫은 개발자. 코딩 외에 문서 작성·코드 리뷰 코멘트·기술 블로그 작성 등 범용 작업이 많은 경우. 또는 Terminal-Bench 75점급의 최고 성능이 필요한 복잡한 프로젝트.
+
+ 한 가지 확실한 건, AI 코딩 도구 시장에서 &quot;한 모델이 모든 걸 지배하는&quot; 시대는 끝나가고 있다는 것입니다. 2026년은 용도별로 모델을 골라 쓰는 &quot;멀티모델 시대&quot;의 원년이 될 것 같습니다. Composer 2가 그 신호탄을 쏘아올렸고요.
+
+  **참고 자료:**
+
+  [Bloomberg - AI Coding Startup Cursor Plans New Model to Rival Anthropic, OpenAI](https://www.bloomberg.com/news/articles/2026-03-19/ai-coding-startup-cursor-plans-new-model-to-rival-anthropic-openai) (2026년 3월) [The Decoder - Cursor takes on OpenAI and Anthropic with Composer 2](https://the-decoder.com/cursor-takes-on-openai-and-anthropic-with-composer-2-a-code-only-model-built-to-match-rivals-at-a-fraction-of-the-cost/) (2026년 3월) [VentureBeat - Cursor&#39;s new coding model Composer 2 beats Claude Opus 4.6](https://venturebeat.com/technology/cursors-new-coding-model-composer-2-is-here-it-beats-claude-opus-4-6-but/) (2026년 3월) [SiliconANGLE - Vibe coding startup Cursor launches Composer 2 model](https://siliconangle.com/2026/03/19/vibe-coding-startup-cursor-launches-programming-optimized-composer-2-model/) (2026년 3월) [10x.pub - 85% of devs now use AI coding tools](https://tianpan.co/forum/t/85-of-devs-now-use-ai-coding-tools-but-claude-code-overtook-copilot-in-less-than-a-year-what-shifted/2402) (2026년 3월)   **함께 읽으면 좋은 글:**
+
+  [AI 코딩 도구 비용 전쟁 2026: 크레딧 태워도 괜찮을까?](https://daily-1-bite.tistory.com/entry/AI-%EC%BD%94%EB%94%A9-%EB%8F%84%EA%B5%AC-%EB%B9%84%EC%9A%A9-%EC%A0%84%EC%9F%81-2026-%ED%81%AC%EB%A0%88%EB%94%A7-%ED%83%9C%EC%9B%8C%EB%8F%84-%EA%B4%9C%EC%B0%AE%EC%9D%84%EA%B9%8C) - AI 코딩 도구의 가격 구조와 비용 최적화 전략 [MCP(Model Context Protocol)로 AI 에이전트 연결하기](https://daily-1-bite.tistory.com/entry/MCPModel-Context-Protocol%EB%A1%9C-AI-%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8-%EC%97%B0%EA%B2%B0%ED%95%98%EA%B8%B0-2026%EB%85%84-%ED%91%9C%EC%A4%80-%ED%94%84%EB%A1%9C%ED%86%A0%EC%BD%9C-%EC%8B%A4%EC%A0%84-%EC%9E%85%EB%AC%B8) - AI 에이전트 간 연결 표준 프로토콜 입문 가이드 
