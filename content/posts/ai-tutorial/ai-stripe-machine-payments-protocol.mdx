@@ -73,7 +73,9 @@ _출처: [Forrester](https://www.forrester.com/blogs/why-stripes-machine-payment
  
 ![디지털 결제 기술을 상징하는 신용카드와 계산기](https://images.unsplash.com/photo-1633526544365-a98d534c9201?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxkaWdpdGFsJTIwcGF5bWVudCUyMHRlY2hub2xvZ3l8ZW58MHwwfHx8MTc3NDMzNjA4Nnww&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999?utm\_source=daily-1-bite&utm\_medium=referral) on [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | AI 에이전트 결제 시대의 도래_
+_Photo by
+- [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999?utm\_source=daily-1-bite&utm\_medium=referral) on
+- [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | AI 에이전트 결제 시대의 도래_
 
  
 ## 경쟁 프로토콜 비교: MPP vs AP2 vs x402
@@ -97,10 +99,18 @@ _Photo by [Towfiqu barbhuiya](https://unsplash.com/@towfiqu999999?utm\_source=da
 
  개발자로서 지금 할 수 있는 것을 정리하면:
 
-  **[Stripe MPP 문서](https://docs.stripe.com/payments/machine/mpp)** 읽고 테스트넷에서 npx mppx로 실습 내 API가 유료라면 MPP 미들웨어 붙여보기 — 에이전트 고객이라는 새로운 시장 [mpp.dev](https://mpp.dev/) 공식 사양 확인 — 오픈 프로토콜이라 Stripe 없이도 구현 가능 Google AP2, Coinbase x402도 함께 파악 — 결국 다중 프로토콜 지원이 필요할 가능성  저는 사이드 프로젝트 API에 MPP를 붙여보려고 합니다. 테스트넷이라 비용도 안 드니까요. 에이전트가 제 API의 첫 유료 고객이 될 수도 있겠다 싶으면, 좀 설레기도 합니다.
+**
+- [Stripe MPP 문서](https://docs.stripe.com/payments/machine/mpp) ** 읽고 테스트넷에서 npx mppx로 실습 내 API가 유료라면 MPP 미들웨어 붙여보기 — 에이전트 고객이라는 새로운 시장
+- [mpp.dev](https://mpp.dev/) 공식 사양 확인 — 오픈 프로토콜이라 Stripe 없이도 구현 가능 Google AP2, Coinbase x402도 함께 파악 — 결국 다중 프로토콜 지원이 필요할 가능성  저는 사이드 프로젝트 API에 MPP를 붙여보려고 합니다. 테스트넷이라 비용도 안 드니까요. 에이전트가 제 API의 첫 유료 고객이 될 수도 있겠다 싶으면, 좀 설레기도 합니다.
 
   **참고 자료:**
 
-  [Stripe 공식 블로그 - Introducing the Machine Payments Protocol](https://stripe.com/blog/machine-payments-protocol) (2026.03.18) [Stripe MPP 공식 문서](https://docs.stripe.com/payments/machine/mpp) (2026.03 기준) [Forrester - Why Stripe's Machine Payments Protocol Signals a Turning Point For Micropayments](https://www.forrester.com/blogs/why-stripes-machine-payments-protocol-signals-a-turning-point-for-micropayments/) (2026.03.22) [Fortune - Stripe-backed crypto startup Tempo releases AI payments protocol](https://fortune.com/2026/03/18/stripe-tempo-paradigm-mpp-ai-payments-protocol/) (2026.03.18) [PYMNTS - Stripe-Backed Protocol Lets AI Agents Transact Autonomously](https://www.pymnts.com/news/payment-methods/2026/stripe-backed-protocol-lets-ai-agents-transact-autonomously/) (2026.03) [Google Cloud Blog - Announcing Agent Payments Protocol (AP2)](https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol) (2025.09)   **함께 읽으면 좋은 글:**
+- [Stripe 공식 블로그 - Introducing the Machine Payments Protocol](https://stripe.com/blog/machine-payments-protocol) (2026.03.18)
+- [Stripe MPP 공식 문서](https://docs.stripe.com/payments/machine/mpp) (2026.03 기준)
+- [Forrester - Why Stripe's Machine Payments Protocol Signals a Turning Point For Micropayments](https://www.forrester.com/blogs/why-stripes-machine-payments-protocol-signals-a-turning-point-for-micropayments/) (2026.03.22)
+- [Fortune - Stripe-backed crypto startup Tempo releases AI payments protocol](https://fortune.com/2026/03/18/stripe-tempo-paradigm-mpp-ai-payments-protocol/) (2026.03.18)
+- [PYMNTS - Stripe-Backed Protocol Lets AI Agents Transact Autonomously](https://www.pymnts.com/news/payment-methods/2026/stripe-backed-protocol-lets-ai-agents-transact-autonomously/) (2026.03)
+- [Google Cloud Blog - Announcing Agent Payments Protocol (AP2)](https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol) (2025.09)   **함께 읽으면 좋은 글:**
 
-  [AI 에이전트 도입 현실: 기업의 8.6%만 프로덕션, 나머지 91.4%는 어디서 막혔나](https://daily1bite.com/blog/dev-life/ai-86percent-914percent) - 에이전트가 프로덕션까지 가려면 무엇이 필요한지 [Ryt Bank: 메뉴 대신 AI 챗봇으로 은행 업무](https://daily1bite.com/blog/ai-tools/ryt-bank-ai-ai) - AI가 금융 서비스를 어떻게 바꾸고 있는지 
+- [AI 에이전트 도입 현실: 기업의 8.6%만 프로덕션, 나머지 91.4%는 어디서 막혔나](https://daily1bite.com/blog/dev-life/ai-86percent-914percent) - 에이전트가 프로덕션까지 가려면 무엇이 필요한지
+- [Ryt Bank: 메뉴 대신 AI 챗봇으로 은행 업무](https://daily1bite.com/blog/ai-tools/ryt-bank-ai-ai) - AI가 금융 서비스를 어떻게 바꾸고 있는지
