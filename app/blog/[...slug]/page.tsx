@@ -5,6 +5,7 @@ import { ArticleJsonLd, BreadcrumbJsonLd } from '@/components/JsonLd';
 import RelatedPosts from '@/components/RelatedPosts';
 import TableOfContents from '@/components/TableOfContents';
 import Comments from '@/components/Comments';
+import { getPopularPosts } from '@/lib/analytics';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
@@ -14,6 +15,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 interface Props {
   params: Promise<{ slug: string[] }>;
 }
+
+export const revalidate = 3600;
 
 export async function generateStaticParams() {
   const slugs = getAllSlugs();
@@ -85,6 +88,13 @@ export default async function PostPage({ params }: Props) {
   const categoryLabel = CATEGORIES[post.category] || post.category;
   const postUrl = `${BASE_URL}/blog/${fullSlug}`;
 
+  // 조회수 가져오기
+  const popularPosts = await getPopularPosts(100);
+  const viewData = popularPosts.find(
+    (p) => p.path.replace(/^\/blog\//, '').replace(/\/$/, '') === fullSlug
+  );
+  const views = viewData?.pageViews || 0;
+
   return (
     <>
       {/* JSON-LD 구조화 데이터 */}
@@ -148,6 +158,12 @@ export default async function PostPage({ params }: Props) {
             <time dateTime={post.date}>{post.date}</time>
             <span aria-hidden="true">·</span>
             <span>📖 {post.readingTime} 읽기</span>
+            {views > 0 && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>👁 {views.toLocaleString('ko-KR')}회</span>
+              </>
+            )}
           </div>
 
           {post.tags.length > 0 && (

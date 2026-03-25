@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 const CATEGORIES: Record<string, string> = {
-  'ai': 'AI',
   'dev-life': 'Dev Life & Opinion',
   'ai-tools': 'AI Tools & Review',
   'ai-tutorial': 'AI Tutorial & How-to',
@@ -21,9 +20,10 @@ interface PostMeta {
 
 interface PostCardProps {
   post: PostMeta;
+  views?: number;
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, views }: PostCardProps) {
   return (
     <article className="group border border-gray-100 rounded-2xl p-6 hover:shadow-md hover:border-amber-200 transition-all bg-white">
       <Link href={`/blog/${post.slug}`}>
@@ -32,6 +32,9 @@ export default function PostCard({ post }: PostCardProps) {
             {CATEGORIES[post.category] || post.category}
           </span>
           <span className="text-xs text-gray-400">📖 {post.readingTime} 읽기</span>
+          {views !== undefined && views > 0 && (
+            <span className="text-xs text-gray-400">👁 {views.toLocaleString('ko-KR')}</span>
+          )}
         </div>
         <h2 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-amber-600 transition-colors leading-snug">
           {post.title}

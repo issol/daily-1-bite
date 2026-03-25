@@ -2,15 +2,24 @@ import { getAllPosts } from '@/lib/posts';
 import PostListWithToggle from '@/components/PostListWithToggle';
 import SearchBar from '@/components/SearchBar';
 import { BlogJsonLd } from '@/components/JsonLd';
+import { getPopularPosts } from '@/lib/analytics';
 import type { Metadata } from 'next';
+
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: '전체 글',
   description: '매일 한입 블로그의 모든 글을 확인하세요. AI 뉴스 요약, 도구 리뷰, 튜토리얼.',
 };
 
-export default function BlogPage() {
+export default async function BlogPage() {
   const posts = getAllPosts();
+  const popularPosts = await getPopularPosts(100);
+  const viewsMap: Record<string, number> = {};
+  for (const p of popularPosts) {
+    const slug = p.path.replace(/^\/blog\//, '').replace(/\/$/, '');
+    viewsMap[slug] = p.pageViews;
+  }
 
   return (
     <>
@@ -28,7 +37,7 @@ export default function BlogPage() {
             <p>아직 게시된 글이 없습니다.</p>
           </div>
         ) : (
-          <PostListWithToggle posts={posts} />
+          <PostListWithToggle posts={posts} viewsMap={viewsMap} />
         )}
       </div>
     </>

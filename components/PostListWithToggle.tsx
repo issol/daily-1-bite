@@ -3,13 +3,23 @@
 import { useState } from 'react';
 import PostCard from './PostCard';
 import PostList from './PostList';
-import type { PostMeta } from '@/lib/posts';
+
+interface PostMeta {
+  slug: string;
+  title: string;
+  date: string;
+  description: string;
+  category: string;
+  tags: string[];
+  readingTime: string;
+}
 
 interface PostListWithToggleProps {
   posts: PostMeta[];
+  viewsMap?: Record<string, number>;
 }
 
-export default function PostListWithToggle({ posts }: PostListWithToggleProps) {
+export default function PostListWithToggle({ posts, viewsMap = {} }: PostListWithToggleProps) {
   const [view, setView] = useState<'card' | 'list'>('card');
 
   return (
@@ -48,11 +58,11 @@ export default function PostListWithToggle({ posts }: PostListWithToggleProps) {
       {view === 'card' ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {posts.map((post) => (
-            <PostCard key={post.slug} post={post} />
+            <PostCard key={post.slug} post={post} views={viewsMap[post.slug]} />
           ))}
         </div>
       ) : (
-        <PostList posts={posts} />
+        <PostList posts={posts} viewsMap={viewsMap} />
       )}
     </>
   );
