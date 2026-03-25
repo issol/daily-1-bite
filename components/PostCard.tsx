@@ -1,5 +1,23 @@
 import Link from 'next/link';
-import { PostMeta, CATEGORIES } from '@/lib/posts';
+
+const CATEGORIES: Record<string, string> = {
+  'ai': 'AI',
+  'dev-life': 'Dev Life & Opinion',
+  'ai-tools': 'AI Tools & Review',
+  'ai-tutorial': 'AI Tutorial & How-to',
+  'seo': 'SEO',
+  'blog-info': 'Blog Info',
+};
+
+interface PostMeta {
+  slug: string;
+  title: string;
+  date: string;
+  description: string;
+  category: string;
+  tags: string[];
+  readingTime: string;
+}
 
 interface PostCardProps {
   post: PostMeta;
@@ -23,10 +41,10 @@ export default function PostCard({ post }: PostCardProps) {
             {post.description}
           </p>
         )}
-        <div className="flex items-start justify-between gap-2">
-          <time className="text-xs text-gray-400 whitespace-nowrap shrink-0">{post.date}</time>
+        <div className="flex flex-col gap-2">
+          <time className="text-xs text-gray-400">{post.date}</time>
           {post.tags.length > 0 && (
-            <div className="flex gap-1 flex-wrap justify-end">
+            <div className="flex gap-1 flex-wrap">
               {post.tags.slice(0, 3).map((tag) => (
                 <span
                   key={tag}

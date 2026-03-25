@@ -1,5 +1,5 @@
 import { getAllPosts } from '@/lib/posts';
-import PostCard from '@/components/PostCard';
+import PostListWithToggle from '@/components/PostListWithToggle';
 import SearchBar from '@/components/SearchBar';
 import { BlogJsonLd } from '@/components/JsonLd';
 import type { Metadata } from 'next';
@@ -28,11 +28,7 @@ export default function BlogPage() {
             <p>아직 게시된 글이 없습니다.</p>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {posts.map((post) => (
-              <PostCard key={post.slug} post={post} />
-            ))}
-          </div>
+          <PostListWithToggle posts={posts} />
         )}
       </div>
     </>
