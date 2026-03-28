@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import {Link} from '@/i18n/navigation';
 
 export const metadata: Metadata = {
   title: '문의하기 | 매일 한입',
@@ -63,9 +64,9 @@ export default function ContactPage() {
         <p className="text-xs text-gray-400 leading-relaxed">
           스팸·광고성 메일은 별도 응답 없이 처리될 수 있습니다.
           개인정보는{' '}
-          <a href="/privacy-policy" className="underline hover:text-amber-500 transition-colors">
+          <Link href="/privacy-policy" className="underline hover:text-amber-500 transition-colors">
             개인정보처리방침
-          </a>
+          </Link>
           에 따라 보호됩니다.
         </p>
       </div>

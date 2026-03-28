@@ -1,0 +1,59 @@
+{
+  "nav": {
+    "home": "홈",
+    "blog": "블로그",
+    "about": "소개",
+    "contact": "문의",
+    "stats": "통계",
+    "privacy": "개인정보처리방침"
+  },
+  "home": {
+    "siteName": "매일 한입",
+    "tagline": "매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다.",
+    "subTagline": "한입 크기로 읽는 AI 트렌드, 도구 리뷰, 튜토리얼.",
+    "popular": "🔥 인기 글",
+    "allStats": "전체 통계 →",
+    "recent": "최근 글",
+    "viewAll": "전체 보기 →",
+    "noPosts": "아직 게시된 글이 없습니다."
+  },
+  "post": {
+    "readingTime": "{minutes}분 읽기",
+    "views": "{count}회",
+    "relatedPosts": "관련 글 추천",
+    "backToCategory": "← {category} 글 더 보기",
+    "backHome": "홈으로",
+    "tags": "태그",
+    "notAvailable": "이 글은 아직 한국어로 제공되지 않습니다.",
+    "viewOriginal": "원문 보기"
+  },
+  "blog": {
+    "allPosts": "전체 글",
+    "postCount": "전체 글 ({count})",
+    "description": "매일 한입 블로그의 모든 글을 확인하세요.",
+    "search": "검색..."
+  },
+  "category": {
+    "dev-life": "Dev Life & Opinion",
+    "ai-tools": "AI Tools & Review",
+    "ai-tutorial": "AI Tutorial & How-to",
+    "seo": "SEO",
+    "blog-info": "Blog Info"
+  },
+  "footer": {
+    "siteName": "매일 한입",
+    "tagline": "매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다",
+    "copyright": "© {year} 매일 한입. All rights reserved."
+  },
+  "notFound": {
+    "title": "404",
+    "message": "앗, 이 페이지는 존재하지 않거나 이동되었어요.",
+    "goHome": "홈으로 돌아가기",
+    "viewAll": "전체 글 보기"
+  },
+  "language": {
+    "ko": "한국어",
+    "en": "English",
+    "switchTo": "English"
+  }
+}

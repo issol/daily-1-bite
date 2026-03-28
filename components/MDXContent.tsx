@@ -69,6 +69,12 @@ const components = {
   td: (props: React.HTMLAttributes<HTMLTableCellElement>) => (
     <td className="border border-gray-200 px-4 py-2 text-gray-700" {...props} />
   ),
+  cite: (props: React.HTMLAttributes<HTMLElement>) => (
+    <cite
+      className="not-italic text-gray-600 text-sm border-l-2 border-amber-300 pl-2 inline-block"
+      {...props}
+    />
+  ),
 };
 
 export default function MDXContent({ source }: MDXContentProps) {

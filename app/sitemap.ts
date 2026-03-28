@@ -1,63 +1,71 @@
-import { MetadataRoute } from 'next';
-import { getAllPosts, CATEGORIES } from '@/lib/posts';
+import {MetadataRoute} from 'next';
+import {getAllPosts, CATEGORIES} from '@/lib/posts';
+import type {Locale} from '@/lib/posts';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
+const locales: Locale[] = ['ko', 'en'];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const posts = getAllPosts();
+  const entries: MetadataRoute.Sitemap = [];
 
-  const postUrls: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${BASE_URL}/blog/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: 'monthly',
-    priority: 0.7,
-  }));
+  // Static pages
+  const staticPages = ['', '/blog', '/about', '/contact', '/stats', '/privacy-policy'];
+  for (const page of staticPages) {
+    for (const locale of locales) {
+      entries.push({
+        url: `${BASE_URL}/${locale}${page}`,
+        lastModified: new Date(),
+        changeFrequency: page === '' ? 'daily' : page === '/blog' ? 'daily' : 'weekly',
+        priority: page === '' ? 1 : page === '/blog' ? 0.9 : 0.3,
+        alternates: {
+          languages: Object.fromEntries(
+            locales.map((l) => [l, `${BASE_URL}/${l}${page}`])
+          ),
+        },
+      });
+    }
+  }
 
-  const categoryUrls: MetadataRoute.Sitemap = Object.keys(CATEGORIES).map((category) => ({
-    url: `${BASE_URL}/category/${category}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.6,
-  }));
+  // Category pages
+  for (const category of Object.keys(CATEGORIES)) {
+    for (const locale of locales) {
+      entries.push({
+        url: `${BASE_URL}/${locale}/category/${category}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.6,
+        alternates: {
+          languages: Object.fromEntries(
+            locales.map((l) => [l, `${BASE_URL}/${l}/category/${category}`])
+          ),
+        },
+      });
+    }
+  }
 
-  return [
-    {
-      url: BASE_URL,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${BASE_URL}/blog`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
-    ...categoryUrls,
-    ...postUrls,
-    {
-      url: `${BASE_URL}/stats`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.4,
-    },
-    {
-      url: `${BASE_URL}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-    {
-      url: `${BASE_URL}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-    },
-    {
-      url: `${BASE_URL}/privacy-policy`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.2,
-    },
-  ];
+  // Blog posts - all locales
+  for (const locale of locales) {
+    const posts = getAllPosts(locale);
+    for (const post of posts) {
+      const alternateLanguages: Record<string, string> = {};
+      for (const l of locales) {
+        const otherPosts = getAllPosts(l);
+        if (otherPosts.some((p) => p.slug === post.slug)) {
+          alternateLanguages[l] = `${BASE_URL}/${l}/blog/${post.slug}`;
+        }
+      }
+
+      entries.push({
+        url: `${BASE_URL}/${locale}/blog/${post.slug}`,
+        lastModified: new Date(post.date),
+        changeFrequency: 'monthly',
+        priority: 0.7,
+        alternates: {
+          languages: alternateLanguages,
+        },
+      });
+    }
+  }
+
+  return entries;
 }

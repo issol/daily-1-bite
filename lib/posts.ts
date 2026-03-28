@@ -2,11 +2,13 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import readingTime from 'reading-time';
-import { CATEGORIES } from './categories';
+import {CATEGORIES} from './categories';
 
-export { CATEGORIES };
+export {CATEGORIES};
 
-const postsDirectory = path.join(process.cwd(), 'content/posts');
+const contentDirectory = path.join(process.cwd(), 'content/posts');
+
+export type Locale = 'ko' | 'en';
 
 export interface PostMeta {
   slug: string;
@@ -23,11 +25,15 @@ export interface Post extends PostMeta {
   content: string;
 }
 
+function getPostsDirectory(locale: Locale): string {
+  return path.join(contentDirectory, locale);
+}
+
 function getAllMdxFiles(dir: string): string[] {
   const files: string[] = [];
   if (!fs.existsSync(dir)) return files;
 
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const entries = fs.readdirSync(dir, {withFileTypes: true});
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
@@ -39,14 +45,19 @@ function getAllMdxFiles(dir: string): string[] {
   return files;
 }
 
-export function getAllPosts(): PostMeta[] {
-  const files = getAllMdxFiles(postsDirectory);
+function formatReadingTime(minutes: number, locale: Locale): string {
+  return locale === 'ko' ? `${minutes}분` : `${minutes} min`;
+}
+
+export function getAllPosts(locale: Locale = 'ko'): PostMeta[] {
+  const postsDir = getPostsDirectory(locale);
+  const files = getAllMdxFiles(postsDir);
 
   const posts = files.map((filePath) => {
     const fileContents = fs.readFileSync(filePath, 'utf8');
-    const { data, content } = matter(fileContents);
+    const {data, content} = matter(fileContents);
 
-    const relativePath = path.relative(postsDirectory, filePath);
+    const relativePath = path.relative(postsDir, filePath);
     const slug = relativePath.replace(/\.(mdx|md)$/, '').replace(/\\/g, '/');
 
     const stats = readingTime(content);
@@ -58,7 +69,7 @@ export function getAllPosts(): PostMeta[] {
       description: data.description || '',
       category: data.category || 'ai',
       tags: data.tags || [],
-      readingTime: `${Math.ceil(stats.minutes)}분`,
+      readingTime: formatReadingTime(Math.ceil(stats.minutes), locale),
       thumbnail: data.thumbnail || null,
     } as PostMeta;
   });
@@ -66,14 +77,15 @@ export function getAllPosts(): PostMeta[] {
   return posts.sort((a, b) => (a.date > b.date ? -1 : 1));
 }
 
-export function getPostBySlug(slug: string): Post | null {
+export function getPostBySlug(slug: string, locale: Locale = 'ko'): Post | null {
+  const postsDir = getPostsDirectory(locale);
   const extensions = ['.mdx', '.md'];
 
   for (const ext of extensions) {
-    const filePath = path.join(postsDirectory, `${slug}${ext}`);
+    const filePath = path.join(postsDir, `${slug}${ext}`);
     if (fs.existsSync(filePath)) {
       const fileContents = fs.readFileSync(filePath, 'utf8');
-      const { data, content } = matter(fileContents);
+      const {data, content} = matter(fileContents);
       const stats = readingTime(content);
 
       return {
@@ -83,7 +95,7 @@ export function getPostBySlug(slug: string): Post | null {
         description: data.description || '',
         category: data.category || 'ai',
         tags: data.tags || [],
-        readingTime: `${Math.ceil(stats.minutes)}분`,
+        readingTime: formatReadingTime(Math.ceil(stats.minutes), locale),
         thumbnail: data.thumbnail || null,
         content,
       };
@@ -92,10 +104,18 @@ export function getPostBySlug(slug: string): Post | null {
   return null;
 }
 
-export function getPostsByCategory(category: string): PostMeta[] {
-  return getAllPosts().filter((post) => post.category === category);
+export function getPostsByCategory(category: string, locale: Locale = 'ko'): PostMeta[] {
+  return getAllPosts(locale).filter((post) => post.category === category);
 }
 
-export function getAllSlugs(): string[] {
-  return getAllPosts().map((post) => post.slug);
+export function getAllSlugs(locale: Locale = 'ko'): string[] {
+  return getAllPosts(locale).map((post) => post.slug);
+}
+
+export function hasTranslation(slug: string, locale: Locale): boolean {
+  const postsDir = getPostsDirectory(locale);
+  return (
+    fs.existsSync(path.join(postsDir, `${slug}.mdx`)) ||
+    fs.existsSync(path.join(postsDir, `${slug}.md`))
+  );
 }

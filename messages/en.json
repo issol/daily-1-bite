@@ -1,0 +1,59 @@
+{
+  "nav": {
+    "home": "Home",
+    "blog": "Blog",
+    "about": "About",
+    "contact": "Contact",
+    "stats": "Stats",
+    "privacy": "Privacy Policy"
+  },
+  "home": {
+    "siteName": "Daily 1 Bite",
+    "tagline": "Daily AI news digests in bite-sized format.",
+    "subTagline": "AI trends, tool reviews, and tutorials you can read in one bite.",
+    "popular": "🔥 Popular Posts",
+    "allStats": "All Stats →",
+    "recent": "Recent Posts",
+    "viewAll": "View All →",
+    "noPosts": "No posts published yet."
+  },
+  "post": {
+    "readingTime": "{minutes} min read",
+    "views": "{count} views",
+    "relatedPosts": "Related Posts",
+    "backToCategory": "← More from {category}",
+    "backHome": "Home",
+    "tags": "Tags",
+    "notAvailable": "This post is not yet available in English.",
+    "viewOriginal": "View in Korean"
+  },
+  "blog": {
+    "allPosts": "All Posts",
+    "postCount": "All Posts ({count})",
+    "description": "Browse all posts on the Daily 1 Bite blog.",
+    "search": "Search..."
+  },
+  "category": {
+    "dev-life": "Dev Life & Opinion",
+    "ai-tools": "AI Tools & Review",
+    "ai-tutorial": "AI Tutorial & How-to",
+    "seo": "SEO",
+    "blog-info": "Blog Info"
+  },
+  "footer": {
+    "siteName": "Daily 1 Bite",
+    "tagline": "Daily AI news digests in bite-sized format",
+    "copyright": "© {year} Daily 1 Bite. All rights reserved."
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Oops, this page doesn't exist or has been moved.",
+    "goHome": "Go Home",
+    "viewAll": "Browse All Posts"
+  },
+  "language": {
+    "ko": "한국어",
+    "en": "English",
+    "switchTo": "한국어"
+  }
+}

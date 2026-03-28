@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import {Link} from '@/i18n/navigation';
 
 const CATEGORIES: Record<string, string> = {
   'dev-life': 'Dev Life & Opinion',
@@ -31,9 +31,9 @@ export default function PostCard({ post, views }: PostCardProps) {
           <span className="text-xs font-semibold text-amber-500 bg-amber-50 px-2 py-1 rounded-full">
             {CATEGORIES[post.category] || post.category}
           </span>
-          <span className="text-xs text-gray-400">📖 {post.readingTime} 읽기</span>
+          <span className="text-xs text-gray-400">📖 {post.readingTime}</span>
           {views !== undefined && views > 0 && (
-            <span className="text-xs text-gray-400">👁 {views.toLocaleString('ko-KR')}</span>
+            <span className="text-xs text-gray-400">👁 {views.toLocaleString()}</span>
           )}
         </div>
         <h2 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-amber-600 transition-colors leading-snug">

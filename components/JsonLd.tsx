@@ -72,6 +72,7 @@ interface ArticleJsonLdProps {
   category: string;
   tags: string[];
   thumbnail?: string;
+  locale?: string;
 }
 
 export function ArticleJsonLd({
@@ -82,8 +83,9 @@ export function ArticleJsonLd({
   category,
   tags,
   thumbnail,
+  locale,
 }: ArticleJsonLdProps) {
-  const url = `${BASE_URL}/blog/${slug}`;
+  const url = `${BASE_URL}/${locale || 'ko'}/blog/${slug}`;
   const imageUrl = thumbnail || `${BASE_URL}/og-default.png`;
 
   const schema = {
@@ -94,7 +96,7 @@ export function ArticleJsonLd({
     url,
     datePublished: date,
     dateModified: date,
-    inLanguage: 'ko-KR',
+    inLanguage: locale === 'en' ? 'en-US' : 'ko-KR',
     image: {
       '@type': 'ImageObject',
       url: imageUrl,
@@ -177,6 +179,38 @@ export function FAQJsonLd({ faqs }: FAQJsonLdProps) {
         '@type': 'Answer',
         text: faq.answer,
       },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+interface HowToJsonLdProps {
+  title: string;
+  description: string;
+  steps: { name: string; text: string; position: number }[];
+  locale?: string;
+}
+
+export function HowToJsonLd({ title, description, steps, locale }: HowToJsonLdProps) {
+  if (steps.length === 0) return null;
+
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: title,
+    description,
+    inLanguage: locale === 'en' ? 'en-US' : 'ko-KR',
+    step: steps.map((step) => ({
+      '@type': 'HowToStep',
+      position: step.position,
+      name: step.name,
+      text: step.text,
     })),
   };
 
