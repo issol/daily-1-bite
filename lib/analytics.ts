@@ -18,10 +18,8 @@ function getClient() {
 }
 
 export interface SiteStats {
-  totalUsers: number;
   totalPageViews: number;
-  last30DaysUsers: number;
-  last30DaysPageViews: number;
+  todayPageViews: number;
 }
 
 export interface PopularPost {
@@ -39,23 +37,18 @@ export async function getSiteStats(): Promise<SiteStats | null> {
     const [allTimeRes] = await client.runReport({
       property: `properties/${propertyId}`,
       dateRanges: [{ startDate: '2020-01-01', endDate: 'today' }],
-      metrics: [{ name: 'totalUsers' }, { name: 'screenPageViews' }],
+      metrics: [{ name: 'screenPageViews' }],
     });
 
-    const [last30Res] = await client.runReport({
+    const [todayRes] = await client.runReport({
       property: `properties/${propertyId}`,
-      dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
-      metrics: [{ name: 'totalUsers' }, { name: 'screenPageViews' }],
+      dateRanges: [{ startDate: 'today', endDate: 'today' }],
+      metrics: [{ name: 'screenPageViews' }],
     });
-
-    const allTime = allTimeRes.rows?.[0]?.metricValues;
-    const last30 = last30Res.rows?.[0]?.metricValues;
 
     return {
-      totalUsers: parseInt(allTime?.[0]?.value || '0'),
-      totalPageViews: parseInt(allTime?.[1]?.value || '0'),
-      last30DaysUsers: parseInt(last30?.[0]?.value || '0'),
-      last30DaysPageViews: parseInt(last30?.[1]?.value || '0'),
+      totalPageViews: parseInt(allTimeRes.rows?.[0]?.metricValues?.[0]?.value || '0'),
+      todayPageViews: parseInt(todayRes.rows?.[0]?.metricValues?.[0]?.value || '0'),
     };
   } catch (e) {
     console.error('GA4 getSiteStats error:', e);
