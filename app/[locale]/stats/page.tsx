@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
-import { getSiteStats } from '@/lib/analytics';
+import { getSiteStats, getPopularPosts } from '@/lib/analytics';
+import { getAllPosts } from '@/lib/posts';
+import type { Locale } from '@/lib/posts';
+import { Link } from '@/i18n/navigation';
 import { setRequestLocale } from 'next-intl/server';
 
 export const revalidate = 3600;
@@ -22,8 +25,18 @@ export default async function StatsPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const stats = await getSiteStats();
+  const [stats, popularPosts, allPosts] = await Promise.all([
+    getSiteStats(),
+    getPopularPosts(10),
+    Promise.resolve(getAllPosts(locale as Locale)),
+  ]);
   const isKo = locale === 'ko';
+
+  const enrichedPosts = popularPosts.map((p, i) => {
+    const slug = p.path.replace(/^\/blog\//, '').replace(/\/$/, '');
+    const post = allPosts.find((a) => a.slug === slug);
+    return { ...p, rank: i + 1, displayTitle: post?.title || p.title || slug, slug };
+  });
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
@@ -81,6 +94,54 @@ export default async function StatsPage({ params }: Props) {
           </p>
         </section>
       )}
+
+      {/* 인기 글 TOP 10 */}
+      <section className="mt-12">
+        <h2 className="text-base font-semibold text-gray-700 mb-4">
+          {isKo ? '🔥 인기 글 TOP 10' : '🔥 Popular Posts TOP 10'}
+          {stats && (
+            <span className="text-xs font-normal text-gray-400 ml-2">
+              {isKo ? '최근 90일 기준' : 'Last 90 days'}
+            </span>
+          )}
+        </h2>
+
+        {enrichedPosts.length > 0 ? (
+          <ol className="space-y-3">
+            {enrichedPosts.map((post) => (
+              <li key={post.path}>
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white hover:border-amber-200 hover:shadow-sm transition-all group"
+                >
+                  <span
+                    className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-bold shrink-0 ${
+                      post.rank <= 3 ? 'bg-amber-400 text-white' : 'bg-gray-100 text-gray-500'
+                    }`}
+                  >
+                    {post.rank}
+                  </span>
+                  <span className="flex-1 text-sm font-medium text-gray-800 group-hover:text-amber-600 transition-colors leading-snug">
+                    {post.displayTitle}
+                  </span>
+                  <span className="text-xs text-gray-400 shrink-0">
+                    👁️ {formatNumber(post.pageViews)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <div className="p-8 text-center text-gray-400 bg-gray-50 rounded-2xl border border-gray-100">
+            <p className="text-3xl mb-2">📈</p>
+            <p className="text-sm">
+              {stats
+                ? (isKo ? '아직 충분한 방문 데이터가 없습니다.' : 'Not enough visitor data yet.')
+                : (isKo ? 'GA4 연동 후 인기 글 순위가 표시됩니다.' : 'Connect GA4 to see popular posts.')}
+            </p>
+          </div>
+        )}
+      </section>
     </main>
   );
 }
