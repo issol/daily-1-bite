@@ -1,0 +1,162 @@
+---
+title: "Memobase: One Memory Layer for ChatGPT, Claude, and Gemini"
+date: "2026-03-03"
+description: "Memobase gives any AI tool persistent memory — ChatGPT, Claude, Gemini, or your own apps — through a single API. Here's an honest assessment of what it can and can't do, plus a real integration walkthrough."
+category: "ai-tools"
+tags: ["AI memory", "ChatGPT", "Claude", "Memobase", "personalization"]
+---
+
+Every AI assistant has the same fundamental limitation: it forgets you the moment the conversation ends. You explain your tech stack, your preferences, your project context — and tomorrow you explain it all again. **Memobase** is trying to solve this by sitting between you and any AI tool, maintaining a persistent memory layer that travels across sessions and platforms.
+
+The pitch: tell Claude about your project once. Open ChatGPT tomorrow. Memobase injects your context automatically. The AI picks up where you left off.
+
+Here's whether that pitch holds up.
+
+![AI memory concept image](https://images.unsplash.com/photo-1620712943543-bcc4688e7485?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwbWVtb3J5fGVufDB8MHx8fDE3NzQwODgwMDB8MA&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Memobase aims to give AI tools what they currently lack: memory that persists across conversations and platforms._
+
+
+## How It Works
+
+Memobase sits as a middleware layer. At its core:
+
+1. **Memory extraction**: After each conversation, Memobase analyzes the session and extracts facts worth remembering — your name, tech preferences, project details, recurring problems, communication style
+2. **Memory storage**: Facts are stored in a structured format, organized by category (technical context, personal preferences, project state, etc.)
+3. **Context injection**: At the start of each new session, relevant memories are injected into the system prompt automatically
+
+The API is clean:
+
+```python
+import memobase
+
+client = memobase.Client(api_key="your-key")
+
+# After a conversation — extract and store memories
+session_text = "I'm building a Next.js app with TypeScript and Prisma. \
+                I prefer functional components and avoid class components. \
+                The project uses PostgreSQL hosted on Supabase."
+
+memories = client.extract(text=session_text)
+client.store(user_id="user_123", memories=memories)
+
+# Before the next conversation — retrieve relevant context
+context = client.retrieve(
+    user_id="user_123",
+    query="I need help with database queries",
+    max_tokens=1000
+)
+
+# context now contains:
+# - "Uses PostgreSQL hosted on Supabase"
+# - "Next.js + TypeScript + Prisma stack"
+# - Relevant preferences and constraints
+
+# Inject into your AI call
+messages = [
+    {"role": "system", "content": f"User context:\n{context}"},
+    {"role": "user", "content": "How should I structure my Prisma schema?"}
+]
+```
+
+The extraction step is where most of the intelligence lives. Memobase uses its own LLM pipeline to decide what's worth remembering and how to categorize it. This works well in most cases, though I've seen it over-extract (storing trivial details) and under-extract (missing important context) in edge cases.
+
+
+## Real Integration: Claude + ChatGPT Shared Memory
+
+I tested the cross-platform scenario that's Memobase's main selling point. Setup: establish context in a Claude conversation, then continue in ChatGPT with that context automatically available.
+
+```python
+# Step 1: Claude session — establish project context
+claude_conversation = """
+User: I'm working on a fintech app. We're using Go for the backend,
+React + TypeScript frontend. The main challenge right now is that our
+payment processing service has race conditions under load.
+
+Claude: Based on what you've described...
+[conversation continues for ~20 exchanges]
+"""
+
+# Extract and store after the session
+memories = client.extract(text=claude_conversation)
+client.store(user_id="dev_user", memories=memories)
+
+# What was stored:
+# - Project type: fintech application
+# - Backend: Go
+# - Frontend: React + TypeScript
+# - Current problem: race conditions in payment processing service
+# - Context: high load scenario
+
+# Step 2: ChatGPT session — next day, different platform
+context = client.retrieve(
+    user_id="dev_user",
+    query="payment processing"
+)
+
+# ChatGPT now knows the stack, the problem, and the prior discussion
+```
+
+In practice, this worked better than I expected for well-defined technical context. Stack preferences, project constraints, and recurring problem patterns transferred cleanly. The AI didn't need to re-ask for basics.
+
+Where it got messy: conversational nuance and in-progress reasoning don't transfer well. If I was mid-debug on something specific in Claude, the ChatGPT session had the facts but not the investigative thread. I still had to re-orient it to where I was in the process.
+
+
+## Three Strengths
+
+**1. Genuinely cross-platform**
+The same memory layer works with any API-accessible model. Claude, GPT-5.4, Gemini, your own fine-tuned models — as long as you can inject a system prompt, Memobase's context travels. This is the real value proposition. No other tool does this cleanly.
+
+**2. Memory is structured, not just text**
+Rather than injecting a raw conversation dump, Memobase extracts structured facts: `[technology: Go, role: backend]`, `[problem: race conditions, context: high load]`. The injection is cleaner and uses fewer tokens than naive context stuffing.
+
+**3. Privacy controls are granular**
+You can mark memories as "session-only" (not persisted), "private" (retrievable only with explicit key), or "shareable" (available to team members). For enterprise use cases where some context is sensitive, this matters.
+
+
+## Three Weaknesses
+
+**1. Memory quality depends on what you tell the AI**
+Memobase extracts what's in the conversation. If your conversations are vague or context-light, your memory store will be too. The tool amplifies your communication habits — it doesn't fix them.
+
+**2. Stale memories are a real problem**
+If your stack changes or you switch projects, old memories can actively mislead the AI. Memobase has a "memory freshness" scoring system, but in practice I found I needed to manually prune outdated context more often than the automatic scoring caught it.
+
+**3. Token cost adds up**
+Every session now starts with a memory injection — typically 500-1500 tokens. At scale, this adds meaningful cost to every API call. For high-volume applications, the economics need careful modeling.
+
+
+## What It Doesn't Do
+
+Memobase is not a long-term reasoning system. It stores facts, not understanding. The AI still needs to reason with the context you provide — Memobase just ensures that context is available. If you're hoping it'll make the AI "understand you better over time" in a deep sense, that's not what this is.
+
+It's also not a replacement for well-structured system prompts. For production applications where you know exactly what context the AI needs, a carefully crafted system prompt will outperform automatic memory extraction every time. Memobase is most useful for open-ended personal use, where you can't predict in advance what context will matter.
+
+
+## Pricing and Availability
+
+As of March 2026, Memobase is in public beta with a free tier (10K memories stored, 1M extractions/month) and paid plans starting at $29/month. API documentation is solid; SDKs for Python and JavaScript are available.
+
+The free tier is generous enough to test thoroughly before committing.
+
+
+## Who Should Use This
+
+Memobase makes the most sense for:
+
+- **Individual developers** who switch between AI tools and want context to follow them
+- **Small teams** where shared project context needs to be AI-accessible across members
+- **Power users** of multiple AI platforms who are frustrated by constant context re-establishment
+
+It's harder to justify for:
+
+- **Production applications** with well-defined context requirements (just use a good system prompt)
+- **High-volume use cases** where the per-call token overhead is significant
+- **Single-model workflows** where you're not switching between platforms
+
+The core idea — persistent memory across AI tools — is solving a real problem. The execution is good enough to be useful today, with room to improve. Worth trying if cross-platform AI continuity is something you actually need.
+
+**Related reading:**
+
+- [My Honest Take After 3 Months of AI Tools](https://daily1bite.com/en/blog/ai-tools/ai-3-2) (AI tool overview and workflow patterns)
+- [Claude Opus 4.6 Adaptive Thinking + Fast Mode: 200% Utilization Guide](https://daily1bite.com/en/blog/ai-tutorial/claude-opus-46-adaptive-thinking-fast-mode-200percent) (Getting more from Claude specifically)

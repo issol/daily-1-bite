@@ -1,0 +1,300 @@
+---
+title: "Claude Opus 4.6 Adaptive Thinking + Fast Mode: Getting 200% More Out of the API"
+date: "2026-02-10"
+description: "A practical guide to Claude Opus 4.6's adaptive thinking and fast mode features. Covers effort level cost comparisons, API code examples, and tips you won't find in the official docs. Released February 5th — here's everything you need to start using it effectively."
+category: "ai-tutorial"
+tags: ["Adaptive Thinking", "ai coding", "claude api", "Claude Opus 4.6", "fast mode"]
+---
+
+A practical guide to using Claude Opus 4.6's adaptive thinking and fast mode in real projects. Includes effort-level cost comparisons, API code examples, and practical tips that aren't in the official documentation.
+
+## What This Post Covers
+
+Claude Opus 4.6, released on February 5th, ships with two major new capabilities: **Adaptive Thinking** and **Fast Mode**. Both address the same underlying question — how do you balance speed and cost — but from different angles.
+
+By the end of this post, you'll be able to:
+
+- Use Adaptive Thinking's four effort levels appropriately for different tasks
+- Enable Fast Mode via the API and avoid bill shock
+- Find the optimal combination of both features for your use case
+- Apply three practical tips that aren't obvious from the documentation
+
+I started applying these to a side project and an internal tool the day Opus 4.6 launched. Adjusting a single effort level made a noticeable difference in API costs — more on that below.
+
+## Prerequisites
+
+Before getting started, you'll need:
+
+- **Anthropic API key:** Get one at [console.anthropic.com](https://console.anthropic.com)
+- **Python SDK (latest):** `anthropic >= 0.52.0` (required for adaptive thinking support)
+- **Claude Opus 4.6 access:** Model ID is `claude-opus-4-6`
+- **Fast Mode access:** Currently in research preview — apply at the [waitlist](https://claude.com/fast-mode)
+
+```bash
+# Install or update the SDK
+pip install --upgrade anthropic
+```
+
+One caveat: Fast Mode is still in beta. It requires a separate beta header (`fast-mode-2026-02-01`) and waitlist approval. Adaptive Thinking, however, works immediately without any special headers.
+
+## Step 1: Understanding Adaptive Thinking
+
+### How It Differs from Extended Thinking
+
+In previous models (Sonnet 4.5, Opus 4.5, etc.), you had to manually set `thinking.type: "enabled"` and specify `budget_tokens` — essentially telling the model "use at most 10,000 thinking tokens on this request." The problem: it was hard to estimate the right budget for each request type.
+
+Adaptive Thinking hands that decision back to Claude. For complex questions, it thinks deeply. For simple ones, it skips thinking or keeps it brief — much like how a person quickly answers easy questions but takes time to work through hard ones.
+
+### Basic Usage
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+
+response = client.messages.create(
+    model="claude-opus-4-6",
+    max_tokens=16000,
+    thinking={
+        "type": "adaptive"  # The key change: "enabled" → "adaptive"
+    },
+    messages=[{
+        "role": "user",
+        "content": "Analyze the source of the memory leak in this Python function."
+    }]
+)
+
+# Separate thinking blocks from the response
+for block in response.content:
+    if block.type == "thinking":
+        print(f"[Reasoning] {block.thinking[:200]}...")
+    elif block.type == "text":
+        print(f"[Answer] {block.text}")
+```
+
+That's the entire change — swap `"enabled"` for `"adaptive"` and remove `budget_tokens`. Note that in Opus 4.6, the `"enabled"` + `budget_tokens` approach is **deprecated**. It still works but will be removed in a future version, so it's worth migrating now.
+
+## Step 2: Optimizing Costs with Effort Levels
+
+The real power of Adaptive Thinking is the **effort parameter** — four levels that let you dial in how deeply Claude should reason.
+
+| Effort Level | Behavior | Best For | Estimated Cost |
+|-------------|----------|----------|----------------|
+| `low` | Skips thinking for simple questions | Translation, format conversion, simple code gen | ~40% less than baseline |
+| `medium` | Thinks moderately; skips easy ones | Code review, general Q&A | ~20% less than baseline |
+| `high` (default) | Almost always thinks | Bug analysis, architecture design | Baseline |
+| `max` | Unrestricted deep reasoning | Complex math, security analysis, research validation | ~50% more than baseline |
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+
+# Simple task: save money with low effort
+simple_response = client.messages.create(
+    model="claude-opus-4-6",
+    max_tokens=4000,
+    thinking={"type": "adaptive"},
+    output_config={"effort": "low"},  # Key: specify effort level
+    messages=[{
+        "role": "user",
+        "content": 'Convert this JSON to a TypeScript interface: {"name": "string", "age": 0}'
+    }]
+)
+
+# Complex task: maximize accuracy with max effort
+complex_response = client.messages.create(
+    model="claude-opus-4-6",
+    max_tokens=32000,
+    thinking={"type": "adaptive"},
+    output_config={"effort": "max"},  # Unrestricted reasoning
+    messages=[{
+        "role": "user",
+        "content": "List every concurrency bug scenario in this distributed system and propose a fix for each."
+    }]
+)
+```
+
+In my own testing, the same refactoring request sent at `low` vs `high` effort produced about 3× the output tokens at `high`. At `low`, thinking was skipped entirely and the model went straight to the answer. For simple transformation tasks, I couldn't detect any quality difference.
+
+### Tip: Fine-Tuning with the System Prompt
+
+This isn't well-documented, but you can **further fine-tune effort via the system prompt**. For example, if you want to reduce unnecessary thinking even at `high` effort:
+
+```python
+response = client.messages.create(
+    model="claude-opus-4-6",
+    max_tokens=16000,
+    thinking={"type": "adaptive"},
+    output_config={"effort": "high"},
+    system=(
+        "Extended thinking adds latency and should only be used when it "
+        "will meaningfully improve answer quality — typically for problems "
+        "that require multi-step reasoning. When in doubt, respond directly."
+    ),
+    messages=[{"role": "user", "content": "Review this code."}]
+)
+```
+
+This reduces thinking overhead on simple requests even at `high` effort. That said, as the docs warn: reducing thinking can hurt quality on complex tasks. Always test against your actual workload.
+
+## Step 3: Fast Mode — 2.5× Faster Output
+
+If Adaptive Thinking controls *how deeply* Claude reasons, Fast Mode controls *how quickly* it outputs. Same model, same intelligence — up to 2.5× faster token generation.
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+
+# Enable Fast Mode (beta header required)
+response = client.beta.messages.create(
+    model="claude-opus-4-6",
+    max_tokens=4096,
+    speed="fast",                       # Key: speed parameter
+    betas=["fast-mode-2026-02-01"],    # Beta header
+    messages=[{
+        "role": "user",
+        "content": "Write a rate limiter middleware for Express.js."
+    }]
+)
+
+# Verify fast mode was applied
+print(f"Speed used: {response.usage.speed}")  # "fast" or "standard"
+```
+
+### Fast Mode Pricing: It's Expensive
+
+Here's the honest breakdown. Fast Mode costs **6× the standard rate**.
+
+| Tier | Input (per MTok) | Output (per MTok) |
+|------|-----------------|-------------------|
+| Standard Opus 4.6 | $5 | $25 |
+| Fast Mode (≤200K) | $30 | $150 |
+| Fast Mode (>200K) | $60 | $225 |
+
+There's currently a 50% promotional discount (running through February 16), making it roughly 3× right now — but once it expires, the full 6× applies. I don't keep Fast Mode on for all requests. I use it selectively where it makes a measurable difference:
+
+- **Agentic workflows:** Multi-turn tasks with repeated tool calls — every step's output speed affects total wall-clock time
+- **Real-time code completion:** Interactive environments where the user is waiting
+- **Long outputs:** Generating large code files or documents (speed difference is most felt with high token output)
+
+Conversely, **TTFT (time to first token)** doesn't improve meaningfully with Fast Mode. For short, single-line responses, the cost-to-benefit ratio is poor.
+
+### Automatic Fallback When Rate-Limited
+
+Fast Mode has its own rate limit, separate from standard. In production, implement a fallback:
+
+```python
+import anthropic
+
+client = anthropic.Anthropic()
+
+def call_with_fast_fallback(**params):
+    """Try Fast Mode; fall back to standard on rate limit."""
+    try:
+        return client.beta.messages.create(**params, max_retries=0)
+    except anthropic.RateLimitError:
+        if params.get("speed") == "fast":
+            del params["speed"]
+            return client.beta.messages.create(**params)
+        raise
+
+response = call_with_fast_fallback(
+    model="claude-opus-4-6",
+    max_tokens=4096,
+    speed="fast",
+    betas=["fast-mode-2026-02-01"],
+    messages=[{"role": "user", "content": "Review this code"}]
+)
+```
+
+One caveat: switching between Fast and Standard **invalidates the prompt cache**. If you're relying on cache hits, frequent fallbacks will slightly increase costs. If heavy fallback is expected, sending everything as Standard from the start may be more economical.
+
+## Step 4: Combining Both Features
+
+Adaptive Thinking and Fast Mode can be used together — and this is where the real optimization happens.
+
+### Pattern 1: Fast and Light (Chatbots, Simple Queries)
+
+```python
+# effort: low + speed: fast = minimal thinking + maximum speed
+response = client.beta.messages.create(
+    model="claude-opus-4-6",
+    max_tokens=2000,
+    thinking={"type": "adaptive"},
+    output_config={"effort": "low"},
+    speed="fast",
+    betas=["fast-mode-2026-02-01"],
+    messages=[{"role": "user", "content": "What's list comprehension syntax in Python?"}]
+)
+```
+
+### Pattern 2: Deep Analysis, Fast Delivery (Code Review, Debugging)
+
+```python
+# effort: high + speed: fast = full reasoning + fast output
+response = client.beta.messages.create(
+    model="claude-opus-4-6",
+    max_tokens=16000,
+    thinking={"type": "adaptive"},
+    output_config={"effort": "high"},
+    speed="fast",
+    betas=["fast-mode-2026-02-01"],
+    messages=[{"role": "user", "content": "Analyze security vulnerabilities in this code"}]
+)
+```
+
+### Pattern 3: Cost-Efficient Batch Work
+
+```python
+# effort: medium + speed: standard = moderate reasoning + standard pricing
+response = client.messages.create(
+    model="claude-opus-4-6",
+    max_tokens=8000,
+    thinking={"type": "adaptive"},
+    output_config={"effort": "medium"},
+    messages=[{"role": "user", "content": "Add type hints to this function"}]
+)
+```
+
+In practice, **Pattern 3 is what I reach for most often**. For typical day-to-day coding tasks, medium effort with standard speed delivers solid results at a reasonable cost. Fast Mode only comes out for agentic loops or interactive environments where response speed directly affects total task time.
+
+## Common Errors and Fixes
+
+### 1. `stop_reason: "max_tokens"` on Max Effort
+
+At `max` effort, Claude can spend so many tokens on thinking that the actual answer gets cut off. Thinking tokens count toward the `max_tokens` limit.
+
+**Fix:** Increase `max_tokens` generously, or drop effort to `high`.
+
+### 2. Fast Mode 429 Too Many Requests
+
+Fast Mode has its own rate limit pool, separate from standard. Monitor the `anthropic-fast-output-tokens-remaining` response header to track remaining quota.
+
+**Fix:** Implement the fallback pattern shown above, or space out requests.
+
+### 3. Warning on `"enabled"` Type
+
+Using `thinking.type: "enabled"` in Opus 4.6 is deprecated. It still works but logs a warning indicating future removal.
+
+**Fix:** Replace `"enabled"` + `budget_tokens` with `"adaptive"` + `effort`.
+
+## Summary
+
+The key takeaways:
+
+- **Adaptive Thinking:** Switch to `thinking.type: "adaptive"`. Claude manages reasoning depth automatically
+- **Effort levels:** `low` → `medium` → `high` → `max` trades cost for quality — match the level to the task
+- **Fast Mode:** `speed: "fast"` + beta header gives 2.5× output speed, at 6× the price
+- **Combination strategy:** Daily coding tasks → medium + standard; agentic/real-time → high + fast
+
+The biggest practical shift for me has been the effort levels. Previously every request cost the same regardless of complexity. Now I can say "this is a simple question, go light on it" — and the savings on personal projects are real. Even just using `low` and `medium` for the majority of requests cuts costs noticeably.
+
+Next up: a deep dive into applying Adaptive Thinking to agentic workflows with interleaved thinking — where Claude reasons between tool calls for significantly better accuracy on multi-step tasks.
+
+If you're already running Opus 4.6 in production, I'd love to know which effort levels you're gravitating toward.
+
+**Related posts:**
+
+- [Claude Opus 4.6 vs GPT-5.3 Codex](https://daily1bite.com/en/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai) (General performance comparison of Opus 4.6)

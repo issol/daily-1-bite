@@ -1,0 +1,217 @@
+---
+title: "Building a Japanese Learning SaaS in 2 Weeks with Claude Code: The Utakoto Story"
+date: "2026-03-04"
+description: "I used to be skeptical of 'I built an entire service with AI' posts. Usually it's a todo app or basic CRUD. Then I shipped a full SaaS with payments using only Claude Code CLI in two weeks — 84 commits, 235 source files, 27,679 lines of TypeScript. Here's the honest retrospective."
+category: "dev-life"
+tags: ["Solo Development", "AI Coding", "Claude Code", "Next.js", "Supabase"]
+---
+
+Full disclosure: I used to roll my eyes at "I built a whole service with AI" posts. Usually it's a todo app or some basic CRUD, nowhere near production quality. Then I actually did it — and shipped a SaaS with a real payment system using only Claude Code CLI in two weeks. My thinking changed.
+
+![Image](https://blog.kakaocdn.net/dn/EPLpH/dJMcabwxukH/GXMfXxRuwd1xK8j0zDBbkk/img.jpg)
+
+_Utakoto's song library. Processing status, JLPT vocabulary distribution, and learning progress all visible at a glance._
+
+This is an honest retrospective on how I built **[Utakoto](https://utakoto.space)** — a Japanese language learning platform powered by J-pop lyrics — using only the Claude Code CLI. What I wanted to build, how I built it, and what I actually learned.
+
+## TL;DR
+
+- **Project**: Utakoto — an SRS platform for learning Japanese vocabulary through favorite J-pop songs
+- **Development period**: 2 weeks (Feb 18 – Mar 3, 2026)
+- **Scale**: 84 commits, 235 source files, 27,679 lines of TypeScript/React
+- **Stack**: Next.js 15 + React 19 + Supabase + Inngest + Lemon Squeezy
+- **Tool**: Claude Code CLI (Anthropic's official terminal AI)
+- **Result**: Authentication, song management, 12-step async pipeline, SRS flashcards, 4-level difficulty system, subscription payments, data export — full stack, done
+
+## What I Wanted to Build
+
+I love J-pop. Listening to Kenshi Yonezu or YOASOBI and wondering "what do these lyrics mean?" was a regular occurrence — then the tedious cycle of searching Genius, looking up words one by one, and manually creating Anki cards.
+
+So I thought: what if I could drop in a YouTube URL and get lyrics automatically fetched, vocabulary extracted, and JLPT level-tagged? Add SuperMemo-2 algorithm for spaced repetition scheduling? That would be something I'd actually use.
+
+Existing alternatives existed but fell short — most showed lyrics without a study system, or had a study system without proper UX, or were visually stuck in 2015. A complete "music → word extraction → SRS learning" pipeline was nowhere to be found.
+
+## The Results vs. the Plan
+
+### Original Plan
+
+| Item | Goal |
+|------|------|
+| Basic CRUD | Add/delete/list songs |
+| Lyrics pipeline | YouTube URL → lyrics → word extraction |
+| Study features | Flashcards + SRS |
+| Auth | Email + OAuth |
+| Responsive | Mobile + desktop |
+| Payments | Subscription system |
+
+### Actual Results After 2 Weeks
+
+| Metric | Count |
+|--------|-------|
+| Total commits | 84 |
+| Source files | 235 (.ts/.tsx) |
+| Lines of code | 27,679 |
+| API endpoints | 36 |
+| DB tables | 14 |
+| Async pipeline steps | 12 |
+
+Honestly, I was surprised by the scale. Basic features done in the first 10 days, then 4-level difficulty UI, data export, mobile dark mode, and Lemon Squeezy payment integration all wrapped up in the remaining days. Solo, two weeks. Claude Code made a real difference.
+
+## Top 3 Hard Problems
+
+### 1. The 12-Step Async Pipeline: Automation Is More Complex Than It Looks
+
+Getting from a YouTube URL to a study-ready song involves 12 steps:
+
+URL input → duplicate check → YouTube metadata → artist registration → lyrics search (4 providers) → save → morphological analysis (kuromoji) → furigana generation → translation (Gemini API) → word extraction → JLPT tagging → romanization → status: ready
+
+Running this synchronously means a minute-plus loading screen. So I built an async job queue with Inngest — where the real struggle began.
+
+Each step has different failure modes. Lyrics not found? Morphological analyzer throws an exception? Gemini API quota hit? The key instruction to Claude Code was: "on failure at each step, update status appropriately, and allow partial success." Perfect code didn't come out on the first try — I iterated each time I discovered an error case.
+
+```javascript
+// Core Inngest pipeline pattern
+const processSong = inngest.createFunction(
+  { id: "process-song", retries: 2 },
+  { event: "song/process.requested" },
+  async ({ event, step }) => {
+    // Each step can retry independently
+    const metadata = await step.run("fetch-metadata", async () => {
+      return await fetchYoutubeMetadata(event.data.youtubeUrl);
+    });
+
+    const lyrics = await step.run("search-lyrics", async () => {
+      // Try in order: YouTube Captions → AZLyrics → Genius → SerpAPI
+      return await searchLyrics(metadata.artist, metadata.title);
+    });
+
+    // ... continues through all 12 steps
+  }
+);
+```
+
+For AI translation, I chose the Gemini API specifically because song lyrics are a special case — they're full of poetic expressions that require more nuanced translation. I also implemented Translation Memory caching to avoid re-translating identical text.
+
+### 2. Guest Mode: Simpler Than Expected, Then Not
+
+"Let non-members try one song" seemed like a small feature. Supabase's anonymous auth (`signInAnonymously()`) would handle it quickly... right?
+
+Reality:
+
+- Anonymous users need Supabase sessions, so APIs must work
+- But limit to 1 song
+- Show login-prompt modal on limit hit
+- Preserve data when converting to OAuth (`linkIdentity()`)
+- Auto-delete anonymous users after 30 days (Inngest daily cron)
+
+My commit log has 10+ guest-related fix commits: `fix: handle 401/403 for guest users`, `fix: show login prompt modal on 401/403`, `fix: skip 401→/login redirect on guest-allowed paths`... classic fix-one-break-another edge case hell.
+
+### 3. Mobile/Desktop Split: "Responsive Will Do It" Is a Trap
+
+Tailwind responsive breakpoints seemed sufficient at first. But the layouts were fundamentally different: desktop uses sidebar + header, mobile uses bottom tabs + mobile header. I ended up fully splitting routes:
+
+```
+Desktop: src/app/(main)/songs/page.tsx
+Mobile:  src/app/m/(protected)/songs/page.tsx
+```
+
+Middleware detects UA for server-side rewrites, and a `ViewportRouter` component on the client redirects to `/m/*` when `window.innerWidth < 768`. This pattern works well — you can optimize components per platform. The trade-off is code duplication.
+
+## How I Used Claude Code
+
+### The Workflow
+
+Claude Code is Anthropic's official CLI tool from 2025. Not a VS Code extension — you chat in the terminal while it reads/writes files, runs commands, and manipulates git.
+
+My actual workflow:
+
+- **Write a feature spec (FEATURE_SPEC.md) first** — in the project root for Claude Code to reference
+- **Write an API spec (API_SPEC.md)** — endpoints, request/response formats, error codes pre-defined
+- **Write a tech spec (TECH_SPEC.md)** — database schema, auth flow, payment system
+- **"Build this feature"** — Claude Code reads the specs and generates code
+- **Build/test → fix errors, repeat** — show error messages to Claude Code for correction
+
+The key to this workflow is **spec document quality**. Claude Code is smart, but if it doesn't know what to build, it builds the wrong thing. I specified details like status values (`processing | ready | partial | error | no_lyrics`), field naming conventions (`songId` not `id`), and plan limits (`Guest: 1 song, Free: 5 songs`). My spec documents were 3 files totaling over 700 lines.
+
+As I wrote in [Stack Overflow Blog: Knowing Is Half the Battle in an AI World](https://daily1bite.com/en/blog/dev-life/stack-overflow-ai): to use AI coding tools well, you need to know clearly what you're building. Claude Code is an executor, not a planner.
+
+### What Claude Code Did Well
+
+**Repetitive CRUD and boilerplate** — genuinely fast. When building 36 API routes, I showed the pattern for the first one (Supabase client init → auth check → query → response) and the rest came out consistently styled.
+
+**Error debugging** — useful. Paste in a build error or type error and it identifies the cause and suggests a fix. Particularly good at catching TypeScript strict mode type errors.
+
+**Playwright E2E test writing** — better than expected. Describe test scenarios for auth, songs, flashcards and it writes tests with proper `storageState` patterns and session management.
+
+### Where Claude Code Fell Short
+
+**Business logic edge cases** — I had to find these myself. Auth timing issues in guest mode or boundary conditions in the SRS algorithm weren't proactively surfaced. It produces "mostly works" code quickly; production-grade robustness is on the developer.
+
+**Design decisions** — also mine. "What goes in the sidebar," "how should the flashcard UX work" — I made those calls, and Claude Code implemented them.
+
+## Tech Stack Retrospective
+
+| Choice | Satisfaction | Would Use Again? |
+|--------|-------------|-----------------|
+| Next.js 15 (App Router) | ★★★★☆ | Yes. Server Components are great for SSR performance |
+| Supabase | ★★★★★ | Yes. Auth + DB + RLS in one package, plus anonymous auth |
+| Inngest | ★★★★☆ | Yes. 12-step async pipeline + subscription renewal cron + guest cleanup cron |
+| Tailwind v4 | ★★★★☆ | Yes. Adjustment period for new v4 syntax, but results are clean |
+| kuromoji | ★★★☆☆ | Reconsidering. Large bundle size; exploring server-side MeCab alternatives |
+| Lemon Squeezy | ★★★★☆ | Yes. Global card payments are simple. Domestic payment provider TBD |
+| TanStack React Query | ★★★★★ | Yes. Clean server state caching with flexible staleTime strategy |
+
+On payments: I started with a local payment provider but switched to Lemon Squeezy because their checkout session flow was faster to ship than waiting for merchant account approval. Webhook handling for `subscription_created` and `subscription_updated` events is quite clean.
+
+## Final Numbers
+
+| Metric | Value |
+|--------|-------|
+| Dev period | 2 weeks (Feb 18 – Mar 3, 2026) |
+| Total commits | 84 |
+| Source files | 235 |
+| Lines of code | 27,679 |
+| API endpoints | 36 |
+| DB tables | 14 |
+| Async pipeline | 12 steps |
+| Auth methods | Email + Google OAuth + Guest (anonymous) |
+| Subscription plans | Guest (1 song) / Free (5 songs) / Pro (unlimited) |
+| Payments | Lemon Squeezy (global card, $1.99/month / $19.99/year) |
+| Mobile | Fully separate routes + dark/light theme |
+| SRS algorithm | SuperMemo-2 (4-level difficulty) |
+
+## Try Utakoto
+
+If you've read this far, you're probably curious: "So, is it actually usable?"
+
+The fastest way to find out is to try it. Available at **[utakoto.space](https://utakoto.space)**.
+
+**Recommended if you:**
+- Are curious about J-pop lyrics — paste in a YouTube URL and get lyrics, furigana, and romanization automatically
+- Are tired of manually creating Japanese vocabulary cards for Anki — songs auto-extract words classified by JLPT N1–N5. Pro plan supports CSV/Anki export
+- Keep forgetting to review Japanese vocabulary — SuperMemo-2 algorithm tells you the optimal review timing
+
+**How to start:**
+1. Go to [utakoto.space](https://utakoto.space) (one song available without signup)
+2. Paste the YouTube URL of a Japanese song you like
+3. Lyrics and vocabulary are organized automatically in 30–60 seconds
+4. Start flashcard review
+
+The **Free plan** supports up to 5 songs, with SRS flashcards and statistics available without restriction. **Pro plan** ($1.99/month or $19.99/year) offers unlimited songs and data export (CSV/Anki).
+
+Feedback and feature requests welcome at **[isolatorv@gmail.com](mailto:isolatorv@gmail.com)** — I actually read them and act on them. The advantage of solo development.
+
+The biggest shift I felt building this project: the **range of what's possible expanded dramatically.** Building a project with payments from scratch in two weeks solo would have been unimaginable before. Claude Code doesn't replace senior developers — but it absolutely multiplies a senior developer's output by 3–4x.
+
+**Related posts:**
+
+- [AI Translation Showdown: DeepL Pro vs Google Translate AI](https://daily1bite.com/en/blog/ai-tutorial/ai-deepl-pro-vs-google-translate-ai) — background on choosing Utakoto's translation engine
+- [Stack Overflow Blog: Knowing Is Half the Battle in an AI World](https://daily1bite.com/en/blog/dev-life/stack-overflow-ai) — AI-era developer learning strategy
+
+**References:**
+
+- [Anthropic Claude Code official docs (February 2026)](https://docs.anthropic.com/en/docs/claude-code)
+- [Inngest — Durable workflow engine official docs](https://www.inngest.com/docs)
+- [Supabase Anonymous Auth Guide (2025)](https://supabase.com/docs/guides/auth/auth-anonymous)
+- [SuperMemo-2 Algorithm (supermemo.guru)](https://supermemo.guru/wiki/SuperMemo_Algorithm)
+- [Lemon Squeezy Developer Docs](https://docs.lemonsqueezy.com/)

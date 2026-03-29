@@ -1,0 +1,117 @@
+---
+title: "Did DeepSeek Really Copy OpenAI? — The AI Model Distillation Controversy, Explained"
+date: "2026-02-14"
+description: "OpenAI filed an official complaint to the US Congress alleging DeepSeek distilled its models without permission. Here's what distillation actually is, why this dispute matters beyond the two companies, and what developers need to understand about the evolving IP landscape for AI outputs."
+category: "dev-life"
+tags: ["AI Distillation", "AI Ethics", "DeepSeek", "Knowledge Distillation", "LLM"]
+---
+
+OpenAI officially alleged to Congress that DeepSeek used model distillation to copy its models without permission. Here's what distillation is, why this is controversial, and what developers need to know.
+
+## OpenAI Filed a Formal Memo with Congress
+
+Yesterday (February 12th) a fairly significant story broke.
+
+OpenAI sent a memo to the US House Select Committee on China, officially alleging that Chinese AI company DeepSeek copied its models using "distillation." This isn't OpenAI complaining on Twitter — **this is a formal document submitted to the US Congress.** This has moved from a technical dispute to something approaching a diplomatic matter.
+
+When I saw this news, two thoughts hit me simultaneously: "Is this actually serious?" and "Is OpenAI exaggerating this?" Today I want to sort through those questions based on the facts.
+
+## First: What Exactly Is Distillation?
+
+Knowledge distillation is a technique proposed by Geoffrey Hinton in 2015 — **a method for transferring the knowledge of a large model (teacher) to a smaller model (student).**
+
+Think of it this way. Imagine a top mathematics professor (large model) and a high school student (small model). Learning directly from the professor gives you not just answers but insight into "why this approach is more elegant" and "where this method breaks down." Distillation is that process. Rather than copying just the right answers (labels), **the student model learns from the probability distributions the large model assigns to each possible answer (soft labels).**
+
+```python
+# Core distillation concept (pseudocode)
+import torch
+import torch.nn.functional as F
+
+def distillation_loss(student_logits, teacher_logits, true_labels,
+                      temperature=3.0, alpha=0.7):
+    """
+    temperature: higher values make teacher's probability distribution softer
+    alpha: balance between soft labels and hard labels
+    """
+    # Soft target: learn from teacher's smoothed probability distribution
+    soft_loss = F.kl_div(
+        F.log_softmax(student_logits / temperature, dim=1),
+        F.softmax(teacher_logits / temperature, dim=1),
+        reduction='batchmean'
+    ) * (temperature ** 2)
+
+    # Hard target: also learn from actual ground truth
+    hard_loss = F.cross_entropy(student_logits, true_labels)
+
+    return alpha * soft_loss + (1 - alpha) * hard_loss
+```
+
+Critically: **distillation itself is not illegal.** It's a legitimate technique used widely in academic research. Distilling from open-source models like Meta's Llama is entirely fine — as long as the license permits it.
+
+The problem is that **OpenAI's models are not open-source.**
+
+## OpenAI's Specific Allegations: "They Bypassed Access Controls"
+
+Looking at the concrete claims in OpenAI's memo, this goes well beyond vague suspicion:
+
+**First, circumventing access restrictions.** OpenAI alleges that "accounts associated with DeepSeek employees developed methods to circumvent access restrictions, accessing models through obfuscated third-party routers."
+
+**Second, programmatic bulk extraction.** DeepSeek employees "developed code to access US AI models and programmatically extract outputs at scale for distillation purposes."
+
+**Third, other US companies were also targeted.** OpenAI stated that "models from other US frontier research labs were also accessed through third-party routers."
+
+If true, this goes beyond API terms of service violations into organized technology theft. OpenAI's terms of service explicitly prohibit using model outputs to develop competing models.
+
+## The Other Side of the Story
+
+Here I want to ask some uncomfortable questions.
+
+**Where exactly is the line on "distillation"?** If a developer asks ChatGPT "help me optimize this algorithm" and references that answer while writing code, is that distillation? Pushed to an extreme: is there a difference between studying with ChatGPT to build a better AI and using ChatGPT's outputs as training data?
+
+**OpenAI's double standard is also worth examining.** OpenAI itself has trained on enormous amounts of internet data, and copyright controversies have been constant — the New York Times lawsuit being the most prominent. "We can train on other people's data but you can't train on ours" — does that logic hold?
+
+**The timing is suspicious.** Per Bloomberg, OpenAI sent this memo just before DeepSeek was expected to release a new model during Chinese New Year. Last year DeepSeek R1's surprise New Year's launch rattled markets. This reads as a preemptive strike.
+
+That said, I can't dismiss OpenAI's claims. **If it's true that DeepSeek circumvented access controls and extracted outputs at scale, that's a clear terms of service violation and a legal problem.** "Referenced it" is different from "systematically scraped it."
+
+## Three Things Developers Should Take Away
+
+This dispute isn't just a fight between two companies. I see it as **the first major battle defining intellectual property in the AI era.**
+
+### 1. The AI APIs You Use Have Terms of Service
+
+Honestly, I've rarely read API terms of service carefully. But most AI API terms include a "no use of outputs to train competing models" clause. Using GPT API responses as fine-tuning data on a personal project may technically be a violation.
+
+```
+# Key clauses in OpenAI Terms of Service (summary)
+- Using outputs to develop/train competing AI models: prohibited
+- Automatically collecting large volumes of outputs: prohibited
+- Circumventing access restrictions: prohibited
+```
+
+### 2. Open-Source vs. Closed-Source Is the Core Distinction
+
+The fundamental question in this dispute is: **"Who owns AI model outputs?"** For open-source models like Meta's Llama 4, distillation is permitted (subject to license terms). Using API outputs from closed models like OpenAI's is a different matter.
+
+One reason developers choose open-source LLMs is exactly this legal safety. Using a Llama 4-based model in your service dramatically reduces legal risk around output usage.
+
+### 3. AI Technology Competition Is Now Geopolitics
+
+This is no longer just a technology story. Congressional memos, the US-China relations context, export controls — all intertwined. The US has already restricted export of high-performance NVIDIA chips to China, and US wariness about "closing the technology gap through software means" will only intensify.
+
+I also read today that the Trump administration has temporarily suspended certain China-related tech sanctions ahead of expected meetings with Xi — a reminder that AI technology competition is actively being used as a diplomatic card.
+
+## Conclusion: Whoever Is Right, We Need Rules
+
+My position: **whether OpenAI's claims are 100% accurate, I don't yet know.** DeepSeek hasn't issued an official response, and independent technical verification hasn't happened.
+
+But one thing is certain: **there are no clear international rules governing AI model intellectual property.** And that absence is what creates these disputes — and will produce more.
+
+The EU is building a regulatory framework through the AI Act. US states are generating AI legislation in piecemeal fashion. The rules are being written in real time. As developers, the tools we build, the APIs we use — any of it could be at the center of a controversy like this. That's reason enough to stay engaged with these developments.
+
+What's your take? Did DeepSeek actually "copy" OpenAI, or is this competitive posturing? And more fundamentally — how far should training AI on another AI's outputs be permitted? Share your thoughts in the comments.
+
+**Related posts:**
+
+- [Claude Opus 4.6 vs GPT-5.3 Codex — Two AI Models Released the Same Day: What's Different?](https://daily1bite.com/en/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai) (competition between US AI companies)
+- [Can AI Replace Code Reviews? What I Learned from Testing 3 Tools](https://daily1bite.com/en/blog/dev-life/ai-3) (ethical boundaries when applying AI tools in practice)

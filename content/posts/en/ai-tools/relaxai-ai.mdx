@@ -1,0 +1,129 @@
+---
+title: "relaxAI Review: The Privacy-First AI Assistant Built in the UK"
+date: "2026-03-10"
+description: "relaxAI is a UK-based AI assistant that processes everything on-device, stores nothing in the cloud, and is designed from the ground up around privacy. I tested it for two weeks. Here's what privacy-first AI actually looks like in practice."
+category: "ai-tools"
+tags: ["AI assistant", "on-device AI", "privacy AI", "relaxAI", "UK AI"]
+---
+
+Most AI assistants have a straightforward privacy model: your data goes to a server, the server processes it, you get an answer. The data might be used for training, might be retained for some period, might be accessible to employees under certain circumstances. The terms of service tell you what they can do; your trust in the company determines whether you're comfortable with it.
+
+relaxAI is built on a different model: your data doesn't leave your device. Processing happens locally. No conversation history is stored externally. No model training on your inputs. The company's pitch is that privacy isn't a feature they've added — it's the architectural constraint they designed around.
+
+I tested it for two weeks. Here's what privacy-first AI actually looks like.
+
+![Privacy technology concept](https://images.unsplash.com/photo-1555421689-491a97ff2040?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxwcml2YWN5JTIwdGVjaG5vbG9neXxlbnwwfDB8fHwxNzc0MDg4MDAwfDA&ixlib=rb-4.1.0&q=80&w=1080)
+
+_relaxAI's on-device processing model is verifiable — your data never reaches their servers because there's no path for it to._
+
+
+## What "On-Device" Actually Means
+
+relaxAI runs a quantized language model directly on your device using Apple's Core ML framework (iOS/Mac) or equivalent local inference on other platforms. The model downloads once on setup (approximately 4GB for the standard model) and runs entirely locally thereafter.
+
+What this means practically:
+- No internet connection required after initial setup
+- No conversation data transmitted or stored by relaxAI
+- Works in airplane mode, in environments with strict network controls, with sensitive information
+- No API keys, no account required for core functionality
+
+The tradeoff is capability. A quantized 7B-13B parameter model running on consumer hardware is not going to match GPT-5.4 or Claude Opus 4.6 on complex tasks. The privacy guarantee comes at a real capability cost. relaxAI doesn't hide this — their marketing is explicit that they're optimizing for a different axis than raw performance.
+
+
+## Setup and Performance
+
+Setup on a 2024 MacBook Pro M3 (16GB):
+- Download and install: ~8 minutes
+- Model download: ~12 minutes (4.2GB)
+- First response: under 3 seconds
+
+Response quality on standard tasks (answering questions, summarizing text, basic coding help): solid. Comparable to mid-tier cloud models from 2-3 years ago. For most everyday AI assistant tasks — drafting emails, explaining concepts, simple code snippets — it's genuinely useful.
+
+Where it struggles:
+- Complex multi-step reasoning
+- Tasks requiring up-to-date world knowledge (training data cutoff is visible)
+- Long-form writing requiring sustained quality
+- Nuanced code review on complex codebases
+
+These are expected limitations given the model size. The question is whether your use cases fit within what a local 7B-13B model can handle well.
+
+
+## The Real Privacy Guarantee
+
+I want to be precise about what relaxAI's privacy model actually guarantees and what it doesn't.
+
+**What is guaranteed:**
+- Your conversation content doesn't transit relaxAI's servers (because there are no servers in the loop)
+- relaxAI cannot be compelled to hand over conversation data they don't have
+- No risk of a data breach exposing your conversation history
+- No behavioral profiling based on your queries
+
+**What is not guaranteed:**
+- Your operating system's local storage is still subject to device search under legal process
+- Other apps on your device with file system access could theoretically read cached data
+- The model weights themselves were trained on data — you're trusting that training process
+
+The most meaningful protection is against the cloud-service threat model: bulk data collection, company policy changes, government data requests to the AI provider, data breaches at the provider's infrastructure. For people whose threat model centers on these risks, relaxAI's architecture provides genuine protection.
+
+
+## Who Actually Needs This
+
+**Legal and healthcare professionals**: Client privilege and HIPAA constraints make cloud-based AI tools genuinely problematic for sensitive work. A local AI assistant that can help with document drafting, research, and summarization without touching an external server is a practical solution to a real compliance problem.
+
+**Enterprise environments with strict data controls**: Companies with sensitive IP, regulated data, or air-gapped networks where sending data to external servers isn't permissible.
+
+**Personal privacy-conscious users**: People who would use AI assistants more if they trusted the privacy model. The friction of "I won't ask that because I don't want it stored" disappears with local processing.
+
+**Journalists and researchers**: Working with sensitive sources or pre-publication research where privacy matters.
+
+
+## Comparison with Cloud Alternatives
+
+| Feature | relaxAI | ChatGPT | Claude |
+|---------|---------|---------|--------|
+| **Data storage** | None (local) | Retained (configurable) | Retained (configurable) |
+| **Offline use** | Yes | No | No |
+| **Model capability** | 7B-13B equivalent | GPT-5.x | Claude 3.x/4.x |
+| **Price** | £4.99/month flat | $20+/month | $20+/month |
+| **Training on inputs** | No | Opt-out available | Opt-out available |
+| **Regulatory compliance** | Strong | Configurable | Configurable |
+
+The capability gap is real and should be honestly weighed. If you need state-of-the-art reasoning or complex analysis, relaxAI isn't the right tool. If privacy is a genuine constraint and a capable-but-not-frontier model meets your needs, the tradeoff makes sense.
+
+
+## A Note on the Developer API
+
+relaxAI offers a local API for developers that mirrors the OpenAI API format, making it a drop-in replacement for local development:
+
+```python
+from openai import OpenAI
+
+# Point the OpenAI client at the local relaxAI server
+client = OpenAI(
+    api_key="not-needed",
+    base_url="http://localhost:8765/v1"
+)
+
+response = client.chat.completions.create(
+    model="relaxai-local",
+    messages=[
+        {"role": "user", "content": "Summarize this document..."}
+    ]
+)
+```
+
+For developers building applications that handle sensitive user data, this is useful for testing without sending production data to external APIs, and potentially for privacy-preserving production deployments.
+
+
+## The Honest Assessment
+
+relaxAI does what it says. On-device processing, no cloud transmission, genuine privacy. The capability ceiling is real — you're trading frontier-model performance for an airtight privacy model.
+
+For most people, that tradeoff doesn't make sense: their tasks need more capability than a local model can deliver, and they're comfortable with the privacy practices of major AI providers. For a specific set of users — those in regulated industries, those with sensitive professional obligations, or those who've made a considered privacy-first choice — relaxAI is the most honest implementation of that approach I've seen from a consumer product.
+
+The £4.99/month price is also notably lower than cloud AI subscriptions. For light-to-medium use cases where the capability matches, the economics favor it on both privacy and cost.
+
+**Related reading:**
+
+- [Apple Intelligence 2026: From LLM Siri to Gemini Integration](https://daily1bite.com/en/blog/ai-tools/apple-intelligence-2026-llm-siri-gemini) (On-device AI processing comparison)
+- [My Honest Take After 3 Months of AI Tools](https://daily1bite.com/en/blog/ai-tools/ai-3-2) (AI assistant landscape overview)

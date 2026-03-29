@@ -1,0 +1,176 @@
+---
+title: "Llama 4 Scout vs Maverick: Full Analysis"
+date: "2026-02-22"
+description: "Meta released two Llama 4 models simultaneously: Scout (17B active parameters, 10M token context) and Maverick (17B active parameters, multimodal). Here's a complete breakdown of specs, benchmarks, and which one to actually use."
+category: "ai-tools"
+tags: ["LLM comparison", "Llama 4", "Maverick", "Meta AI", "Scout"]
+---
+
+Meta's Llama 4 release did something unusual: instead of a single flagship model, they shipped two distinct variants at the same time. **Scout** is optimized for long-context tasks — 10 million token context window, narrow specialist focus. **Maverick** is optimized for breadth — multimodal, stronger reasoning, more general-purpose capability.
+
+They share an underlying architecture (both are 17B active parameters from a 400B+ total MoE model) but are tuned for fundamentally different use cases. Here's what you actually need to know.
+
+![AI model comparison concept](https://images.unsplash.com/photo-1677442135703-1787eea5ce01?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwY29tcGFyaXNvbnxlbnwwfDB8fHwxNzc0MDg4MDAwfDA&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Llama 4 Scout and Maverick share the same foundation but diverge sharply in what they're built for._
+
+
+## Specs at a Glance
+
+| Spec | Llama 4 Scout | Llama 4 Maverick |
+|------|--------------|-----------------|
+| **Architecture** | MoE (17B active / 109B total) | MoE (17B active / 400B+ total) |
+| **Context window** | 10M tokens | 1M tokens |
+| **Modalities** | Text only | Text + images |
+| **Availability** | Open weights | Open weights |
+| **Primary strength** | Long-context retrieval | Reasoning, multimodal |
+| **MMLU** | 79.4% | 85.5% |
+| **MATH** | 73.2% | 81.7% |
+| **HumanEval** | 72.8% | 77.3% |
+
+
+## Llama 4 Scout: The 10M Token Context Window
+
+The headline number is 10 million tokens. For reference: GPT-4o supports 128K, Claude Opus 4.6 supports 1M (in beta), Gemini 2.0 Pro supports 2M. Scout's 10M is a significant claim.
+
+But context window size and context window *quality* are different things. The useful question is: at what point does retrieval accuracy degrade?
+
+Meta's internal benchmarks show Scout maintaining ~82% accuracy on needle-in-a-haystack tasks up to 8M tokens — a genuinely impressive result. In practice, most "long context" use cases involve documents in the 100K-500K range, where Scout performs excellently.
+
+```python
+from llama import Llama4Scout
+
+model = Llama4Scout.load()
+
+# Load an entire large codebase
+with open("entire_codebase.txt", "r") as f:
+    codebase = f.read()  # ~2M tokens
+
+response = model.query(
+    context=codebase,
+    query="Find all places where user input is passed directly to SQL queries without sanitization"
+)
+# Scout handles this well — long-range pattern matching across large documents
+```
+
+**Where Scout shines:**
+- Security audits across large codebases
+- Legal document review (contracts, regulatory filings, case law)
+- Academic literature synthesis across dozens of papers
+- Long-running conversation history retention
+
+**Where Scout falls short:**
+- Complex reasoning chains (Maverick is meaningfully better)
+- Anything involving images or non-text input
+- Creative tasks where quality matters more than coverage
+
+
+## Llama 4 Maverick: The Multimodal Generalist
+
+Maverick is the more capable model on standard benchmarks. 85.5% MMLU vs Scout's 79.4%; 81.7% on MATH vs Scout's 73.2%. These aren't marginal differences — Maverick is genuinely better at reasoning-heavy tasks.
+
+The multimodal capability is real and competitive. In head-to-head tests against GPT-4o Vision, Maverick performs comparably on image understanding tasks while being open-weights and self-hostable.
+
+```python
+from llama import Llama4Maverick
+from PIL import Image
+
+model = Llama4Maverick.load()
+
+# Multimodal: analyze a diagram
+image = Image.open("architecture_diagram.png")
+response = model.query(
+    image=image,
+    text="Identify potential single points of failure in this system architecture"
+)
+
+# Reasoning: complex multi-step problem
+response = model.query(
+    text="""
+    I have a distributed system with:
+    - 3 microservices (A, B, C)
+    - A calls B and C in parallel
+    - B has p99 latency of 200ms, C has p99 of 350ms
+    - A has a 500ms timeout
+
+    What's the probability that a single request to A times out?
+    Work through this step by step.
+    """
+)
+```
+
+**Where Maverick shines:**
+- Code generation and debugging
+- Multi-step reasoning problems
+- Image analysis and visual Q&A
+- Technical writing
+- Tasks that benefit from stronger baseline intelligence
+
+**Where Maverick falls short:**
+- Documents exceeding 1M tokens (Scout handles 10x more)
+- Tasks where cost matters — Maverick is heavier to run
+- Specialized long-context retrieval
+
+
+## Running Both Locally
+
+Both models are available on Hugging Face as open weights. Hardware requirements are non-trivial:
+
+**Scout (17B active parameters):**
+```bash
+# Minimum: 2x A100 80GB or equivalent
+# Recommended for production: 4x A100
+
+pip install llama-stack
+llama model download --source meta --model-id Llama-4-Scout-17B
+llama stack run llama4-scout --port 8080
+```
+
+**Maverick (17B active parameters, larger total model):**
+```bash
+# Minimum: 4x A100 80GB
+# Recommended: 8x A100
+
+llama model download --source meta --model-id Llama-4-Maverick-17B
+llama stack run llama4-maverick --port 8081
+```
+
+For most individual developers, running these locally isn't practical. The more realistic path is using Meta's API or the growing list of cloud providers offering Llama 4 inference.
+
+
+## Benchmark Reality Check
+
+Meta's benchmarks show Maverick beating GPT-4o on MMLU (85.5% vs 83.7%) and MATH (81.7% vs 76.6%). These numbers are accurate but require context.
+
+Benchmarks are run under controlled conditions with well-crafted prompts. Real-world performance on your specific use case will differ. The MMLU advantage doesn't necessarily translate to Maverick writing better code for your specific stack, or giving better advice on your specific problem domain.
+
+My practical experience: Maverick is genuinely competitive with GPT-4o for coding tasks. The gap is smaller than the benchmark numbers suggest, but the numbers aren't misleading — Maverick is a strong model.
+
+Scout's long-context claims are harder to validate without access to genuinely long test cases. I've tested up to ~500K tokens and the performance is solid. Whether the 10M token claims hold up at scale is something I haven't been able to verify independently.
+
+
+## Which One to Use
+
+**Use Scout if:**
+- Your primary use case involves documents over 200K tokens
+- You need to search or reason across large knowledge bases
+- You're building a RAG system where context length is the binding constraint
+- Cost efficiency matters and you can sacrifice some reasoning quality
+
+**Use Maverick if:**
+- You need the best reasoning quality from an open-weights model
+- Multimodal capability matters to your use case
+- You're replacing GPT-4o and want the closest open-weights equivalent
+- Context length under 1M tokens is sufficient
+
+**Use neither if:**
+- You need maximum capability — GPT-5.4 or Claude Opus 4.6 lead on complex tasks
+- Hardware for self-hosting isn't available — managed APIs are the practical path
+- You need guaranteed uptime and support — open-weights models require operational investment
+
+The open-weights availability is the real differentiator. For organizations with data privacy requirements, compliance constraints, or cost structures that make per-token API pricing impractical, Llama 4 Scout and Maverick are the best self-hosted options available today.
+
+**Related reading:**
+
+- [Qwen3.5 Review: Running Alibaba's Open Source AI Locally](https://daily1bite.com/en/blog/ai-tools/qwen35-ai) (Another open-source LLM comparison perspective)
+- [Claude Opus 4.6 vs GPT-5.3 Codex — Two AIs Released on the Same Day](https://daily1bite.com/en/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai) (Where frontier closed models stand)

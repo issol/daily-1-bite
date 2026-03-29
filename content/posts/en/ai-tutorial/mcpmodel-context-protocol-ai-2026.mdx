@@ -1,0 +1,265 @@
+---
+title: "MCP (Model Context Protocol): Connecting AI Agents to Your Tools — A 2026 Practical Intro"
+date: "2026-03-11"
+description: "Ever wished your AI could directly access your database, read your Slack messages, or automatically create GitHub issues? MCP is the open protocol that makes this possible — and it's now been adopted by OpenAI, Microsoft, and Google. This guide walks you through building your first MCP server in Python and connecting it to Claude Desktop."
+category: "ai-tutorial"
+tags: ["AI agents", "AI automation", "Anthropic", "Claude Desktop", "MCP"]
+---
+
+Have you ever wished that Claude or ChatGPT could directly query your database? Or that your AI could read Slack messages and automatically file GitHub issues? The dream is obvious. The reality has always been that each integration requires custom API code, different authentication schemes, and incompatible data formats — endless friction.
+
+![Image symbolizing network connections and technology integration](https://images.unsplash.com/photo-1681321570365-df53da7dbaa2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxuZXR3b3JrJTIwY29ubmVjdGlvbiUyMHRlY2hub2xvZ3l8ZW58MHwwfHx8MTc3MzIwNjczOXww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [2H Media](https://unsplash.com/@2hmedia?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | A standard for connecting AI to external tools has arrived_
+
+MCP (Model Context Protocol) solves exactly this problem. Anthropic announced this open protocol in November 2024, and it has since been adopted by OpenAI, Microsoft, and Google — effectively becoming the USB port of the AI agent world. This guide covers the full process of building an MCP server in Python and connecting it to Claude Desktop.
+
+## TL;DR
+
+MCP is an open protocol for connecting AI apps to external data sources and tools in a standardized way. Using the Python FastMCP library, you can create a custom tool server with a few decorators and register it in Claude Desktop's config file — and it just works.
+
+## What Is MCP? The USB-C Analogy
+
+MCP is, in essence, "USB-C for AI." As [Anthropic's official blog](https://www.anthropic.com/news/model-context-protocol) describes it: instead of building a separate connector for every data source, you connect everything through one standard protocol. (Anthropic, November 2024)
+
+Here's how the old approach compares to MCP:
+
+| Item | Old Approach | MCP Approach |
+|------|-------------|-------------|
+| Connection method | Custom API code for each tool | Single standard protocol |
+| Authentication | Separate OAuth, API keys, etc. | Handled by MCP framework |
+| Reusability | Re-implement for every app | Build once, use across multiple AI apps |
+| Ecosystem | Closed/proprietary | Open source, community-shared servers |
+
+MCP servers can expose three types of capabilities:
+
+- **Resources:** Read-only data like files or API responses
+- **Tools:** Functions the LLM can call (with user approval)
+- **Prompts:** Pre-defined templates for specific tasks
+
+Tools are the most commonly used and are the focus of today's walkthrough. Per the [MCP official docs](https://modelcontextprotocol.io/docs/develop/build-server), a single server can serve multiple clients (Claude Desktop, custom apps, etc.) simultaneously. (March 2026)
+
+## Prerequisites: Environment Setup
+
+What you'll need:
+
+| Item | Version / Requirement |
+|------|----------------------|
+| Python | 3.10+ |
+| uv (package manager) | Latest |
+| Claude Desktop | Latest (free plan works) |
+| OS | macOS, Windows, or Linux |
+
+```bash
+# Install uv if you don't have it
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Initialize the project
+mkdir mcp-demo && cd mcp-demo
+uv init
+uv add "mcp[cli]" httpx
+
+# Create the server file
+touch server.py
+```
+
+A note on `uv`: if you haven't used it before, it's significantly faster than pip and handles virtual environments cleanly. The MCP documentation defaults to it, which prompted me to switch — and dependency installs feel about 5× faster.
+
+## Step 1: Build Your First MCP Server
+
+Let's build a simple MCP server that fetches weather data. This is based on the [MCP official tutorial](https://modelcontextprotocol.io/docs/develop/build-server), adapted slightly for a real-world shape.
+
+```python
+# server.py
+from mcp.server.fastmcp import FastMCP
+import httpx
+
+# Create FastMCP server instance
+mcp = FastMCP("weather-demo")
+
+# US National Weather Service API
+NWS_API = "https://api.weather.gov"
+HEADERS = {"User-Agent": "mcp-weather-demo/1.0"}
+
+@mcp.tool()
+async def get_forecast(latitude: float, longitude: float) -> str:
+    """Fetches weather forecast for a given coordinate.
+
+    Args:
+        latitude: Latitude (e.g., 37.5665 for Seoul)
+        longitude: Longitude (e.g., 126.9780 for Seoul)
+    """
+    async with httpx.AsyncClient() as client:
+        # Step 1: Get grid point from coordinates
+        points_url = f"{NWS_API}/points/{latitude},{longitude}"
+        resp = await client.get(points_url, headers=HEADERS)
+        if resp.status_code != 200:
+            return f"Grid lookup failed: {resp.status_code}"
+
+        forecast_url = resp.json()["properties"]["forecast"]
+
+        # Step 2: Fetch forecast data
+        forecast_resp = await client.get(forecast_url, headers=HEADERS)
+        periods = forecast_resp.json()["properties"]["periods"]
+
+        # Return first 3 periods
+        result = []
+        for p in periods[:3]:
+            result.append(
+                f" {p['name']}: {p['temperature']}°{p['temperatureUnit']}\n"
+                f" {p['detailedForecast']}"
+            )
+        return "\n\n".join(result)
+
+@mcp.tool()
+async def get_alerts(state: str) -> str:
+    """Fetches active weather alerts for a US state.
+
+    Args:
+        state: US state abbreviation (e.g., CA, NY, TX)
+    """
+    async with httpx.AsyncClient() as client:
+        url = f"{NWS_API}/alerts/active?area={state}"
+        resp = await client.get(url, headers=HEADERS)
+        alerts = resp.json().get("features", [])
+
+        if not alerts:
+            return f"No active alerts for {state}."
+
+        result = []
+        for alert in alerts[:5]:
+            props = alert["properties"]
+            result.append(
+                f"⚠️ {props['event']}\n"
+                f"   Severity: {props['severity']}\n"
+                f"   {props['headline']}"
+            )
+        return "\n\n".join(result)
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
+```
+
+The key here is the `@mcp.tool()` decorator. FastMCP reads the function's type hints and docstring and automatically generates the tool schema — no manual schema definition needed. In the TypeScript SDK you'd write Zod schemas by hand; Python handles it automatically.
+
+One tip that's not obvious from the docs: write your `Args` section in Google-style docstring format and FastMCP will extract parameter descriptions automatically.
+
+![MCP server connected to Claude Desktop showing weather tool results](https://mintcdn.com/mcp/4ZXF1PrDkEaJvXpn/images/current-weather.png?fit=max&auto=format&n=4ZXF1PrDkEaJvXpn&q=85&s=dce7b2f8a06c20ba358e4bd2e75fa4c7)
+
+_Source: [MCP Official Docs](https://modelcontextprotocol.io/docs/develop/build-server) | Weather tool running in Claude Desktop via MCP_
+
+## Step 2: Connect to Claude Desktop
+
+Now register the server with Claude Desktop. Open the config file (macOS):
+
+```bash
+code ~/Library/Application\ Support/Claude/claude_desktop_config.json
+```
+
+Add this:
+
+```json
+{
+  "mcpServers": {
+    "weather-demo": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/yourname/mcp-demo",
+        "run",
+        "server.py"
+      ]
+    }
+  }
+}
+```
+
+Replace the directory path with your actual project path. (I forgot to do this the first time and got a "server connection failed" error — don't skip it.)
+
+Save the file and restart Claude Desktop. A hammer icon will appear next to the chat input. Click it and you'll see `get_forecast` and `get_alerts` listed as available tools.
+
+Per [Stainless's MCP SDK comparison](https://www.stainless.com/mcp/mcp-sdk-comparison-python-vs-typescript-vs-go-implementations), the Python SDK is "best for rapid prototyping" while TypeScript is "more robust for production deployment." For side projects and internal tools, Python is more than sufficient. (March 2026)
+
+## Step 3: Debug with MCP Inspector
+
+Before connecting to Claude Desktop, test your server with MCP Inspector first:
+
+```bash
+# Run MCP Inspector
+npx @modelcontextprotocol/inspector uv run server.py
+```
+
+The Inspector opens a browser UI where you can view registered tools and invoke them directly. This saved me considerable debugging time — you can see exactly what schema the server is exposing and what responses it returns in real time.
+
+![Code editor showing a development environment](https://images.unsplash.com/photo-1649451844931-57e22fc82de3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxhcGklMjBpbnRlZ3JhdGlvbiUyMGNvZGV8ZW58MHwwfHx8MTc3MzIwNjczOXww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Bernd Dittrich](https://unsplash.com/@hdbernd?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Building MCP servers feels like normal Python development_
+
+## Common Errors and Fixes
+
+**1. "Server disconnected" error**
+
+The most common cause is a path error in `claude_desktop_config.json`. Specifying the full path to `uv` usually resolves it:
+
+```bash
+# Find the full path
+which uv
+# e.g., /Users/yourname/.local/bin/uv
+```
+
+Replace `"command": "uv"` with the full path.
+
+**2. "Tool not found" — tools aren't showing up**
+
+If the `@mcp.tool()` decorator is applied but the tool isn't visible, check whether you used `def` instead of `async def`. FastMCP supports both, but tools involving HTTP calls are more reliable as `async def`.
+
+**3. Timeout errors**
+
+If external API calls are slow, they can hit MCP's default 30-second timeout. Increase it explicitly:
+
+```python
+httpx.AsyncClient(timeout=60.0)
+```
+
+I lost 30 minutes to the NWS API being intermittently slow — adding the explicit timeout fixed it.
+
+## Why MCP Became the Standard
+
+According to [Wikipedia's MCP article](https://en.wikipedia.org/wiki/Model_Context_Protocol), as of March 2026, OpenAI, Microsoft, and Google have all adopted MCP in their AI platforms. Anthropic created it, but it's no longer just Anthropic's protocol.
+
+The [GitHub MCP organization](https://github.com/modelcontextprotocol) now hosts official SDKs for Python, TypeScript, and Go, plus hundreds of community-built MCP servers. Slack, GitHub, PostgreSQL, Google Drive — most services you'd want to connect already have someone's MCP server implementation.
+
+| SDK | Strengths | Best For |
+|-----|-----------|----------|
+| Python (FastMCP) | Fast development with decorators, automatic type inference | Prototyping, data analysis tools |
+| TypeScript | Strict typing, production stability | Web service integration, large-scale deployment |
+| Go | High performance, low memory footprint | Infrastructure tools, high-volume processing |
+
+## Summary + Next Steps
+
+MCP is foundational infrastructure for the AI agent era. It's worth building familiarity with it now.
+
+Key takeaways:
+
+- **FastMCP + Python:** A custom server takes about 30 minutes
+- **Claude Desktop connection:** One JSON config block
+- **MCP Inspector:** Essential for debugging
+- **Ecosystem:** Hundreds of community servers already available
+
+![Abstract network node graph](https://images.unsplash.com/photo-1737505599162-d9932323a889?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxuZXR3b3JrJTIwY29ubmVjdGlvbiUyMHRlY2hub2xvZ3l8ZW58MHwwfHx8MTc3MzIwNjczOXww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Ecliptic Graphic](https://unsplash.com/@eclipticgraphic?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | MCP is becoming the connectivity standard for the AI ecosystem_
+
+Next up: building a genuinely useful MCP server — one that lets you query an internal PostgreSQL database with natural language. I'll also cover advanced features from [Anthropic's MCP advanced course](https://anthropic.skilljar.com/model-context-protocol-advanced-topics), including sampling and notifications.
+
+**References:**
+
+- [Introducing the Model Context Protocol | Anthropic Official Blog](https://www.anthropic.com/news/model-context-protocol) (November 2024)
+- [Build an MCP Server | MCP Official Docs](https://modelcontextprotocol.io/docs/develop/build-server) (March 2026)
+- [MCP SDK Comparison | Stainless](https://www.stainless.com/mcp/mcp-sdk-comparison-python-vs-typescript-vs-go-implementations) (March 2026)
+- [Model Context Protocol | Wikipedia](https://en.wikipedia.org/wiki/Model_Context_Protocol) (March 2026)
+- [MCP GitHub Organization](https://github.com/modelcontextprotocol) (March 2026)
+
+**Related posts:**
+
+- [GPT-5.4 Practical Guide: Fact-Checking Workflow with 33% Fewer Hallucinations](https://daily1bite.com/en/blog/ai-tools/gpt-54-33percent) - Connect fact-checking APIs via MCP to make this even more powerful

@@ -1,0 +1,137 @@
+---
+title: "Stack Overflow Blog: 'Knowing Is Half the Battle in an AI World' — How Developer Learning Is Changing"
+date: "2026-02-28"
+description: "I handed off my authentication logic to Claude — and it worked, until a bug surfaced two days later that I couldn't diagnose because I hadn't understood the code. Then I read a Stack Overflow post titled 'To live in an AI world, knowing is half the battle.' The timing was uncanny. Here's what it means for how developers should learn in 2026."
+category: "dev-life"
+tags: ["AI Tool Reliability", "Developer Learning in AI Era", "Human Agency", "Stack Overflow AI", "Developer Skills"]
+---
+
+Last Friday night I was working on authentication logic for a side project, letting Claude handle the Supabase anonymous-auth-to-OAuth migration. The generated code looked clean and ran fine, so I moved on. Two days later, a bug appeared: user data was disappearing after the migration. The `linkIdentity()` call was timed incorrectly. I had accepted AI-generated code without truly understanding it, and I paid for it.
+
+![Developer working with code on laptop screen](https://images.unsplash.com/photo-1763568258143-904ea924ac53?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxkZXZlbG9wZXIlMjBsZWFybmluZyUyMGxhcHRvcHxlbnwwfDB8fHwxNzcyMjczODIzfDA&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Daniil Komov](https://unsplash.com/@dkomow?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | The developer learning environment is changing in the AI era_
+
+While debugging that bug, a thought surfaced: the better AI tools get, the less I find myself caring about *why* code works. Then I saw the Stack Overflow blog post title: [To live in an AI world, knowing is half the battle](https://stackoverflow.blog/2026/02/27/to-live-in-an-ai-world-knowing-is-half-the-battle/). The timing was not subtle.
+
+## 'Human Agency': You Have to Understand Technology to Direct It
+
+The article is a conversation with Marcus Fontoura, Microsoft Technical Fellow and author of *Human Agency in the Digital World*. His core message is simple:
+
+> "If you have absolutely no idea how the technology works, it's really hard to feel that you can exert any power over it."
+> — Marcus Fontoura
+
+My first reaction was "another abstract take." But reading further, it landed. Fontoura points to the way social media feed algorithms, search rankings, and AI systems start to feel like natural laws — inevitable, not human-made. His point: they're all systems built by people, and people can change them.
+
+"A computer just rapidly calculates functions. Everything else is what we humans do with it."
+
+This hits differently for developers because we're both *users* of AI tools and *builders* of them. The gap between a developer who copy-pastes AI-generated code and a developer who understands why it works and can modify it when it breaks — that gap is growing.
+
+I wrote about something similar in [An AI-Designed Drug Has Reached Phase 3](https://daily1bite.com/en/blog/dev-life/ai-3-xai): the deeper AI penetrates a domain, the more valuable domain experts become. The same paradox applies to software development.
+
+## The Uncomfortable Numbers: 84% Use It, 46% Don't Trust It
+
+![Server room symbolizing AI technology's future](https://images.unsplash.com/photo-1655393001768-d946c97d6fd1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxBSSUyMHRlY2hub2xvZ3klMjBmdXR1cmV8ZW58MHwwfHx8MTc3MjI3MzgyNHww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [ZHENYU LUO](https://unsplash.com/@mrnuclear?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | The data reveals a paradox in how developers trust AI tools_
+
+Stack Overflow's [2025 Developer Survey](https://survey.stackoverflow.co/2025/ai) paints an interesting picture:
+
+| Metric | Value | Change |
+|--------|-------|--------|
+| AI tool usage rate | 84% | (76% → 84%) |
+| Daily AI tool usage | 51% | — |
+| Positive sentiment toward AI | 60% | (70%+ → 60%) |
+| Trust in AI output | 33% | — |
+| Distrust of AI output | 46% | — |
+| Learning AI tools (career motivation) | 36% | New category |
+
+One-sentence summary: **using more, trusting less.**
+
+This seems contradictory, but any developer who actually uses AI tools daily will recognize it. I use Claude and Cursor almost every day. But do I trust AI-generated code 100%? Honestly, no. Especially for edge case handling or business logic with complex interdependencies — I always read and understand before merging.
+
+The AI agent adoption numbers are also telling. 52% of developers aren't using agents at all or are staying with simpler AI tools, and 38% have no plans to adopt them ([Stack Overflow official press release, December 2025](https://stackoverflow.co/company/press/archive/stack-overflow-2025-developer-survey/)). A very different temperature from the "agentic AI is the future" narrative dominating industry discourse.
+
+## How the Developer Community Is Responding
+
+![Diverse team in modern office having a meeting](https://images.unsplash.com/photo-1758691737568-a1572060ce5a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwZGlzY3Vzc2lvbiUyMGNvbGxhYm9yYXRpb258ZW58MHwwfHx8MTc3MjI3MzgyNnww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Vitaly Gariev](https://unsplash.com/@silverkblack?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | The developer community's debate about AI learning continues_
+
+The World Economic Forum's [January 2026 report](https://www.weforum.org/stories/2026/01/software-developers-ai-work/) found that 65% of developers expect their role to be redefined in 2026 — shifting from routine coding toward architecture, integration, and AI-driven decision-making.
+
+On Hacker News and similar communities, the responses generally fall into three camps:
+
+**"AI makes me 10x more productive."** Mostly senior developers. They already have strong fundamentals, so they use AI as an amplifier. "AI handles the boilerplate so I can focus on design" is the representative view.
+
+**"AI is atrophying my skills."** More common among junior to mid-level developers. Similar to how relying on AI-generated summaries reduces your ability to read original sources carefully — dependency compounds over time.
+
+**"It's just a tool. Stop over-hyping it."** The most grounded position, in my view. Excel didn't mean you no longer needed to understand math. AI coding tools don't mean you no longer need to understand programming principles.
+
+I lean closest to the third camp personally. Though some days I feel the first and second simultaneously — "AI got 3 hours of work done in 40 minutes!" in the morning, then "wait, why exactly does this code work this way..." in the evening.
+
+## How Should Learning Strategy Change?
+
+Taking Fontoura's message and the survey data together, some patterns emerge for how to learn in the AI era.
+
+### 1. "Why" First, "How" to AI
+
+Previously, the sequence was: "How do I handle state in React?" → official docs → tutorial → implement yourself.
+
+Now, you can ask AI and get working code immediately. The problem: if you don't understand *why* the code works, you're helpless when bugs appear.
+
+```javascript
+// AI-generated code — "works, but why?"
+const [state, setState] = useState(() => {
+  const saved = localStorage.getItem('key');
+  return saved ? JSON.parse(saved) : defaultValue;
+});
+
+// To understand this, you need to know:
+// 1. useState's lazy initializer pattern (why pass a function?)
+// 2. localStorage access issues in SSR environments
+// 3. Cases where JSON.parse can fail
+
+// My current habit: "List 3 potential problems with this code"
+```
+
+My current practice: when AI generates code, I don't use it immediately. I ask: "What are 3 potential issues with this code?" That single extra step surfaces the underlying principles.
+
+### 2. From T-Shaped to Pi-Shaped
+
+33% of developers named GenAI and AI/ML as their top learning priorities ([Computerworld, January 2026](https://www.computerworld.com/article/4117602/what-ai-skills-job-seekers-need-to-develop-in-2026.html)). But "judgment, collaboration, leadership" are also emerging as core competencies.
+
+The framing has shifted from T-shaped (one deep specialty + broad fundamentals) to pi-shaped — two deep axes. Something like "frontend expertise + AI/ML application capability." The ability to work effectively with long-context AI models is itself becoming a skill.
+
+## Pilot or Passenger — Choose Now
+
+Fontoura frames his book as a self-development guide for the AI era: will we be pilots or passengers through this technological shift?
+
+I'll be honest — I'm sometimes in the passenger seat. Giving AI-generated code a cursory review. Replacing studying with AI-generated summaries. Convenient, but you can feel something slowly hollowing out.
+
+My conclusion:
+
+**To use AI tools better, you need to understand what AI is actually doing.** Counterintuitively, this is exactly where the survey's "using more, trusting less" paradox comes from. People who understand the underlying principles can verify AI output. People who don't are left using it anxiously.
+
+Two concrete actions I'd suggest:
+
+**"Think for 30 seconds before asking AI."** Before throwing a problem to AI, just frame it: "What kind of problem is this, and where would I look for the answer?" That 30 seconds, accumulated, preserves problem decomposition ability.
+
+**Block out one "no-AI coding" session per week.** Like riding a bike — you need to do it occasionally to keep the skill. I deliberately spend about 30 minutes every Friday afternoon looking at official docs and implementing without AI. Surprisingly enjoyable.
+
+Whether technology is good or bad depends not on the technology itself, but on the people using it. Fontoura is right about that. As AI tools get more powerful, "knowing is half the battle" only becomes more true.
+
+One last thing: that `linkIdentity()` bug from the intro? I found the root cause only after re-reading the Supabase docs from scratch. I could have asked AI and gotten the answer faster. But in the process, I genuinely understood how anonymous auth works internally — and I haven't hit a similar bug since. Knowing really was half the battle.
+
+**References:**
+
+- [To live in an AI world, knowing is half the battle — Stack Overflow Blog (2026.02.27)](https://stackoverflow.blog/2026/02/27/to-live-in-an-ai-world-knowing-is-half-the-battle/)
+- [2025 Stack Overflow Developer Survey — AI Section](https://survey.stackoverflow.co/2025/ai)
+- [Stack Overflow 2025 Survey Press Release (2025.12)](https://stackoverflow.co/company/press/archive/stack-overflow-2025-developer-survey/)
+- [Software developers are the vanguard of how AI is redefining work — WEF (2026.01)](https://www.weforum.org/stories/2026/01/software-developers-ai-work/)
+- [What AI skills job seekers need to develop in 2026 — Computerworld](https://www.computerworld.com/article/4117602/what-ai-skills-job-seekers-need-to-develop-in-2026.html)
+
+**Related posts:**
+
+- [An AI-Designed Drug Has Reached Phase 3: Bio × AI Career Opportunities](https://daily1bite.com/en/blog/dev-life/ai-3-xai) — the role of domain expertise as AI goes deeper
+- [Building a Japanese Learning SaaS in 2 Weeks with Claude Code](https://daily1bite.com/en/blog/dev-life/claude-code-2-saas-utakoto) — knowing what to build is what makes AI coding tools effective

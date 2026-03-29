@@ -1,0 +1,223 @@
+---
+title: "Wolfram × ChatGPT 'Computation-Augmented Generation (CAG)': Using Math to Fix AI Hallucinations"
+date: "2026-03-06"
+description: "Last week ChatGPT confidently told me a currency exchange rate that was 3% off. In a financial service, that's not a rounding error — it's a bug. In February 2026, Stephen Wolfram announced a new approach called CAG (Computation-Augmented Generation) that replaces AI guesses with real-time calculations. Here's how it works and how to integrate it."
+category: "ai-tutorial"
+tags: ["AI hallucination", "CAG", "ChatGPT", "LLM", "MCP"]
+---
+
+Last week, while building a side project, I asked ChatGPT about currency conversion logic. It confidently told me "$1 is approximately 1,380 Korean won." I used it. The actual rate was around 1,420 won — a 3% difference. In a financial service, that margin isn't a rounding error; it's a bug.
+
+This kind of thing has happened often enough that "don't trust LLMs with numbers" has become accepted developer wisdom.
+
+![Semiconductor chip close-up symbolizing AI technology](https://images.unsplash.com/photo-1697577418970-95d99b5a55cf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwdGVjaG5vbG9neXxlbnwwfDB8fHwxNzcyNzYwNjk3fDA&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Igor Omilaev](https://unsplash.com/@omilaev?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | A new approach to solving LLM accuracy limitations has arrived_
+
+In February 2026, Stephen Wolfram announced something interesting: the [Wolfram Foundation Tool](https://writings.stephenwolfram.com/2026/02/making-wolfram-tech-available-as-a-foundation-tool-for-llm-systems/). The core concept is **CAG (Computation-Augmented Generation)**. Where RAG retrieves documents and inserts them into context, CAG computes results in real time and injects them into the response. This post covers why CAG matters, how it differs from RAG, and how to wire it up in practice using MCP.
+
+## TL;DR
+
+CAG is a technique where, during response generation, an LLM calls Wolfram's computation engine for numerical, formula, or data-dependent answers — replacing "educated guesses" with real calculations. Unlike RAG (which requires a matching document to exist), CAG can produce results it has never seen before by computing them fresh. This post covers the underlying mechanism, how CAG differs from RAG, and step-by-step integration via MCP.
+
+## What Is CAG? How Does It Differ from RAG?
+
+**CAG injects real-time computation results into the LLM's output stream.** The comparison with RAG makes the distinction clear:
+
+| Item | RAG (Retrieval-Augmented Generation) | CAG (Computation-Augmented Generation) |
+|------|--------------------------------------|---------------------------------------|
+| Data source | Pre-stored documents / vector DB | Wolfram computation engine (real-time) |
+| Response method | Finds relevant passage in existing documents | Computes result on the fly for the query |
+| Limitation | Can't answer what's not in the documents | Limited to computationally tractable domains |
+| Handling hallucinations | Grounds in relevant documents | Replaces with exact computed result |
+| Best for | "What does document X say about Y?" | "What is the value of X?", "What is the difference between A and B?" |
+
+My initial reaction was "isn't this just wrapping the Wolfram Alpha API?" It's more than that. CAG means the LLM itself decides "I need a computation here" and automatically calls the Wolfram engine, then weaves the result into a natural language response. The developer doesn't have to write branching logic for "call the API at this point." The model handles the routing.
+
+As I noted in my [GPT-5.2 context window post](https://daily1bite.com/en/blog/ai-tools/gpt-52-40), a million-token context window doesn't fix calculation accuracy. No amount of context makes 1+1=3 into a valid answer.
+
+## Prerequisites: Access Options
+
+**Wolfram Foundation Tool offers three access methods** (as of February 2026, per the [Wolfram official page](https://www.wolfram.com/artificial-intelligence/foundation-tool/)):
+
+- **MCP service:** Direct call from any MCP-compatible LLM system
+- **Agent One API:** Drop-in replacement for existing LLM APIs
+- **CAG Component API:** Direct control over individual components
+
+This guide focuses on the **MCP approach** — the most accessible entry point, since most consumer LLMs (ChatGPT, Claude, etc.) already support MCP.
+
+### What You Need
+
+- Wolfram account (free tier available)
+- MCP-compatible LLM client (Claude Desktop, ChatGPT, etc.)
+- Node.js 18+ (if running a local MCP server)
+
+![Notebook covered in mathematical formulas](https://images.unsplash.com/photo-1754304342501-54bad0a6d195?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxtYXRoZW1hdGljcyUyMGNvbXB1dGF0aW9ufGVufDB8MHx8fDE3NzI3NjA2MjZ8MA&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [Bozhin Karaivanov](https://unsplash.com/@bkaraivanov?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | The core of CAG: "compute" instead of "retrieve"_
+
+## Step-by-Step Integration: Wolfram via MCP
+
+### Step 1: Configure the Wolfram MCP Server
+
+For Claude Desktop, add the Wolfram server to your MCP config file:
+
+```json
+{
+  "mcpServers": {
+    "wolfram": {
+      "command": "npx",
+      "args": ["-y", "@wolfram/mcp-server"],
+      "env": {
+        "WOLFRAM_APP_ID": "YOUR_APP_ID_HERE"
+      }
+    }
+  }
+}
+```
+
+Get your `WOLFRAM_APP_ID` free from the [Wolfram Developer Portal](https://developer.wolframalpha.com/). The free tier covers up to 2,000 calls per month.
+
+### Step 2: Test Basic Computation
+
+Once configured, try this prompt:
+
+```
+What is the USD/KRW exchange rate as of March 6, 2026?
+```
+
+**Without CAG:** The LLM guesses based on training data — something like "approximately 1,350–1,400 won."
+
+**With CAG:** The Wolfram engine fetches live data and returns the current rate.
+
+### Step 3: Programmatic Access via Agent One API
+
+For code-based integration, the Agent One API is the most practical path. It's OpenAI-compatible — meaning one line of code changes:
+
+```python
+import openai
+
+# Original OpenAI call
+# client = openai.OpenAI(api_key="sk-...")
+
+# Switch to Wolfram Agent One (only the endpoint changes)
+client = openai.OpenAI(
+    base_url="https://api.wolfram.com/agent-one/v1",
+    api_key="YOUR_WOLFRAM_API_KEY"
+)
+
+response = client.chat.completions.create(
+    model="agent-one",
+    messages=[
+        {"role": "user", "content": "What is the distance from the Sun to Mars in km and light-minutes?"}
+    ]
+)
+
+print(response.choices[0].message.content)
+# → Returns precise astronomical calculation
+```
+
+Only `base_url` changes. You keep the same OpenAI SDK, same response parsing logic. Migration cost is essentially zero.
+
+## Where CAG Actually Shines
+
+**Not every query needs CAG.** You don't need to invoke Wolfram's computation engine to answer "how do I sort a list in Python." CAG adds the most value in three areas:
+
+### 1. Numerical Computation
+
+- "What's the take-home pay on a $75,000 salary after taxes?" → accurate tax and deduction calculation
+- "What's the standard deviation and 95% confidence interval of this dataset?" → exact statistical computation
+
+### 2. Real-Time Data
+
+- "What's the current gold spot price?" → live price lookup + conversion
+- "What's the flight distance from New York to Tokyo?" → coordinate-based great-circle calculation
+
+### 3. Unit Conversion and Precise Constants
+
+- "How many liters is 5 gallons?" → simple but LLMs get this wrong more often than you'd expect
+- "What is the molecular weight of caffeine?" → 194.19 g/mol (LLMs tend to say "approximately 194")
+
+That last one stood out to me during testing. The difference between 194 and 194.19 g/mol seems trivial — until it shows up in a research calculation or production formula.
+
+## Common Issues and Fixes
+
+### Problem 1: MCP Server Connection Fails
+
+```
+Error: Failed to connect to Wolfram MCP server
+```
+
+Usually means `WOLFRAM_APP_ID` is missing, wrong, or the free tier App ID has been deactivated (it deactivates after 30 days of no use). Check the Developer Portal for App ID status.
+
+### Problem 2: Korean Language Query Misinterpretation
+
+Wolfram's engine is English-first. When LLMs try to translate Korean queries before passing them to Wolfram, meaning sometimes gets lost.
+
+**Fix:** Add explicit instructions to the system prompt:
+
+```python
+messages=[
+    {
+        "role": "system",
+        "content": (
+            "For queries requiring computation, translate the mathematical "
+            "expression to English before calling Wolfram, then return "
+            "the result explained in Korean."
+        )
+    },
+    {"role": "user", "content": "Give me pi to 100 decimal places"}
+]
+```
+
+### Problem 3: Response Latency
+
+CAG adds 0.5–2 seconds because of the external API call. In real-time chat, this is noticeable. Enabling streaming responses mitigates the perceived delay. As I noted in my [NotebookLM review](https://daily1bite.com/en/blog/ai-tutorial/notebooklm-ai), accuracy and speed are always a trade-off in AI services.
+
+## RAG + CAG Hybrid: The Most Practical Pattern
+
+A tip worth highlighting: in production, **using RAG and CAG together** is more effective than either alone. Route document-based queries to RAG, and computation-based queries to CAG.
+
+```python
+def route_query(query: str) -> str:
+    """Route query to RAG or CAG based on content type."""
+    # Detect computation/numerical keywords
+    calc_keywords = [
+        "calculate", "exchange rate", "convert", "how many",
+        "how much", "average", "total", "distance", "area",
+        "volume", "probability", "statistics"
+    ]
+    if any(kw in query.lower() for kw in calc_keywords):
+        return "cag"  # Route to Wolfram Foundation Tool
+    else:
+        return "rag"  # Route to vector DB search
+```
+
+This is intentionally simplified. In production, you'd either let the LLM itself decide the routing, or use an embedding-based classifier as a front-end router — both are more reliable than keyword matching.
+
+![Developer's desk with laptop and coffee](https://images.unsplash.com/photo-1502900476531-ca62d0f2b679?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxkZXZlbG9wZXIlMjBsZWFybmluZyUyMGNvZGV8ZW58MHwwfHx8MTc3Mjc2MTA5M3ww&ixlib=rb-4.1.0&q=80&w=1080)
+
+_Photo by [John Salzarulo](https://unsplash.com/@johnsalzarulo?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | RAG and CAG together are more powerful than either alone_
+
+## Summary
+
+The dominant approaches to LLM hallucinations so far have been "write better prompts" and "add RAG context." CAG offers a third option: for domains where computation is applicable, hand the problem to a computation engine rather than asking the model to guess.
+
+As Stephen Wolfram wrote in his February 2026 blog post, "LLMs can't do everything, and shouldn't." This isn't a criticism of LLMs — it's a pragmatic case for combining what LLMs do well (natural language understanding, context) with what computation engines do well (exact arithmetic, live data). (February 2026, [Wolfram official blog](https://writings.stephenwolfram.com/2026/02/making-wolfram-tech-available-as-a-foundation-tool-for-llm-systems/))
+
+Duke University Libraries blogged about "why are LLMs still hallucinating in 2026?" — and the honest answer is that hallucinations are a structural property of how language models work, not a problem that scales away with more training data. CAG is a smart workaround for the slice of that problem where computation applies. (January 2026, [Duke University Libraries Blog](https://blogs.library.duke.edu/blog/2026/01/05/its-2026-why-are-llms-still-hallucinating/))
+
+If you're building something where numbers matter — finance, science, education — CAG is worth serious consideration. For general chatbots or content generation, the overhead probably isn't justified.
+
+**Next post:** A deep dive into running the Wolfram MCP server locally and integrating CAG into an on-premise LLM system.
+
+**References:**
+
+- [Making Wolfram Tech Available as a Foundation Tool for LLM Systems — Stephen Wolfram](https://writings.stephenwolfram.com/2026/02/making-wolfram-tech-available-as-a-foundation-tool-for-llm-systems/)
+- [Wolfram AI Ecosystem — Foundation Tool Official Page](https://www.wolfram.com/artificial-intelligence/foundation-tool/)
+- [It's 2026. Why Are LLMs Still Hallucinating? — Duke University Libraries Blog](https://blogs.library.duke.edu/blog/2026/01/05/its-2026-why-are-llms-still-hallucinating/)
+- [Beyond Retrieval: The Expanding Universe of Augmented Generation in AI — IEEE Computer Society](https://www.computer.org/publications/tech-news/trends/augmented-generation-in-ai)
+
+**Related posts:**
+
+- [NotebookLM: Summarizing Long Documents and YouTube Videos](https://daily1bite.com/en/blog/ai-tutorial/notebooklm-ai) - AI accuracy and summary quality in real-world use

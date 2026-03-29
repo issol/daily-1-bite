@@ -1,0 +1,187 @@
+---
+title: "Soft Neutral: A Free Minimal Blog Template with Built-In SEO"
+date: "2026-03-14"
+description: "I spent an hour browsing blog themes looking for something with both clean design and solid SEO. Couldn't find one. So I built it. Soft Neutral is a minimal blog template with rounded card UI, neutral tones, and four built-in JSON-LD structured data schemas — and it's free."
+category: "dev-life"
+tags: ["SEO Optimization", "tistory skin", "Dark Mode Theme", "Minimal Blog", "Free Blog Theme"]
+---
+
+Last Thursday night, I was browsing through blog theme galleries trying to find something new. After about an hour, the pattern was clear: themes with good design had terrible SEO structure, and themes with decent SEO looked like they were built in 2019. So I built one myself.
+
+![Minimal blog design concept showing a clean web interface](https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?ixlib=rb-4.0.3&w=1080&q=80)
+
+![Soft Neutral theme preview](https://blog.kakaocdn.net/dn/lTgel/dJMcabDr3qT/LqQLyUOFK4f02TsVhewt6k/img.png)
+
+**Soft Neutral** is a minimal blog template that doesn't sacrifice SEO for aesthetics. Rounded card UI, neutral color palette, and four JSON-LD structured data schemas built right in. It's free — take it.
+
+## Why Build Another Blog Theme?
+
+I had three requirements, and they turned out to be hard to find together.
+
+**First**: structured data that Google actually recognizes properly. **Second**: design that doesn't look dated in 2026. **Third**: dark mode.
+
+Most free themes checked at most one of those boxes. Even paid themes often had messy code or limited customization. I kept finding themes that slapped a single `og:title` tag and called it "SEO optimized."
+
+As [Backlinko's Technical SEO Guide (2026)](https://backlinko.com/technical-seo-guide) emphasizes, the foundation of blog SEO is structured data and meta tag optimization — and based on my own [3-week SEO experiment](https://daily1bite.com/en/blog/seo/blog-seo-3-weeks), properly implemented structured data alone can meaningfully shift search visibility. Most blog themes simply don't bother.
+
+So I approached it differently: start with SEO as the skeleton, then build the design on top of it. I used Claude Code with MCP (Model Context Protocol) for parts of the development — which connects to [Getting Started with MCP](https://daily1bite.com/en/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026).
+
+## What Makes Soft Neutral Different
+
+One sentence: **minimal on the outside, full-stack SEO on the inside.**
+
+### Design: Rounded Cards + Neutral Tones
+
+Current web design trends favor whitespace and typography over decoration. [Figma's 2026 Web Design Trends Report](https://www.figma.com/resource-library/web-design-trends/) describes the dominant direction as "clean layouts with bold typography or color accents" rather than heavy ornamentation.
+
+Soft Neutral follows that direction:
+
+- Background `#fafafa`, cards `#fff`, text `#222` — a comfortable neutral combination
+- `border-radius: 14px` — rounded cards for a softer impression
+- `box-shadow: 0 2px 12px rgba(0,0,0,0.04)` on hover — a subtle lift effect
+- Animations: none. `transition: 0.15s` is sufficient.
+
+No heavy gradients, no glassmorphism. A blog template exists to let the writing be the focus.
+
+### SEO: 4 Built-In JSON-LD Schemas
+
+This is the core of the theme. While most blog templates include only Open Graph tags at best, Soft Neutral embeds four JSON-LD schemas:
+
+- `BlogPosting` — individual post pages
+- `BreadcrumbList` — navigation hierarchy
+- `WebSite` — site-level metadata
+- `Person` — author information
+
+The `BlogPosting` schema renders only on individual post pages (inside the `s_permalink_article_rep` block), not on list pages. This follows the pattern recommended in [Positional's Structured Data SEO Guide (2025)](https://www.positional.com/blog/structured-data-seo).
+
+Additional SEO coverage includes:
+
+- Complete Open Graph + Twitter Card meta tags
+- Automatic canonical URL
+- Robots meta tag
+- RSS feed link
+
+### Performance: MutationObserver-Based Resource Optimization
+
+Tistory (and many blog platforms) automatically inject scripts and styles — ad scripts, analytics code, default CSS — that significantly hurt page load speed. Soft Neutral uses `MutationObserver` to detect and block these unnecessary resources in real time:
+
+```javascript
+// Block auto-injected resources via MutationObserver
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    mutation.addedNodes.forEach((node) => {
+      if (node.tagName === 'LINK' || node.tagName === 'SCRIPT') {
+        const src = node.href || node.src || '';
+        if (shouldBlock(src)) {
+          node.remove();
+        }
+      }
+    });
+  });
+});
+observer.observe(document.head, { childList: true });
+```
+
+`IntersectionObserver`-based lazy loading is also implemented. Heavy features like comment reactions and code highlighting only load when they enter the viewport. As I noted in [Can AI Replace Code Reviews?](https://daily1bite.com/en/blog/dev-life/ai-3), AI coding tools significantly speed up writing this kind of performance optimization code.
+
+### Dark Mode: Automatic via `prefers-color-scheme`
+
+No toggle button needed — the theme automatically follows the OS setting. Pure CSS custom properties, no JavaScript, no flash of unstyled content:
+
+```css
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #eee;
+    --text: #ccc;
+    --bg: #111;
+    --card: #1a1a1a;
+    --line: #2a2a2a;
+  }
+}
+```
+
+In dark mode, the card background is `#1a1a1a` against an `#111` overall background — a subtle separation. Pure black (`#000`) is actually harder on the eyes for extended reading.
+
+### Accessibility: Screen Readers to Keyboard Navigation
+
+This is the part that's invisible to most users, but I spent real time on it:
+
+- **Skip link**: jump-to-content link accessible via Tab key
+- **`sr-only` class**: screen reader-only text
+- **ARIA labels**: interactive elements (search, navigation)
+- **`focus-visible`**: visible focus indicator for keyboard navigation
+- **`prefers-reduced-motion`**: reduced animation for users who need it
+- **Print styles**: unnecessary elements hidden when printing
+
+[Global Reach's AI Search Optimization Guide (2025)](https://www.globalreach.com/global-reach-media/blog/2025/07/29/boost-ai-organic-visibility-with-smart-structured-data) notes that accessibility and structured data improve citation rates from AI search engines (ChatGPT, Perplexity, etc.). Beyond traditional SEO, this is meaningful for GEO (Generative Engine Optimization) as well.
+
+## Installation (5 Minutes)
+
+[**Download soft-neutral-skin.zip**](https://blog.kakaocdn.net/dn/69gKS/dJMcaio8RyE/dl8tFzrKAB2bVtUsjEB8o1/soft-neutral-skin.zip?attach=1&knm=tfile.zip)
+
+A theme no one installs because it's complicated is a wasted theme. I kept this as simple as possible:
+
+1. Download the skin zip file
+2. Go to Tistory Admin → Customize → Change Skin
+3. Click "Register Skin" in the top right and upload the zip file
+4. Done
+
+![Website settings dashboard interface](https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&w=1080&q=80)
+
+## Customization Options
+
+These options are available through the Tistory admin interface — no code editing required:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `sidebarPosition` | Sidebar position | `right` (set to `none` for single-column layout) |
+| `isIndex` | Use H1 tag on homepage | When checked, blog name renders as H1 |
+| `showAbout` | Show sidebar bio module | — |
+| `nav1` ~ `nav3` | Top navigation links | Custom link settings |
+
+If you don't need a sidebar, set `sidebarPosition` to `none` and the layout switches to a centered single-column view. For writing-focused blogs, I think single-column is cleaner.
+
+## Honest Retrospective
+
+Original plan: design five mockups, pick one, polish it.
+
+Reality: all five initial mockups were too distinctive. Neo Brutalism, Glassmorphism, Bento Grid — good as experiments, too opinionated as templates others would actually use. I scrapped everything and designed five more in the minimal direction.
+
+The final Soft Neutral aims for "universally appropriate without being boring." The softness of 14px border radius, the subtle hover lift, the stability of neutral tones — it works for a tech blog or a personal blog without fighting either.
+
+One regret: I wanted a manual dark mode toggle, but `localStorage`-dependent toggles cause a flash in certain blog platform environments. I settled for automatic OS-based switching. A fix is planned for the next version.
+
+## Tech Stack Summary
+
+| Item | Details |
+|------|---------|
+| Font | Pretendard (CDN, woff2, `font-display: swap`) |
+| Layout | 2-column (680px content + 260px sidebar) / 1-column option |
+| Responsive | 860px (1-column switch), 600px (mobile) |
+| Dark mode | `prefers-color-scheme` automatic |
+| SEO | JSON-LD 4 schemas, OG, Twitter Card, canonical, robots |
+| Performance | MutationObserver resource blocking, IntersectionObserver lazy loading |
+| Accessibility | skip-link, sr-only, ARIA, focus-visible, reduced-motion, print |
+
+## What's Next
+
+This is version 1.0.0, so there's plenty to improve:
+
+- Manual dark mode toggle (after solving the flash issue)
+- Code highlighting theme customization options
+- Auto-generated table of contents (TOC)
+- Comment section design refresh
+
+Bug reports and feedback are welcome in the comments — I'll incorporate them. Building this theme, I made heavy use of Claude Code (as covered in [AI Coding Tool Costs 2026](https://daily1bite.com/en/blog/dev-life/ai-2026)) — for repetitive work like this, the productivity gain is real. As I found [building Utakoto in two weeks](https://daily1bite.com/en/blog/dev-life/claude-code-2-saas-utakoto), working with AI lets you save time on implementation and focus on the design decisions that matter.
+
+**Related posts:**
+
+- [3 Weeks of SEO Optimization: 3x Traffic Result](https://daily1bite.com/en/blog/seo/blog-seo-3-weeks) — practical SEO results from the field
+- [Building a Japanese Learning SaaS in 2 Weeks with Claude Code](https://daily1bite.com/en/blog/dev-life/claude-code-2-saas-utakoto) — AI-assisted project build
+
+**References:**
+
+- [Backlinko — Technical SEO: The Ultimate Guide for 2026](https://backlinko.com/technical-seo-guide)
+- [Figma — Top Web Design Trends for 2026](https://www.figma.com/resource-library/web-design-trends/)
+- [Positional — Structured Data and SEO Best Practices](https://www.positional.com/blog/structured-data-seo)
+- [Global Reach — Boost AI Organic Visibility with Smart Structured Data](https://www.globalreach.com/global-reach-media/blog/2025/07/29/boost-ai-organic-visibility-with-smart-structured-data)
