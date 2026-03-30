@@ -4,11 +4,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
 // RSS 2.0 피드 — AI 검색엔진(Perplexity, ChatGPT 등)과 구독 도구가 활용
 export async function GET() {
-  const posts = getAllPosts().slice(0, 50); // 최근 50개
+  const posts = getAllPosts('ko').slice(0, 50); // 최근 50개
 
   const rssItems = posts
     .map((post) => {
-      const url = `${BASE_URL}/blog/${post.slug}`;
+      const url = `${BASE_URL}/ko/blog/${post.slug}`;
       const category = CATEGORIES[post.category] || post.category;
 
       return `
