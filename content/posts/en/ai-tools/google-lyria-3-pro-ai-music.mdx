@@ -1,0 +1,181 @@
+---
+title: "Google Lyria 3 Pro: DeepMind's Latest AI Music Model — 3-Minute Tracks via API"
+date: "2026-03-31"
+description: "Google Lyria 3 Pro generates full 3-minute tracks with structure-aware composition. Image-to-music, SynthID watermarking, API pricing, and a comparison with Suno and Udio."
+category: "ai-tools"
+tags: ["Lyria 3 Pro", "Google DeepMind", "AI music", "Gemini API", "Suno", "SynthID", "AI composition"]
+---
+
+Just a month ago, Lyria 3 could only generate 30-second clips. Then on March 25, Google dropped **Lyria 3 Pro** and changed the game entirely. Three-minute full tracks, structure-aware composition that understands intros-verses-choruses-bridges, and a developer API to boot.
+
+In our [Suno vs Udio comparison](https://daily1bite.com/en/blog/ai-tools/ai-suno-vs-udio-2026), I wrote that "if Google enters the AI music market seriously, the landscape could shift." Well, it happened.
+
+## TL;DR
+
+- **Lyria 3 Pro**: Google DeepMind's latest AI music model, generates up to **3-minute full tracks**
+- Structure-aware composition: specify intros, verses, choruses, and bridges via prompts
+- **48kHz stereo** high-quality audio output with automatic lyrics and vocals
+- **Image-to-music**: feed a photo and get music matching its mood
+- **SynthID watermark**: all outputs automatically tagged as AI-generated
+- API: available in public preview via Gemini API, Vertex AI, and Google AI Studio
+- Pricing: approximately **$0.08 per song** via API; Gemini subscriptions $19.99–$99.99/mo
+- No artist mimicry: artist names in prompts are treated as "broad inspiration" only
+
+---
+
+## From 30 Seconds to 3 Minutes: What Changed
+
+![AI music production](https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=1080&q=80)
+_Photo by [James Owen](https://unsplash.com/@jamesowens?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | The new standard for AI music generation_
+
+Lyria 3, launched in February 2026, was limited to 30-second clips. Good quality, but too short for real-world use. Lyria 3 Pro breaks through that ceiling.
+
+### Key Upgrades
+
+| Feature | Lyria 3 (Feb) | Lyria 3 Pro (Mar) |
+|---------|-------------|-----------------|
+| Track length | Max 30s | Max **3 min** |
+| Structure awareness | None | Intro/verse/chorus/bridge |
+| Audio quality | 48kHz stereo | 48kHz stereo |
+| Lyrics | Basic | Time-aligned (timing control) |
+| Tempo control | None | Precise BPM setting |
+| Image input | None | Image-to-music |
+| API | Preview | Gemini API + Vertex AI |
+
+**Structure-aware composition** is the biggest differentiator. You can specify things like "start with a 30-second synth intro, bring in the chorus at 1:00, add a bridge at 2:00" — and the model actually follows it.
+
+---
+
+## Prompt Examples in Practice
+
+Lyria 3 Pro works with text prompts. Here's what they look like:
+
+### Basic Prompt
+
+```
+"Acoustic guitar and piano-driven indie pop.
+BPM 95. Female vocals. Theme: a rainy day at a café"
+```
+
+### Structure-Specified Prompt
+
+```
+"Electronic pop, BPM 128.
+0:00-0:15 synth pad intro
+0:15-0:45 verse 1 - male vocals
+0:45-1:15 chorus - energy up, add drums
+1:15-1:45 verse 2
+1:45-2:15 chorus repeat
+2:15-2:45 bridge - piano solo
+2:45-3:00 outro"
+```
+
+### Image-to-Music
+
+Feed a photo, get music that matches its mood. Sunset photo? Warm, nostalgic track. City skyline at night? Electronic vibes. It's a genuinely novel input modality for music generation.
+
+---
+
+## Developer API: Gemini API + Vertex AI
+
+This is the most important part for developers. Lyria 3 Pro is accessible via **Gemini API** and **Vertex AI** in public preview.
+
+### Access Methods
+
+| Platform | Access | Best For |
+|----------|--------|----------|
+| **Google AI Studio** | Web UI, immediate testing | Prototyping |
+| **Gemini API** | REST API calls | App integration |
+| **Vertex AI** | Enterprise environment | Production deployment |
+| **Gemini App** | Mobile/web app | End users |
+| **Google Vids** | Video editing tool | Auto BGM |
+
+### Pricing Structure
+
+| Access Method | Price | Per Song | Daily Limit |
+|--------------|-------|----------|-------------|
+| API (Vertex AI) | Undisclosed (preview) | ~$0.08 | - |
+| Gemini AI Plus | $19.99/mo | ~$0.067 | 10 songs/day |
+| Gemini Pro | $29.99/mo | ~$0.05 | 20 songs/day |
+| Gemini Ultra | $99.99/mo | ~$0.067 | 50 songs/day |
+
+At ~$0.08 per song via API, Lyria 3 Pro is about 5x more expensive than Suno's subscription rate ($0.015/song). But the ability to automate via API and integrate with Google's ecosystem (Vids, YouTube) makes a direct price comparison misleading.
+
+---
+
+## Suno vs Udio vs Lyria 3 Pro: The New Three-Way Race
+
+![AI music comparison](https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1080&q=80)
+_Photo by [Wes Hicks](https://unsplash.com/@sickhews?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | The AI music market now has three major players_
+
+The [Suno vs Udio duopoly](https://daily1bite.com/en/blog/ai-tools/ai-suno-vs-udio-2026) now has a third contender.
+
+| Feature | Suno v4 | Udio | Lyria 3 Pro |
+|---------|---------|------|-------------|
+| Track length | 4 min | 15 min | 3 min |
+| Structure control | Basic | Detailed | Detailed (time-aligned) |
+| Vocal quality | Good | Excellent | Good |
+| API | None (unofficial) | None | **Official API** |
+| Image input | None | None | **Supported** |
+| Watermark | None | None | **SynthID** |
+| Per-song cost | ~$0.015 | ~$0.02 | ~$0.08 |
+| Commercial use | Paid plans | Paid plans | Paid plans |
+
+Lyria 3 Pro's biggest advantage is the **official API** and **Google ecosystem integration**. Suno and Udio have no official APIs, making automation difficult. On the other hand, track length and per-song cost favor the competition.
+
+---
+
+## SynthID: An ID Card for AI Music
+
+Every Lyria 3 Pro output is embedded with a **SynthID** watermark — inaudible to human ears but machine-detectable.
+
+As we covered in our [Google Search Live analysis](https://daily1bite.com/en/blog/ai-tools/google-search-live-gemini-31-flash), SynthID is Google's company-wide technology for identifying AI-generated content. Voice, images, and now music.
+
+This matters for regulatory compliance. The EU AI Act mandates AI content labeling, and in music copyright disputes, determining whether a track is AI-generated is becoming a central issue.
+
+Artist protection is also notable. If you name a specific artist in your prompt, Lyria 3 Pro won't mimic them — it treats the name as "broad inspiration" only.
+
+---
+
+## Honest Assessment
+
+### What's Good
+
+- **3-minute full tracks + structure awareness**: Music that's actually usable
+- **Official API**: The only option for integrating music generation into apps
+- **Google ecosystem**: Natural integration with Vids, YouTube, Gemini
+- **SynthID + artist protection**: Minimized copyright risk
+
+### What's Lacking
+
+- **3-minute cap**: Shorter than Suno (4 min) and Udio (15 min)
+- **Price**: ~$0.08/song is 5x more expensive than competitors
+- **Still in preview**: API pricing not finalized, stability unverified
+- **Mimicry restrictions**: Difficult to precisely reproduce specific styles (by design)
+
+---
+
+## What Developers Can Try Right Now
+
+1. Test Lyria 3 Pro in **Google AI Studio**: [ai.google.dev](https://ai.google.dev)
+2. Try **Gemini API** code integration
+3. Experience automatic BGM generation in [Google Vids](https://workspace.google.com/products/vids/)
+4. Run comparison tests against existing Suno/Udio workflows
+
+The AI music market is shifting from a Suno-Udio duopoly to a three-way race including Google. The **API accessibility** is Lyria 3 Pro's unique advantage. If you've been wanting to add music generation to your app, now's the time to start.
+
+Have you tried making music with AI? Which tool did you like best?
+
+---
+
+## References
+
+- [Lyria 3 Pro: Create longer tracks in more Google products](https://blog.google/innovation-and-ai/technology/ai/lyria-3-pro/) — Google Blog, March 25, 2026
+- [How developers can use Lyria 3 for AI music generation](https://blog.google/innovation-and-ai/technology/developers-tools/lyria-3-developers/) — Google Blog, March 2026
+- [Google launches Lyria 3 Pro music generation model](https://techcrunch.com/2026/03/25/google-launches-lyria-3-pro-music-generation-model/) — TechCrunch, March 25, 2026
+- [Lyria 3 — Google DeepMind](https://deepmind.google/models/lyria/) — Google DeepMind, March 2026
+
+**Related Posts:**
+
+- [AI Music Making: Suno vs Udio 2026 Comparison](https://daily1bite.com/en/blog/ai-tools/ai-suno-vs-udio-2026) — The duopoly before Lyria 3 Pro arrived
+- [Google Search Live Global Expansion + Gemini 3.1 Flash Live](https://daily1bite.com/en/blog/ai-tools/google-search-live-gemini-31-flash) — SynthID watermarking in another context

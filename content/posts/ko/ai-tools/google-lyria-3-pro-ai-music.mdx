@@ -1,0 +1,181 @@
+---
+title: "Google Lyria 3 Pro: DeepMind의 최신 AI 음악 모델, 3분짜리 곡을 API로 만든다"
+date: "2026-03-31"
+description: "Google Lyria 3 Pro는 3분짜리 풀 트랙을 생성하는 AI 음악 모델입니다. 구조 인식 작곡, 이미지-투-뮤직, SynthID 워터마크, API 가격까지 Suno/Udio와 비교 분석합니다."
+category: "ai-tools"
+tags: ["Lyria 3 Pro", "Google DeepMind", "AI 음악", "Gemini API", "Suno", "SynthID", "AI 작곡"]
+---
+
+한 달 전만 해도 Lyria 3는 30초짜리 클립만 만들 수 있었습니다. 그런데 3월 25일, Google이 **Lyria 3 Pro**를 발표하면서 상황이 완전히 바뀌었어요. 3분짜리 풀 트랙, 인트로-벌스-코러스-브릿지를 이해하는 구조 인식 작곡, 그리고 개발자용 API까지.
+
+이전에 [Suno vs Udio 비교 글](https://daily1bite.com/ko/blog/ai-tools/ai-suno-vs-udio-2026)에서 "Google이 음악 AI 시장에 본격 진입하면 판이 바뀔 수 있다"고 썼었는데, 그게 현실이 됐습니다.
+
+## TL;DR
+
+- **Lyria 3 Pro**: Google DeepMind의 최신 AI 음악 모델, 최대 **3분 풀 트랙** 생성
+- 구조 인식 작곡: 인트로, 벌스, 코러스, 브릿지를 프롬프트로 지정 가능
+- **48kHz 스테레오** 고품질 오디오 출력, 가사+보컬 자동 생성
+- **이미지-투-뮤직**: 사진을 입력하면 분위기에 맞는 음악 생성
+- **SynthID 워터마크**: 모든 출력에 AI 생성 표시 자동 삽입
+- API: Gemini API, Vertex AI, Google AI Studio에서 **퍼블릭 프리뷰**
+- 가격: API 기준 곡당 약 **$0.08**, Gemini 구독 $19.99~$99.99/월
+- 아티스트 모방 금지: 프롬프트에 아티스트명을 넣으면 "넓은 영감"으로만 처리
+
+---
+
+## 30초에서 3분으로: 무엇이 달라졌나
+
+![AI 음악 프로덕션](https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=1080&q=80)
+_Photo by [James Owen](https://unsplash.com/@jamesowens?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | AI 음악 생성의 새로운 기준_
+
+2026년 2월에 출시된 Lyria 3는 30초 클립 전용이었습니다. 품질은 좋았지만, 실제로 쓸 수 있는 음악을 만들기엔 너무 짧았죠. Lyria 3 Pro는 이 한계를 깼습니다.
+
+### 핵심 업그레이드
+
+| 기능 | Lyria 3 (2월) | Lyria 3 Pro (3월) |
+|------|-------------|-----------------|
+| 트랙 길이 | 최대 30초 | 최대 **3분** |
+| 구조 인식 | 없음 | 인트로/벌스/코러스/브릿지 |
+| 오디오 품질 | 48kHz 스테레오 | 48kHz 스테레오 |
+| 가사 생성 | 기본 | 시간 정렬 가사 (타이밍 제어) |
+| 템포 제어 | 없음 | 정밀 BPM 설정 |
+| 이미지 입력 | 없음 | 이미지-투-뮤직 |
+| API | 프리뷰 | Gemini API + Vertex AI |
+
+**구조 인식 작곡**이 가장 큰 차이입니다. "30초 인트로로 시작해서, 1분부터 코러스가 들어오고, 2분에 브릿지를 넣어줘"처럼 곡의 구조를 프롬프트로 지정할 수 있어요.
+
+---
+
+## 실전 프롬프트 예시
+
+Lyria 3 Pro는 텍스트 프롬프트로 작동합니다. 몇 가지 예시를 보면요.
+
+### 기본 프롬프트
+
+```
+"어쿠스틱 기타와 피아노 중심의 잔잔한 인디 팝.
+BPM 95. 여성 보컬. 가사 주제: 비 오는 날의 카페"
+```
+
+### 구조 지정 프롬프트
+
+```
+"일렉트로닉 팝, BPM 128.
+0:00-0:15 신스 패드 인트로
+0:15-0:45 벌스 1 - 남성 보컬, 가사: 도시의 불빛 아래
+0:45-1:15 코러스 - 에너지 업, 드럼 추가
+1:15-1:45 벌스 2
+1:45-2:15 코러스 반복
+2:15-2:45 브릿지 - 피아노 솔로
+2:45-3:00 아웃트로"
+```
+
+### 이미지-투-뮤직
+
+사진 한 장을 입력하면 그 분위기에 맞는 음악을 생성합니다. 석양 사진이면 따뜻하고 노스탤직한 곡, 도시 야경이면 일렉트로닉한 곡이 나오는 식이에요.
+
+---
+
+## 개발자 API: Gemini API + Vertex AI
+
+개발자에게 가장 중요한 부분입니다. Lyria 3 Pro는 **Gemini API**와 **Vertex AI**를 통해 퍼블릭 프리뷰로 접근할 수 있습니다.
+
+### 접근 방법
+
+| 플랫폼 | 접근 방식 | 특징 |
+|--------|---------|------|
+| **Google AI Studio** | 웹 UI에서 바로 테스트 | 프로토타이핑에 적합 |
+| **Gemini API** | REST API 호출 | 앱 통합에 적합 |
+| **Vertex AI** | 엔터프라이즈 환경 | 프로덕션 배포 |
+| **Gemini 앱** | 모바일/웹 앱 내 | 일반 사용자용 |
+| **Google Vids** | 영상 편집 도구 내 | BGM 자동 생성 |
+
+### 가격 구조
+
+| 접근 방식 | 가격 | 곡당 비용 | 일일 한도 |
+|----------|------|----------|----------|
+| API (Vertex AI) | 미공개 (프리뷰) | ~$0.08/곡 | - |
+| Gemini AI Plus | $19.99/월 | ~$0.067 | 10곡/일 |
+| Gemini Pro | $29.99/월 | ~$0.05 | 20곡/일 |
+| Gemini Ultra | $99.99/월 | ~$0.067 | 50곡/일 |
+
+API 기준 곡당 약 $0.08은 Suno의 구독 기준($0.015/곡)보다 약 5배 비쌉니다. 하지만 API로 자동화할 수 있다는 점, 그리고 Google 생태계(Vids, YouTube 등)와의 연동을 생각하면 단순 비교는 어렵습니다.
+
+---
+
+## Suno vs Udio vs Lyria 3 Pro: 3강 체제
+
+![AI 음악 비교](https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1080&q=80)
+_Photo by [Wes Hicks](https://unsplash.com/@sickhews?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | AI 음악 시장의 3강 구도_
+
+[Suno vs Udio 비교](https://daily1bite.com/ko/blog/ai-tools/ai-suno-vs-udio-2026)에서 다뤘던 양강 구도에 Google이 끼어들었습니다.
+
+| 기능 | Suno v4 | Udio | Lyria 3 Pro |
+|------|---------|------|-------------|
+| 트랙 길이 | 4분 | 15분 | 3분 |
+| 구조 제어 | 기본 | 상세 | 상세 (시간 정렬) |
+| 보컬 품질 | 우수 | 최상 | 우수 |
+| API | 없음 (비공식) | 없음 | **공식 API** |
+| 이미지 입력 | 없음 | 없음 | **지원** |
+| 워터마크 | 없음 | 없음 | **SynthID** |
+| 곡당 비용 | ~$0.015 | ~$0.02 | ~$0.08 |
+| 상업적 사용 | 유료 플랜 | 유료 플랜 | 유료 플랜 |
+
+Lyria 3 Pro의 최대 강점은 **공식 API**와 **Google 생태계 통합**입니다. Suno와 Udio는 공식 API가 없어서 자동화가 어렵거든요. 반면 트랙 길이와 곡당 비용에서는 경쟁사에 뒤집니다.
+
+---
+
+## SynthID: AI 음악의 신분증
+
+모든 Lyria 3 Pro 출력에는 **SynthID** 워터마크가 삽입됩니다. 사람 귀에는 들리지 않지만, 기계적으로 감지할 수 있는 방식이에요.
+
+[Google Search Live 분석](https://daily1bite.com/ko/blog/ai-tools/google-search-live-gemini-31-flash)에서도 다뤘듯이, SynthID는 Google이 AI 생성 콘텐츠 식별에 전사적으로 적용하는 기술입니다. 음성, 이미지, 이제 음악까지.
+
+이건 규제 대응 측면에서 중요합니다. EU AI Act가 AI 생성 콘텐츠 표시를 의무화하고 있고, 음악 저작권 분쟁에서도 "이 곡이 AI가 만든 건지 아닌지" 판별이 핵심 이슈거든요.
+
+아티스트 보호도 눈에 띕니다. 프롬프트에 특정 아티스트 이름을 넣으면, Lyria 3 Pro는 그 아티스트를 **모방하지 않고** "넓은 영감"으로만 처리합니다. "BTS 스타일"이라고 해도 BTS의 곡을 복제하는 게 아니라, K-pop 장르의 일반적 특성을 참고하는 수준이에요.
+
+---
+
+## 냉정한 평가
+
+### 좋은 점
+
+- **3분 풀 트랙 + 구조 인식**: 실제로 쓸 수 있는 수준의 음악 생성
+- **공식 API**: 앱에 음악 생성 기능을 통합할 수 있는 유일한 선택지
+- **Google 생태계**: Vids, YouTube, Gemini 앱과 자연스럽게 연동
+- **SynthID + 아티스트 보호**: 저작권 리스크 최소화
+
+### 아쉬운 점
+
+- **3분 한계**: Suno(4분), Udio(15분)보다 짧음
+- **가격**: 곡당 $0.08은 경쟁사 대비 5배 비쌈
+- **아직 프리뷰**: API 가격이 확정되지 않았고, 안정성 검증 필요
+- **모방 제한**: 특정 스타일을 정밀하게 재현하기 어려움 (아티스트 보호 정책)
+
+---
+
+## 개발자가 지금 해볼 수 있는 것
+
+1. **Google AI Studio**에서 Lyria 3 Pro 바로 테스트: [ai.google.dev](https://ai.google.dev)
+2. **Gemini API**로 코드 연동 테스트
+3. [Google Vids](https://workspace.google.com/products/vids/)에서 영상 BGM 자동 생성 체험
+4. 기존 Suno/Udio 워크플로우와 비교 테스트
+
+AI 음악 시장이 Suno-Udio 양강에서 Google까지 포함한 3강 체제로 전환되고 있습니다. 특히 **API 접근성**은 Lyria 3 Pro만의 독보적 강점이에요. 앱에 음악 생성 기능을 넣고 싶었던 개발자라면, 지금이 시작할 타이밍입니다.
+
+여러분은 AI로 음악을 만들어본 적 있나요? 어떤 도구가 가장 맘에 들었나요?
+
+---
+
+## 참고 자료
+
+- [Lyria 3 Pro: Create longer tracks in more Google products](https://blog.google/innovation-and-ai/technology/ai/lyria-3-pro/) — Google Blog, 2026년 3월 25일
+- [How developers can use Lyria 3 for AI music generation](https://blog.google/innovation-and-ai/technology/developers-tools/lyria-3-developers/) — Google Blog, 2026년 3월
+- [Google launches Lyria 3 Pro music generation model](https://techcrunch.com/2026/03/25/google-launches-lyria-3-pro-music-generation-model/) — TechCrunch, 2026년 3월 25일
+- [Lyria 3 — Google DeepMind](https://deepmind.google/models/lyria/) — Google DeepMind, 2026년 3월
+
+**함께 읽으면 좋은 글:**
+
+- [AI로 음악 만들기: Suno vs Udio 2026년 최신 비교](https://daily1bite.com/ko/blog/ai-tools/ai-suno-vs-udio-2026) — Lyria 3 Pro 등장 전 양강 구도 분석
+- [Google Search Live 200개국 확대 + Gemini 3.1 Flash Live](https://daily1bite.com/ko/blog/ai-tools/google-search-live-gemini-31-flash) — SynthID 워터마크의 또 다른 적용 사례
