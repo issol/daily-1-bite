@@ -1,0 +1,170 @@
+---
+title: "OpenAI Safety Bug Bounty: AI 오남용 신고하면 최대 10만 달러, 개발자가 알아야 할 것"
+date: "2026-04-01"
+description: "OpenAI가 AI 안전 버그 바운티 프로그램을 공개했습니다. 프롬프트 인젝션, 에이전트 하이재킹, 데이터 유출 등 AI 고유 보안 이슈를 신고하면 최대 10만 달러 보상. 참여 방법과 범위를 정리합니다."
+category: "dev-life"
+tags: ["OpenAI", "Bug Bounty", "AI 안전", "프롬프트 인젝션", "AI 보안", "Bugcrowd", "에이전트 보안"]
+---
+
+버그 바운티 프로그램은 새로운 게 아닙니다. Google, Apple, Microsoft 다 합니다. 근데 3월 25일 OpenAI가 발표한 **Safety Bug Bounty**는 좀 다릅니다. 기존 보안 취약점(XSS, SQL Injection 등)이 아니라, **AI 고유의 안전 문제**를 타겟으로 합니다.
+
+프롬프트 인젝션으로 에이전트를 하이재킹하는 것, AI가 사용자 데이터를 유출하는 것, 에이전트가 허가 없는 행동을 하는 것. 이런 문제를 찾아서 신고하면 **최대 10만 달러**를 받을 수 있습니다.
+
+## TL;DR
+
+- OpenAI **Safety Bug Bounty**: AI 오남용·안전 리스크 전용 바운티 프로그램 (3/25 공개)
+- **기존 Security Bug Bounty와 별도** — AI 고유 안전 이슈에 초점
+- 최대 보상: **$100,000** (크리티컬), 고심각도 $7,500
+- 핵심 범위: **프롬프트 인젝션**, 에이전트 하이재킹, 데이터 유출, 무단 행동
+- 재현율 **50% 이상** 필요 — 가끔 되는 건 인정 안 됨
+- 단순 탈옥(욕설 유도 등)은 **범위 밖**
+- 플랫폼: **Bugcrowd** 통해 접수, 수일 내 트리아지
+- 별도 **Bio Bug Bounty**(생물학적 위험)도 운영 중
+
+---
+
+## 왜 "안전" 바운티를 따로 만들었나
+
+![AI 보안 대시보드](https://images.unsplash.com/photo-1751448555253-f39c06e29d82?w=1080&q=80)
+_Photo by [Zulfugar Karimov](https://unsplash.com/@zulfugarkarimov?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | AI 안전은 기존 보안과 다른 차원의 문제입니다_
+
+기존 보안 버그 바운티는 서버 해킹, API 키 노출, 인증 우회 같은 **전통적 보안 취약점**을 다룹니다. 하지만 AI 에이전트 시대에는 새로운 유형의 위협이 등장했어요.
+
+ChatGPT Agent, Browser, 그리고 앞으로 나올 에이전트 제품들은 **사용자 대신 행동**합니다. 이메일을 보내고, 웹사이트를 탐색하고, 파일을 다운로드하죠. 만약 악의적인 웹페이지에 숨겨진 텍스트가 에이전트의 행동을 조종할 수 있다면? 이건 전통적인 보안 취약점 카테고리에 안 맞습니다.
+
+OpenAI는 이런 AI 고유 안전 이슈를 기존 프로그램으로는 충분히 커버할 수 없다고 판단한 거예요. [NVIDIA Agent Toolkit](https://daily1bite.com/ko/blog/ai-tutorial/nvidia-agent-toolkit-enterprise-ai)의 OpenShell이 에이전트를 샌드박스에서 격리하는 것처럼, OpenAI는 바운티를 통해 **공격 벡터 자체를 발견**하려는 겁니다.
+
+---
+
+## 어떤 문제를 신고할 수 있나
+
+### 범위 안 (In-Scope)
+
+| 카테고리 | 설명 | 예시 |
+|----------|------|------|
+| **프롬프트 인젝션 + 데이터 유출** | 공격자 텍스트가 피해자의 에이전트를 하이재킹 | 악성 웹페이지가 ChatGPT Agent를 조종해 사용자 이메일 내용을 외부로 전송 |
+| **에이전트 무단 행동** | 에이전트가 허가 없는 행동을 대규모로 수행 | ChatGPT Agent가 사용자 동의 없이 파일을 삭제하거나 계정 설정을 변경 |
+| **독점 정보 노출** | OpenAI 내부 정보가 유출되는 취약점 | 시스템 프롬프트, 모델 가중치, 내부 API 구조 등 |
+| **계정/플랫폼 무결성** | 인증·권한 관련 약점 | 다른 사용자의 대화 내용에 접근 |
+
+### 범위 밖 (Out-of-Scope)
+
+- **단순 탈옥(Jailbreak)**: 욕설을 유도하거나 쉽게 검색 가능한 정보를 출력하는 것 → 보상 없음
+- **콘텐츠 정책 우회**: 안전·오남용 영향이 명확하지 않은 경우
+- **이론적 위험**: 실제 재현할 수 없는 추상적 시나리오
+
+**핵심 기준**: 재현율 **50% 이상**. 10번 시도해서 5번 이상 성공해야 합니다.
+
+---
+
+## 보상 구조
+
+![AI 보안 개념](https://images.unsplash.com/photo-1728756666032-d0b5552b6384?w=1080&q=80)
+_Photo by [Rostislav Uzunov](https://unsplash.com/@rostislavuznv?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | AI 안전 연구가 보상받는 시대가 열렸습니다_
+
+| 심각도 | 보상 범위 | 조건 |
+|--------|----------|------|
+| **Critical** | 최대 **$100,000** | 대규모 영향, 즉각적 위험 |
+| **High** | 최대 **$7,500** | 재현 가능, 명확한 완화 방안 포함 |
+| **Medium/Low** | 사안별 판단 | 제한적 영향 |
+
+$100,000은 상당한 금액입니다. 참고로 Google의 Chrome 버그 바운티 최대 보상이 약 $30,000이고, Apple은 $200,000까지 갑니다. AI 안전 분야에서 $100,000은 이 문제를 OpenAI가 얼마나 심각하게 보는지를 보여주는 숫자예요.
+
+추가로, **한정 기간 프로모션**도 운영됩니다. 특정 카테고리에서 제출하면 추가 보너스를 받을 수 있어요.
+
+---
+
+## 참여 방법 (Step by Step)
+
+### 1. Bugcrowd 등록
+
+[bugcrowd.com/engagements/openai-safety](https://bugcrowd.com/engagements/openai-safety)에서 계정을 만들고 OpenAI Safety 프로그램에 참여합니다.
+
+### 2. 범위 확인
+
+프로그램 페이지에서 정확한 범위와 규칙을 읽습니다. 범위 밖 이슈를 제출하면 시간 낭비입니다.
+
+### 3. 테스트 (자기 계정만)
+
+**반드시 자신의 계정으로만** 테스트해야 합니다. 다른 사용자의 데이터나 시스템에 영향을 주면 안 됩니다.
+
+### 4. 보고서 작성
+
+보고서에 포함해야 할 것:
+
+- **재현 단계**: 누구나 따라할 수 있는 구체적 절차
+- **영향 분석**: 이 취약점이 실제로 어떤 피해를 줄 수 있는지
+- **완화 방안**: 어떻게 고칠 수 있는지 제안 (보상 금액에 영향)
+- **재현율**: 몇 번 중 몇 번 성공했는지 (50% 이상 필수)
+
+### 5. 트리아지 대기
+
+OpenAI는 대부분의 제출을 **수일 내에** 트리아지하고 검증한다고 합니다.
+
+---
+
+## 개발자에게 의미하는 것
+
+이 프로그램이 단순히 "상금 타기"를 넘어 개발자에게 중요한 이유가 있습니다.
+
+### 1. AI 보안이 새로운 전문 분야가 됐다
+
+전통적 보안(웹, 네트워크, 모바일)에 이어 **AI 보안**이 독립적인 전문 분야로 자리잡고 있습니다. 프롬프트 인젝션, 에이전트 하이재킹, 멀티모달 공격 벡터 — 이런 분야의 전문가 수요가 급증할 겁니다.
+
+[Microsoft Copilot Cowork](https://daily1bite.com/ko/blog/ai-tutorial/microsoft-copilot-cowork-agent-365)와 [NVIDIA Agent Toolkit](https://daily1bite.com/ko/blog/ai-tutorial/nvidia-agent-toolkit-enterprise-ai) 모두 에이전트 보안 레이어(Agent 365, OpenShell)를 핵심으로 내세웠듯이, 업계 전체가 이 문제를 심각하게 인식하고 있습니다.
+
+### 2. 자사 AI 제품의 보안 점검 프레임워크
+
+OpenAI의 바운티 범위를 보면, 자사 AI 제품을 점검할 때 어떤 공격 벡터를 확인해야 하는지 알 수 있습니다.
+
+체크리스트로 활용할 수 있어요:
+- 외부 콘텐츠(웹페이지, 이메일, 문서)에 의한 **프롬프트 인젝션** 방어
+- 에이전트의 **행동 범위 제한** (어떤 API를 호출할 수 있는지)
+- **데이터 유출 경로** 차단 (에이전트가 민감 정보를 외부로 전송하지 않는지)
+- 사용자 **동의 없는 행동** 방지
+
+### 3. 부업으로서의 가능성
+
+솔직히 말하면, AI를 깊이 이해하는 개발자라면 Safety Bug Bounty는 꽤 매력적인 부업입니다. 웹 보안 바운티는 경쟁이 치열해서 좋은 버그를 찾기 어렵지만, AI 안전 분야는 아직 초기라 기회가 더 많아요.
+
+---
+
+## 냉정한 평가
+
+### 좋은 점
+
+- **AI 안전 연구의 금전적 인센티브**: 학술 연구에만 의존하지 않고 실전 공격 벡터를 빠르게 발견
+- **투명성**: OpenAI가 자사 제품의 약점을 외부에 공개적으로 검증받겠다는 의지
+- **업계 표준 설정**: 다른 AI 기업들도 유사 프로그램을 만들 가능성
+
+### 아쉬운 점
+
+- **탈옥 제외가 너무 넓을 수 있음**: "안전 영향이 명확하지 않은" 탈옥도 실제로는 위험할 수 있음
+- **재현율 50%는 높은 기준**: 간헐적이지만 심각한 취약점이 걸러질 수 있음
+- **보상 금액의 모호성**: $100,000은 "최대"이고, 실제 대부분은 훨씬 적을 가능성
+- **OpenAI만의 프로그램**: Anthropic, Google 등 다른 AI 기업에는 동등한 프로그램이 아직 없음
+
+---
+
+## AI 에이전트 시대의 보안 = 새로운 프론티어
+
+[AI 에이전트 도입 현실](https://daily1bite.com/ko/blog/dev-life/ai-86percent-914percent)에서 기업의 91.4%가 프로덕션에 못 올리는 이유 중 하나가 보안 우려였습니다. OpenAI의 Safety Bug Bounty는 이 문제를 **커뮤니티 힘으로 해결**하려는 시도예요.
+
+AI 에이전트가 이메일을 보내고, 결제를 하고, 코드를 실행하는 시대에 — [Stripe Machine Payments Protocol](https://daily1bite.com/ko/blog/ai-tutorial/ai-stripe-machine-payments-protocol)처럼 AI가 직접 돈을 다루는 시대에 — 보안은 선택이 아니라 필수입니다.
+
+여러분은 AI 보안 연구에 관심이 있나요? 이미 버그 바운티에 참여해본 경험이 있으신가요?
+
+---
+
+## 참고 자료
+
+- [Introducing the OpenAI Safety Bug Bounty program](https://openai.com/index/safety-bug-bounty/) — OpenAI, 2026년 3월 25일
+- [OpenAI Launches Bug Bounty Program for Abuse and Safety Risks](https://www.securityweek.com/openai-launches-bug-bounty-program-for-abuse-and-safety-risks/) — SecurityWeek, 2026년 3월
+- [Make OpenAI's models misbehave and earn a reward](https://www.helpnetsecurity.com/2026/03/27/openai-safety-bug-bounty-program/) — Help Net Security, 2026년 3월 27일
+- [Bug Bounty: Safety Bug Bounty - Bugcrowd](https://bugcrowd.com/engagements/openai-safety) — Bugcrowd, 프로그램 페이지
+
+**함께 읽으면 좋은 글:**
+
+- [NVIDIA Agent Toolkit 실전 가이드](https://daily1bite.com/ko/blog/ai-tutorial/nvidia-agent-toolkit-enterprise-ai) — OpenShell 보안 샌드박스의 접근법
+- [AI 에이전트 도입 현실: 기업의 8.6%만 프로덕션](https://daily1bite.com/ko/blog/dev-life/ai-86percent-914percent) — 보안 우려가 도입의 걸림돌
+- [AI 에이전트가 직접 결제한다: Stripe MPP](https://daily1bite.com/ko/blog/ai-tutorial/ai-stripe-machine-payments-protocol) — 에이전트 보안이 필수인 이유
