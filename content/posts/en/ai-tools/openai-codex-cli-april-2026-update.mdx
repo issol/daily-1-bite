@@ -1,0 +1,174 @@
+---
+title: "OpenAI Codex CLI 2026 Latest Update: Windows Sandbox, GPT-5.3-Codex-Spark at 1000+ TPS"
+date: "2026-04-03"
+description: "A complete breakdown of OpenAI Codex CLI's latest updates. Windows sandbox OS-level networking, ChatGPT device code login, GPT-5.3-Codex-Spark at 1000+ tokens/sec, and prompt-plus-stdin."
+category: "ai-tools"
+tags: ["Codex CLI", "OpenAI", "GPT-5.3-Codex-Spark", "Windows sandbox", "AI coding", "terminal AI"]
+---
+
+I updated Codex CLI last week and found a surprising number of new features stacked up. Reading through the release notes, it's clear OpenAI is positioning Codex CLI as a serious competitor to Claude Code.
+
+The standout is **GPT-5.3-Codex-Spark** — a real-time coding model generating over 1,000 tokens per second, now available directly in Codex CLI. Combined with Windows sandbox security hardening, device code authentication, and pipeline workflow support, this is a substantial update.
+
+## TL;DR
+
+- **GPT-5.3-Codex-Spark**: Lightweight real-time coding model, **1,000+ tokens/sec**
+- **Windows sandbox**: OS-level network isolation (proxy-only egress), prevents env var bypass
+- **ChatGPT device code login**: Authenticate via device code without browser callback
+- **prompt-plus-stdin**: Pipe input + separate prompt simultaneously with `codex exec`
+- **Dynamic bearer tokens**: Auto-refresh for custom model providers
+- Latest version: **v0.118.0** (as of March 31, 2026)
+
+---
+
+## GPT-5.3-Codex-Spark: 1,000+ Tokens Per Second
+
+![Terminal code editor](https://images.unsplash.com/photo-1762242298589-582f5f6c3fb1?w=1080&q=80)
+_Photo by [Ilnur](https://unsplash.com/@mrw0rld?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | GPT-5.3-Codex-Spark delivers near-instant responses in the terminal_
+
+We previously compared [Claude Opus 4.6 vs GPT-5.3 Codex](https://daily1bite.com/en/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai), and Codex-Spark is the lightweight sibling optimized for speed over depth.
+
+As the name suggests, Spark prioritizes **fast responses** over heavy reasoning. At 1,000+ tokens per second, it can generate mid-sized functions in near real-time.
+
+### Codex vs Codex-Spark
+
+| Metric | GPT-5.3 Codex | GPT-5.3 Codex-Spark |
+|--------|-------------|-------------------|
+| Speed | ~100 TPS | **1,000+ TPS** |
+| Reasoning | High (complex architecture) | Medium (single-file level) |
+| Use case | Deep code review, refactoring | Real-time completion, quick edits |
+| Cost | Higher | Lower (lightweight model) |
+
+The most noticeable difference in practice is **inline edit speed**. "Add error handling to this function" — what used to take 2-3 seconds with standard Codex comes back nearly instantly with Spark.
+
+---
+
+## Windows Sandbox: OS-Level Security
+
+This is an important update from a security perspective.
+
+Previously, Codex CLI's sandbox used **environment variable-based** network restrictions. It set proxy settings to block external traffic, but processes that ignored env vars could bypass the restriction.
+
+The new update enforces **OS-level egress rules**:
+
+```
+Before: Environment vars → proxy settings → bypassable
+After:  OS firewall rules → proxy-only traffic → not bypassable
+```
+
+This matters because AI coding tools **execute code**. Malicious code attempting network access for data exfiltration is now blocked at the OS level. This aligns with the concerns covered in [OpenAI's Safety Bug Bounty](https://daily1bite.com/en/blog/dev-life/openai-safety-bug-bounty-2026).
+
+---
+
+## ChatGPT Device Code Login
+
+![Code terminal screen](https://images.unsplash.com/photo-1568716353609-12ddc5c67f04?w=1080&q=80)
+_Photo by [Patrick Martin](https://unsplash.com/@patrickmmartin?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Device code login makes authentication painless in headless environments_
+
+The biggest pain point of using Codex CLI on servers was **authentication**. Browser callback doesn't work in GUI-less environments.
+
+Device code flow solves this:
+
+1. Run `codex login` in terminal
+2. A 6-digit code appears
+3. Enter the code on another device (phone, etc.)
+4. Authentication complete
+
+SSH sessions, Docker containers, CI/CD pipelines — anywhere **without a browser** can now authenticate easily.
+
+---
+
+## prompt-plus-stdin: Pipeline Workflows
+
+This could significantly change developer workflows.
+
+```bash
+# Before: pipe input only (prompt had to be in stdin)
+cat file.py | codex exec "refactor this"  # ← didn't work before
+
+# Now: pipe input + separate prompt simultaneously
+cat file.py | codex exec -p "Convert this Python to TypeScript"
+```
+
+The power here is **chaining Codex into shell pipelines**:
+
+```bash
+# Auto-generate commit messages from staged diff
+git diff --staged | codex exec -p "Write a conventional commit message for these changes"
+
+# Log analysis
+tail -100 /var/log/app.log | codex exec -p "Analyze error patterns and infer root causes"
+
+# Batch code transformation
+find src -name "*.js" -exec cat {} + | codex exec -p "Convert to ESM imports"
+```
+
+Similar to Claude Code's pipe support, but `codex exec` provides a more concise dedicated command for it.
+
+---
+
+## Dynamic Bearer Tokens
+
+When connecting custom model providers (internal API servers, enterprise LLMs) to Codex CLI, you previously could only use **static tokens**. When tokens expired, manual refresh was required.
+
+The new update supports **automatic token refresh**:
+
+- Auto-requests new tokens on expiration
+- OAuth 2.0 client credentials flow supported
+- No config file or env var resetting needed
+
+Particularly useful for enterprise teams running internal LLMs through Codex CLI.
+
+---
+
+## Claude Code vs Codex CLI: April 2026
+
+As covered in [AI coding tool price wars](https://daily1bite.com/en/blog/dev-life/ai-2026), the terminal-based AI coding tool duopoly is becoming sharper.
+
+| Feature | Claude Code (Anthropic) | Codex CLI (OpenAI) |
+|---------|----------------------|-------------------|
+| Base model | Claude Opus 4.6 (1M context) | GPT-5.3 Codex + Spark |
+| Real-time speed | Fast Mode | **Spark 1,000+ TPS** |
+| Sandbox | Filesystem isolation | **OS-level network isolation** |
+| Agents | Agent Teams, subagents | Multi-agent support |
+| MCP support | Native | Native |
+| Pipeline | stdin support | **prompt-plus-stdin** |
+| Auth | API key | API key + **device code** |
+| Pricing | Usage-based | Usage-based |
+
+Honestly, both tools are evolving so rapidly that declaring a winner is premature. Claude Code's strengths are its context window (1M) and agent teams; Codex CLI's advantages are Spark's response speed and Windows security.
+
+As we showed with [Windsurf Arena Mode](https://daily1bite.com/en/blog/ai-tutorial/windsurf-arena-mode-worktree-parallel), blind comparison is the most accurate way to decide.
+
+---
+
+## How to Update
+
+```bash
+# Update via npm
+npm update -g @openai/codex
+
+# Check version
+codex --version
+# 0.118.0 or higher = latest
+
+# Use Spark model
+codex --model gpt-5.3-codex-spark "write this function"
+```
+
+Which do you use more — Codex CLI or Claude Code? Share your experience in the comments.
+
+---
+
+## References
+
+- [Codex CLI Changelog](https://developers.openai.com/codex/changelog) — OpenAI Developers, March 2026
+- [GitHub Releases - openai/codex](https://github.com/openai/codex/releases) — OpenAI GitHub, 2026
+- [OpenAI Codex CLI: Lightweight Terminal AI Assistant](https://aitoolly.com/ai-news/article/2026-04-03-openai-codex-cli-a-lightweight-terminal-based-programming-assistant-for-developers) — AIToolly, April 3, 2026
+- [Introducing upgrades to Codex](https://openai.com/index/introducing-upgrades-to-codex/) — OpenAI, 2026
+
+**Related Posts:**
+
+- [Claude Opus 4.6 vs GPT-5.3 Codex — What's the Difference?](https://daily1bite.com/en/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai) — Fundamental differences between the two models
+- [Windsurf Arena Mode + Git Worktree Parallel Dev](https://daily1bite.com/en/blog/ai-tutorial/windsurf-arena-mode-worktree-parallel) — Blind comparison method for AI coding tools
+- [AI Coding Tool Price Wars 2026](https://daily1bite.com/en/blog/dev-life/ai-2026) — The reality of pricing and value

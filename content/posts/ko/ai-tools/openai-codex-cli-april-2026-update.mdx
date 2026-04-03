@@ -1,0 +1,174 @@
+---
+title: "OpenAI Codex CLI 2026 최신 업데이트: Windows 샌드박스, GPT-5.3-Codex-Spark 1000+ TPS"
+date: "2026-04-03"
+description: "OpenAI Codex CLI의 최신 업데이트를 정리합니다. Windows 샌드박스 네트워킹, ChatGPT 디바이스 로그인, GPT-5.3-Codex-Spark 초당 1000토큰까지 개발자 관점에서 분석합니다."
+category: "ai-tools"
+tags: ["Codex CLI", "OpenAI", "GPT-5.3-Codex-Spark", "Windows 샌드박스", "AI 코딩", "터미널 AI"]
+---
+
+지난주에 Codex CLI를 업데이트했더니 새 기능이 꽤 많이 쌓여 있었습니다. 릴리스 노트를 쭉 읽어보니, OpenAI가 Codex CLI를 "Claude Code의 대항마"로 진지하게 밀고 있다는 느낌을 받았어요.
+
+특히 **GPT-5.3-Codex-Spark** — 초당 1,000토큰 이상의 실시간 코딩 모델이 Codex CLI에 들어왔다는 건 꽤 큰 변화입니다. Windows 샌드박스 보안 강화, ChatGPT 디바이스 코드 로그인, 파이프라인 워크플로우 지원까지. 하나씩 정리해봤습니다.
+
+## TL;DR
+
+- **GPT-5.3-Codex-Spark**: 실시간 코딩 전용 경량 모델, **초당 1,000+ 토큰** 생성
+- **Windows 샌드박스**: OS 레벨 네트워크 격리 (프록시 전용 통신), 환경변수 우회 방지
+- **ChatGPT 디바이스 코드 로그인**: 브라우저 콜백 없이 디바이스 코드로 인증 가능
+- **prompt-plus-stdin**: `codex exec`에서 파이프 입력 + 프롬프트 동시 사용
+- **동적 Bearer 토큰**: 커스텀 모델 프로바이더용 토큰 자동 갱신
+- 최신 버전: **v0.118.0** (2026년 3월 31일 기준)
+
+---
+
+## GPT-5.3-Codex-Spark: 초당 1,000토큰의 실시간 코딩
+
+![터미널 코드 에디터](https://images.unsplash.com/photo-1762242298589-582f5f6c3fb1?w=1080&q=80)
+_Photo by [Ilnur](https://unsplash.com/@mrw0rld?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Codex CLI에서 GPT-5.3-Codex-Spark의 실시간 응답을 체감할 수 있습니다_
+
+이전에 [Claude Opus 4.6 vs GPT-5.3 Codex 비교](https://daily1bite.com/ko/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai)에서 다뤘던 GPT-5.3 Codex의 경량 버전입니다.
+
+**Spark**라는 이름이 말해주듯, 이건 무거운 추론이 아니라 **빠른 응답**에 초점을 맞춘 모델이에요. 초당 1,000토큰 이상이면, 중간 규모의 함수를 거의 실시간으로 생성할 수 있는 속도입니다.
+
+### 일반 Codex vs Codex-Spark 비교
+
+| 항목 | GPT-5.3 Codex | GPT-5.3 Codex-Spark |
+|------|-------------|-------------------|
+| 속도 | ~100 TPS | **1,000+ TPS** |
+| 추론 능력 | 높음 (복잡한 아키텍처 설계) | 중간 (단일 파일 수준) |
+| 용도 | 심층 코드 리뷰, 리팩토링 | 실시간 자동완성, 빠른 편집 |
+| 비용 | 높음 | 낮음 (경량 모델) |
+
+실무에서 쓸 때 가장 체감되는 건 **인라인 편집 속도**입니다. "이 함수에서 에러 핸들링 추가해줘"라고 하면, 기존 Codex는 2~3초 걸리던 게 Spark에서는 거의 즉시 나와요.
+
+---
+
+## Windows 샌드박스: OS 레벨 보안
+
+이건 보안 관점에서 중요한 업데이트입니다.
+
+기존에 Codex CLI의 샌드박스는 **환경변수 기반** 네트워크 제한을 사용했습니다. 프록시를 설정해서 외부 통신을 차단하는 방식이었는데, 프로세스가 환경변수를 무시하면 우회가 가능했어요.
+
+새 업데이트에서는 **OS 레벨 이그레스 룰**로 네트워크를 격리합니다.
+
+```
+기존: 환경변수 → 프록시 설정 → 우회 가능
+신규: OS 방화벽 룰 → 프록시만 통과 → 우회 불가
+```
+
+왜 이게 중요하냐면, AI 코딩 도구가 **코드를 실행**하기 때문입니다. 악의적인 코드가 네트워크에 접근해서 데이터를 유출하는 걸 OS 레벨에서 차단합니다. [OpenAI Safety Bug Bounty](https://daily1bite.com/ko/blog/dev-life/openai-safety-bug-bounty-2026)에서 에이전트 보안이 핵심 이슈로 다뤄진 것과 같은 맥락이에요.
+
+---
+
+## ChatGPT 디바이스 코드 로그인
+
+![코드 터미널 화면](https://images.unsplash.com/photo-1568716353609-12ddc5c67f04?w=1080&q=80)
+_Photo by [Patrick Martin](https://unsplash.com/@patrickmmartin?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 디바이스 코드 로그인으로 서버 환경에서도 인증이 편해졌습니다_
+
+서버나 원격 머신에서 Codex CLI를 쓸 때 가장 불편했던 게 **로그인**이었습니다. 브라우저 콜백 방식은 GUI가 없는 환경에서 안 되거든요.
+
+디바이스 코드 플로우는 이 문제를 해결합니다:
+
+1. 터미널에서 `codex login` 실행
+2. 6자리 코드가 표시됨
+3. 다른 기기(스마트폰 등)에서 코드 입력
+4. 인증 완료
+
+SSH로 접속한 원격 서버, Docker 컨테이너, CI/CD 환경 등 **브라우저가 없는 곳**에서도 쉽게 인증할 수 있습니다.
+
+---
+
+## prompt-plus-stdin: 파이프라인 워크플로우
+
+이건 개발자 워크플로우를 크게 바꿀 수 있는 기능입니다.
+
+```bash
+# 기존: 파이프 입력만 가능 (프롬프트를 stdin에 포함해야 함)
+cat file.py | codex exec "리팩토링해줘"  # ← 이전에는 안 됐음
+
+# 신규: 파이프 입력 + 별도 프롬프트 동시 사용
+cat file.py | codex exec -p "이 Python 코드를 TypeScript로 변환해줘"
+```
+
+이게 왜 대단하냐면, **셸 스크립트에서 Codex를 파이프라인으로 연결**할 수 있게 되거든요.
+
+```bash
+# 실전 예시: Git diff를 Codex에 넘겨서 커밋 메시지 자동 생성
+git diff --staged | codex exec -p "이 변경사항에 맞는 conventional commit 메시지를 작성해줘"
+
+# 로그 분석
+tail -100 /var/log/app.log | codex exec -p "이 로그에서 에러 패턴을 분석하고 원인을 추론해줘"
+
+# 코드 변환 파이프라인
+find src -name "*.js" -exec cat {} + | codex exec -p "ESM import로 전환해줘"
+```
+
+Claude Code의 파이프 지원과 비슷하지만, `codex exec` 특화 명령어로 더 간결하게 쓸 수 있습니다.
+
+---
+
+## 동적 Bearer 토큰
+
+커스텀 모델 프로바이더(자체 API 서버, 사내 LLM 등)를 Codex CLI에 연결할 때, 기존에는 **정적 토큰**만 설정할 수 있었습니다. 토큰이 만료되면 수동으로 갱신해야 했죠.
+
+새 업데이트에서는 **동적으로 토큰을 갱신**할 수 있습니다:
+
+- 토큰 만료 시 자동으로 새 토큰 요청
+- OAuth 2.0 클라이언트 크레덴셜 플로우 지원
+- 설정 파일이나 환경변수 재설정 불필요
+
+엔터프라이즈 환경에서 사내 LLM을 Codex CLI로 쓰는 팀이라면 꽤 유용한 기능입니다.
+
+---
+
+## Claude Code vs Codex CLI: 2026년 4월 기준
+
+[AI 코딩 도구 비용 전쟁](https://daily1bite.com/ko/blog/dev-life/ai-2026)에서도 다뤘지만, 터미널 기반 AI 코딩 도구의 양강 구도가 더 선명해지고 있습니다.
+
+| 기능 | Claude Code (Anthropic) | Codex CLI (OpenAI) |
+|------|----------------------|-------------------|
+| 기본 모델 | Claude Opus 4.6 (1M 컨텍스트) | GPT-5.3 Codex + Spark |
+| 실시간 속도 | Fast Mode | **Spark 1,000+ TPS** |
+| 샌드박스 | 파일시스템 격리 | **OS 레벨 네트워크 격리** |
+| 에이전트 | Agent Teams, 서브에이전트 | 멀티 에이전트 지원 |
+| MCP 지원 | 네이티브 | 네이티브 |
+| 파이프라인 | stdin 지원 | **prompt-plus-stdin** |
+| 인증 | API 키 | API 키 + **디바이스 코드** |
+| 가격 | 사용량 기반 | 사용량 기반 |
+
+솔직히 말하면, 두 도구 모두 빠르게 진화하고 있어서 "어느 쪽이 낫다"고 단정하기 어렵습니다. Claude Code는 컨텍스트 윈도우(1M)와 에이전트 팀이 강점이고, Codex CLI는 Spark의 응답 속도와 Windows 보안이 강점이에요.
+
+[Windsurf Arena Mode](https://daily1bite.com/ko/blog/ai-tutorial/windsurf-arena-mode-worktree-parallel)에서 소개한 것처럼, 블라인드 비교를 해보는 게 가장 정확한 방법입니다.
+
+---
+
+## 업데이트 방법
+
+```bash
+# npm으로 업데이트
+npm update -g @openai/codex
+
+# 버전 확인
+codex --version
+# 0.118.0 이상이면 최신
+
+# Spark 모델 사용
+codex --model gpt-5.3-codex-spark "함수 작성해줘"
+```
+
+여러분은 Codex CLI와 Claude Code 중 어느 쪽을 더 자주 쓰시나요? 댓글로 경험을 공유해주세요.
+
+---
+
+## 참고 자료
+
+- [Codex CLI Changelog](https://developers.openai.com/codex/changelog) — OpenAI Developers, 2026년 3월
+- [GitHub Releases - openai/codex](https://github.com/openai/codex/releases) — OpenAI GitHub, 2026년
+- [OpenAI Codex CLI: Lightweight Terminal AI Assistant](https://aitoolly.com/ai-news/article/2026-04-03-openai-codex-cli-a-lightweight-terminal-based-programming-assistant-for-developers) — AIToolly, 2026년 4월 3일
+- [Introducing upgrades to Codex](https://openai.com/index/introducing-upgrades-to-codex/) — OpenAI, 2026년
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Opus 4.6 vs GPT-5.3 Codex — 같은 날 출시된 두 AI, 뭐가 다를까?](https://daily1bite.com/ko/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai) — 두 모델의 근본적 차이
+- [Windsurf Arena Mode + Git Worktree 병렬 개발](https://daily1bite.com/ko/blog/ai-tutorial/windsurf-arena-mode-worktree-parallel) — AI 코딩 도구 블라인드 비교법
+- [AI 코딩 도구 비용 전쟁 2026](https://daily1bite.com/ko/blog/dev-life/ai-2026) — 가격과 가치의 현실
