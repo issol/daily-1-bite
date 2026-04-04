@@ -1,0 +1,208 @@
+---
+title: "Claude Code April 2026 Update: /powerup, MCP 500K, Session Stability [Complete Guide]"
+date: "2026-04-05"
+description: "Claude Code v2.1.89–v2.1.92 released in April 2026. Covers /powerup interactive lessons, MCP 500K result storage, defer permission decisions, per-model /cost breakdown, and all stability fixes."
+category: "ai-tutorial"
+tags: ["Claude Code", "AI coding", "MCP", "/powerup", "Claude Code update", "subagents"]
+---
+
+Claude Code shipped four updates in the first week of April 2026 — v2.1.89 through v2.1.92. Across those four releases: a new interactive learning system, a major MCP size limit increase, headless permission deferral, a more informative `/cost` command, and a solid batch of stability fixes.
+
+This post covers everything worth knowing, with practical context on what actually changes in day-to-day use.
+
+## TL;DR
+
+- **`/powerup`**: Interactive lessons with animated demos for learning Claude Code features (v2.1.90)
+- **MCP 500K**: `_meta["anthropic/maxResultSizeChars"]` raises tool result limit to 500,000 chars (v2.1.91)
+- **`defer` permission**: PreToolUse hooks can now pause headless sessions and resume externally (v2.1.89)
+- **`/cost` breakdown**: Per-model and cache-hit cost analysis now available (v2.1.92)
+- **Subagent stability**: Fixed subagent respawning failure after tmux windows were killed (v2.1.92)
+- **Performance**: Write tool diff computation 60% faster; SSE transport now O(n) instead of O(n²)
+
+---
+
+## Highlight 1: `/powerup` — Interactive Learning Lessons
+
+![code on screen](https://images.unsplash.com/photo-1568716353609-12ddc5c67f04?w=1080&q=80)
+_Photo by [Patrick Martin](https://unsplash.com/@patrickmmartin?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | /powerup brings interactive, animated lessons directly into the Claude Code interface_
+
+`/powerup`, added in v2.1.90, is an interactive lesson system built directly into Claude Code. Instead of pointing users to documentation, it walks through features with **animated demos** inside the tool itself.
+
+This matters most for onboarding. Claude Code has a real learning curve — the number of features and workflow patterns isn't obvious from the outside. `/powerup` gives new users a guided path without leaving the terminal.
+
+Anthropic hasn't published a full lesson catalog yet, but the infrastructure is clearly there for incremental additions over time.
+
+---
+
+## Highlight 2: MCP Tool Results Up to 500K Characters
+
+The previous default limit on MCP tool result sizes was restrictive enough to cause problems with large files and high-volume data. In v2.1.91, you can now specify a maximum of **500,000 characters** per result using:
+
+```json
+{
+  "_meta": {
+    "anthropic/maxResultSizeChars": 500000
+  }
+}
+```
+
+For context on why this matters: [MCP (Model Context Protocol) in 2026](https://daily1bite.com/en/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026) covers how MCP works as Claude Code's primary extensibility mechanism. Any MCP server that reads large files, database outputs, or logs was previously constrained by this limit. At 500K characters, most real-world tool responses fit comfortably.
+
+This is particularly relevant for:
+- Log analysis servers returning large log files
+- Database MCP servers with wide query results
+- Code-reading tools that need to return entire modules at once
+
+---
+
+## Highlight 3: `defer` Permission Decision — Headless Pause and Resume
+
+![code with context menu](https://images.unsplash.com/photo-1763568258533-d0597f86ce62?w=1080&q=80)
+_Photo by [Daniil Komov](https://unsplash.com/@dkomow?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | The defer decision enables precise external control over headless Claude Code sessions_
+
+v2.1.89 added a third option to PreToolUse hook decisions: `"defer"`. Previously, hooks could allow or deny tool use. Now they can **pause execution** and wait for an external signal to resume.
+
+```json
+{
+  "decision": "defer"
+}
+```
+
+This unlocks a meaningful category of automation patterns:
+
+- **CI/CD approval gates**: Pause before a destructive operation and require human sign-off via an external system
+- **Multi-agent coordination**: One agent defers until another completes a dependency
+- **Staged rollouts**: Pause between phases of an automated workflow for validation
+
+The same release also introduced a `PermissionDenied` hook with retry support — so when a tool is denied, custom retry logic can run before the agent gives up.
+
+For teams running Claude Code in headless (`-p` mode) pipelines, these additions meaningfully expand what's controllable without requiring interactive sessions.
+
+---
+
+## Highlight 4: `/cost` Per-Model and Cache-Hit Breakdown
+
+The `/cost` command in v2.1.92 now shows a genuinely useful cost breakdown rather than just a session total:
+
+- **Per-model split**: Which models were called, and how much each cost
+- **Cache-hit split**: How much was saved through prompt caching vs. fresh computation
+
+For anyone running longer sessions or mixing models (e.g., a fast model for routing, a more capable model for generation), this gives direct visibility into where the money goes.
+
+Pro subscribers also get **prompt cache expiration hints** — an indicator of when cached context will expire. This is useful for long sessions where you want to avoid an unexpected cache miss triggering a cost spike.
+
+---
+
+## Highlight 5: Named Subagents via @ Mention
+
+v2.1.89 introduced the ability to reference specific subagents by name using `@mention` syntax. Previously, subagents were anonymous — you couldn't address one directly.
+
+This brings subagent orchestration closer to how you'd naturally think about a team: assign named roles, then direct instructions at specific agents. For complex agentic workflows, being able to say "the file-reader agent should..." rather than hoping the right agent picks up the task is a real improvement in reliability.
+
+[Claude Opus 4.6 adaptive thinking guide](https://daily1bite.com/en/blog/ai-tutorial/claude-opus-46-adaptive-thinking-fast-mode-200percent) covers some of the patterns that multi-agent workflows make possible — named subagents make those patterns more controllable.
+
+---
+
+## Performance and Stability Fixes
+
+### Write Tool Diff Computation 60% Faster
+
+v2.1.92 optimized the diff computation algorithm in the Write tool. For sessions working with large files, this translates to noticeably faster write operations.
+
+### SSE Transport Now Linear Time (v2.1.90)
+
+The SSE (Server-Sent Events) transport was previously **O(n²)** — meaning performance degraded quadratically as conversations grew. v2.1.90 fixed this to **O(n)** linear time. Long-running sessions that previously slowed to a crawl in the second hour should now stay responsive throughout.
+
+The same release also fixed quadratic complexity in long conversation transcript writes.
+
+### Subagent Respawning After tmux Window Kill (v2.1.92)
+
+A bug caused subagents to fail to respawn after tmux windows were forcibly closed. This was an intermittent but hard-to-debug failure mode for anyone running Claude Code inside tmux sessions. Fixed in v2.1.92.
+
+### `--resume` Prompt Cache Miss Regression (v2.1.90)
+
+A regression introduced in v2.1.69 caused `--resume` sessions to miss prompt cache hits — meaning resumed sessions paid full token costs instead of cache rates. Fixed after 20+ versions. If you use `--resume` regularly, this is a meaningful cost fix.
+
+### autocompact Thrash Loop (v2.1.89)
+
+Auto-compact was entering a loop where it repeatedly triggered itself rather than settling. Fixed in v2.1.89.
+
+### CJK and Emoji Prompt History Silently Dropped (v2.1.89)
+
+Prompts containing CJK characters (Chinese, Japanese, Korean) or emoji were being silently dropped from prompt history. This was a significant quality-of-life issue for non-English users. Fixed in v2.1.89.
+
+### Nested CLAUDE.md Re-injection in Long Sessions (v2.1.89)
+
+Nested `CLAUDE.md` files were being incorrectly re-injected into the context during long sessions. This could cause unexpected behavior if CLAUDE.md contained instructions that conflicted across layers. Fixed.
+
+---
+
+## Claude Code vs. Codex CLI: April 2026
+
+[OpenAI Codex CLI's April 2026 update](https://daily1bite.com/en/blog/ai-tools/openai-codex-cli-april-2026-update) landed around the same time. Comparing the two release cycles:
+
+| Feature | Claude Code (v2.1.89–92) | Codex CLI (v0.118) |
+|---------|--------------------------|-------------------|
+| Onboarding | **`/powerup` interactive lessons** | Help text |
+| MCP extensibility | **500K result size** | Native MCP support |
+| Permission control | **`defer` pause/resume** | Basic permission model |
+| Cost visibility | **Per-model + cache breakdown** | Basic usage display |
+| Performance fix | SSE O(n²) → O(n) | **Spark 1,000+ TPS** |
+| Remote auth | Basic | **Device code login** |
+
+Claude Code's April updates focused on extensibility and agent control. Codex CLI focused on raw speed and Windows compatibility. Neither is strictly ahead — the right choice depends on your workflow.
+
+---
+
+## Removed Features
+
+v2.1.92 removed `/tag` and `/vim`. Given they made the cut list, usage was apparently low enough to justify the cleanup. If you relied on vim keybindings, the official direction is external editor integration.
+
+`/release-notes` was also made interactive — instead of showing the latest release, it now presents a version picker, which is a small but useful change for checking changes between versions.
+
+---
+
+## How to Update
+
+```bash
+# Update via npm
+npm update -g @anthropic-ai/claude-code
+
+# Verify version
+claude --version
+# Should show v2.1.92 or later
+
+# Explore new features
+/powerup
+/cost
+/release-notes
+```
+
+---
+
+## Assessment
+
+Four releases in one week suggests a healthy cadence, but also raises the question of whether the release process has enough stability gates. The `--resume` cache miss regression running 20+ versions before being caught is an example of the tradeoff.
+
+That said, the substance of these updates addresses real friction:
+
+1. **MCP 500K** removes a practical ceiling for external tool integration
+2. **`defer` permissions** enable automation patterns that weren't possible before
+3. **CJK history drops** and **SSE quadratic complexity** were quality issues affecting broad user categories, not edge cases
+
+The direction is consistent: more capable agents, better cost visibility, and improved stability for long-running sessions.
+
+---
+
+## References
+
+- [Claude Code Changelog](https://docs.anthropic.com/en/release-notes/claude-code) — Anthropic Docs, April 2026
+- [Claude Code GitHub Releases](https://github.com/anthropics/claude-code/releases) — Anthropic GitHub, April 2026
+- [MCP Tool Configuration](https://docs.anthropic.com/en/docs/claude-code/mcp) — Anthropic Docs, 2026
+- [Claude Code Hooks Reference](https://docs.anthropic.com/en/docs/claude-code/hooks) — Anthropic Docs, 2026
+
+**Related posts:**
+
+- [MCP: Model Context Protocol in 2026](https://daily1bite.com/en/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026) — Background on MCP extensibility
+- [OpenAI Codex CLI April 2026 Update](https://daily1bite.com/en/blog/ai-tools/openai-codex-cli-april-2026-update) — Competitor's same-month updates
+- [Windsurf Arena Mode + Parallel Worktrees](https://daily1bite.com/en/blog/ai-tutorial/windsurf-arena-mode-worktree-parallel) — Comparing AI coding tools head-to-head
