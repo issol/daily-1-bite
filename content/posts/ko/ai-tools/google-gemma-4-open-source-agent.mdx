@@ -1,0 +1,251 @@
+---
+title: "Google Gemma 4: Apache 2.0 에이전트 전용 오픈소스 모델 [2026 가이드]"
+date: "2026-04-07"
+description: "Google이 Apache 2.0 라이선스로 Gemma 4를 공개했습니다. 에이전트 워크플로우 전용 설계, Gemini Nano 4의 기반 모델, 6x KV 캐시 압축까지 — 실무 적용 전 알아야 할 것들."
+category: "ai-tools"
+tags: ["Gemma 4", "Google AI", "오픈소스 LLM", "에이전트 AI", "Apache 2.0", "Gemini Nano", "AICore"]
+---
+
+오픈소스 LLM 경쟁이 달아오르고 있습니다. Meta가 [Llama 4](/blog/ai-tools/llama-4-scout-vs-maverick-llm)를 내놓고, Alibaba가 [Qwen 3.5](/blog/ai-tools/qwen35-ai)를 공개한 지 얼마 지나지 않아, 이번엔 Google이 **Gemma 4**를 Apache 2.0 라이선스로 공개했습니다.
+
+그런데 이번 Gemma 4는 이전 버전과 결이 다릅니다. 단순히 "더 좋은 언어 모델"이 아니라, **에이전트 AI 워크플로우 전용으로 설계된 모델**이라는 점에서요. 그리고 이 모델이 2026년 하반기에 출시될 Gemini Nano 4의 토대가 된다는 점도 중요합니다.
+
+![오픈소스 AI 코드](https://images.unsplash.com/photo-1593720213681-e9a8778330a7?w=1080&q=80)
+_Photo by [Ferenc Almasi](https://unsplash.com/@flowforfrank?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Gemma 4는 Apache 2.0으로 완전 개방된 에이전트 전용 오픈소스 모델입니다_
+
+## TL;DR
+
+- **Gemma 4**: Google의 최신 오픈소스 모델 시리즈, **에이전트 워크플로우** 전용 설계
+- 라이선스: **Apache 2.0** (상업적 사용 완전 허용)
+- **Gemini Nano 4**의 기반 모델 — 2026년 하반기 온디바이스 AI 구현 예정
+- Android **AICore Developer Preview**에서 현재 사용 가능
+- Google TurboQuant(ICLR 2026): KV 캐시 메모리를 **6배 압축**
+- Gemini 3 Pro/Flash에 **Computer Use 툴** 추가
+- Gemini 3 Flash가 Gemini 앱의 기본 모델로 전환
+
+---
+
+## Gemma 4란?
+
+Gemma는 Google DeepMind가 개발하는 오픈소스 LLM 시리즈입니다. Gemini와 동일한 연구와 기술을 기반으로 하되, 완전 오픈소스로 공개하는 것이 핵심입니다. Gemma 1, 2를 거쳐 이번 4버전은 **에이전트 AI에 특화된 설계**로 방향을 잡았습니다.
+
+에이전트 AI란, 단순히 질문에 답하는 것을 넘어 **도구를 사용하고, 계획을 세우고, 다단계 작업을 자율적으로 실행하는 AI**를 말합니다. 검색 쿼리를 날리고, 코드를 실행하고, 결과를 검증한 뒤 다음 단계를 결정하는 식으로요. Gemma 4는 이런 워크플로우를 처음부터 염두에 두고 훈련되었습니다.
+
+[NVIDIA Agent Toolkit](/blog/ai-tutorial/nvidia-agent-toolkit-enterprise-ai)이나 [MCP(Model Context Protocol)](/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026) 같은 에이전트 프레임워크와 함께 쓸 때 Gemma 4의 강점이 더 두드러집니다.
+
+---
+
+## 주요 특징
+
+### 1. 향상된 추론 능력
+
+Gemma 4는 복잡한 다단계 추론 문제에 강합니다. 기존 오픈소스 모델들이 몇 단계를 거치면 컨텍스트를 잃거나 논리가 흐트러지는 문제가 있었는데, Gemma 4는 이를 개선했습니다.
+
+특히 **Chain-of-Thought 추론**이 이전 Gemma 버전 대비 크게 향상되었고, 코드 생성과 디버깅에서도 실질적인 성능 개선이 확인됩니다.
+
+### 2. 에이전트 워크플로우 전용 설계
+
+단순 QA 모델과 에이전트 전용 모델의 차이는 **툴 호출(tool calling)과 계획 수립 능력**에서 드러납니다.
+
+```python
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import torch
+
+model_id = "google/gemma-4-12b-it"
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForCausalLM.from_pretrained(
+    model_id,
+    torch_dtype=torch.bfloat16,
+    device_map="auto"
+)
+
+# 에이전트 스타일의 멀티스텝 태스크
+messages = [
+    {
+        "role": "user",
+        "content": """다음 작업을 단계별로 실행해:
+1. 주어진 Python 코드의 버그를 찾아
+2. 수정 방법을 설명해
+3. 수정된 코드를 출력해
+
+코드:
+def calculate_average(numbers):
+    total = 0
+    for n in numbers:
+        total += n
+    return total / len(numbers)  # 빈 리스트 처리 없음
+"""
+    }
+]
+
+input_ids = tokenizer.apply_chat_template(messages, return_tensors="pt").to(model.device)
+output = model.generate(input_ids, max_new_tokens=512, do_sample=True, temperature=0.7)
+print(tokenizer.decode(output[0][input_ids.shape[-1]:], skip_special_tokens=True))
+```
+
+Gemma 4는 이런 다단계 작업에서 중간 결과를 추적하고, 각 단계에서 스스로 검증하는 능력이 이전 버전 대비 개선되었습니다.
+
+### 3. Apache 2.0 — 진짜 오픈소스
+
+라이선스 이야기를 빼놓을 수 없습니다. **Apache 2.0은 상업적 사용, 수정, 재배포를 모두 허용**합니다. 제약 조건이 거의 없어 기업 환경에서도 자유롭게 사용할 수 있습니다.
+
+Meta의 Llama 4도 오픈소스지만, 월간 활성 사용자 7억 명 이상인 서비스에는 별도 라이선스가 필요합니다. Gemma 4의 Apache 2.0은 그런 제약이 없습니다. 대규모 서비스에서도 추가 협의 없이 사용 가능합니다.
+
+---
+
+## Gemini Nano 4와의 연결: 온디바이스 AI의 미래
+
+Gemma 4가 단순한 오픈소스 모델 이상의 의미를 갖는 이유는 **Gemini Nano 4의 기반 모델**이기 때문입니다.
+
+2026년 하반기에 출시 예정인 Gemini Nano 4는 스마트폰에서 직접 실행되는 온디바이스 AI 모델입니다. **Gemma 4로 작성한 코드와 프롬프트는 나중에 Gemini Nano 4 지원 기기에서 그대로 동작합니다.** 개발자 입장에서는 지금 Gemma 4로 개발하면, 별도 수정 없이 수억 대의 Android 기기에 배포할 수 있는 셈입니다.
+
+### AICore Developer Preview
+
+현재 Android **AICore Developer Preview**를 통해 Gemma 4를 온디바이스로 테스트할 수 있습니다.
+
+```kotlin
+// Android AICore Developer Preview 예시
+import com.google.android.aicore.GemmaSession
+
+val session = GemmaSession.create(
+    model = GemmaModel.GEMMA_4,
+    config = GemmaConfig(
+        temperature = 0.7f,
+        maxTokens = 512
+    )
+)
+
+val response = session.generate(
+    prompt = "사용자의 구매 이력을 분석하고 다음 구매를 예측해줘"
+)
+```
+
+서버 API 없이 기기 자체에서 추론이 이루어지기 때문에, **레이턴시가 거의 없고 인터넷 연결 없이도 작동**합니다. 프라이버시 민감한 앱이나 오프라인 환경에서의 AI 기능 구현이 한층 쉬워집니다.
+
+---
+
+## TurboQuant: KV 캐시 메모리 6배 압축
+
+Google이 ICLR 2026에서 발표한 **TurboQuant 알고리즘**도 Gemma 4와 함께 주목할 만합니다.
+
+KV 캐시는 LLM이 긴 컨텍스트를 처리할 때 이전 토큰의 정보를 저장하는 메모리 구조입니다. 긴 대화나 긴 문서를 처리할수록 KV 캐시 크기가 폭발적으로 늘어나는 게 문제였는데, TurboQuant는 이를 **6배 압축**합니다.
+
+실질적인 의미는 이렇습니다:
+- 동일한 GPU 메모리로 **6배 더 긴 컨텍스트** 처리 가능
+- 배치 사이즈 확대 → **처리량(throughput) 향상**
+- 클라우드 추론 비용 절감
+
+에이전트 워크플로우에서 긴 컨텍스트는 필수입니다. 여러 도구의 결과, 이전 단계의 출력, 시스템 프롬프트까지 합치면 금방 수십만 토큰에 달하거든요. TurboQuant가 이 문제를 상당 부분 완화합니다.
+
+---
+
+## 로컬 실행 방법
+
+Gemma 4는 HuggingFace Transformers, Ollama, llama.cpp를 통해 로컬에서 실행할 수 있습니다.
+
+**Ollama로 가장 빠르게 시작하기:**
+
+```bash
+# Ollama 설치 후 (ollama.ai)
+ollama pull gemma4:12b
+ollama run gemma4:12b
+
+# 또는 API로 호출
+curl http://localhost:11434/api/generate -d '{
+  "model": "gemma4:12b",
+  "prompt": "에이전트 AI 워크플로우를 Python으로 구현하는 방법을 설명해줘",
+  "stream": false
+}'
+```
+
+**Google AI Studio (클라우드):**
+
+```python
+import google.generativeai as genai
+
+genai.configure(api_key="YOUR_API_KEY")
+model = genai.GenerativeModel("gemma-4-12b-it")
+
+response = model.generate_content(
+    "다음 데이터를 분석하고 이상값을 찾아줘: [23, 24, 25, 99, 24, 23]"
+)
+print(response.text)
+```
+
+**모델 크기별 권장 하드웨어:**
+
+| 모델 크기 | 최소 VRAM | 권장 환경 |
+|-----------|-----------|-----------|
+| Gemma 4 2B | 4GB | 개인 PC (RTX 3060 이상) |
+| Gemma 4 9B | 16GB | 개인 워크스테이션 |
+| Gemma 4 12B | 24GB | RTX 4090 또는 A10 |
+| Gemma 4 27B | 48GB | A100 40GB × 2 |
+
+---
+
+## Llama 4 / Qwen 3.5와 비교
+
+![AI 개발 코드 화면](https://images.unsplash.com/photo-1568716353609-12ddc5c67f04?w=1080&q=80)
+_Photo by [Patrick Martin](https://unsplash.com/@patrickmmartin?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 2026년 오픈소스 LLM 경쟁은 단순 벤치마크를 넘어 실사용 시나리오 최적화로 이동하고 있습니다_
+
+| 항목 | Gemma 4 | Llama 4 Scout | Qwen 3.5 |
+|------|---------|---------------|----------|
+| **개발사** | Google | Meta | Alibaba |
+| **라이선스** | Apache 2.0 | Llama 커뮤니티 (일부 제한) | Apache 2.0 |
+| **특화 분야** | 에이전트 워크플로우 | 긴 컨텍스트 (10M 토큰) | 다국어 / 코딩 |
+| **온디바이스** | Android AICore | 없음 | 없음 |
+| **컨텍스트 윈도우** | 128K | 10M | 128K |
+| **멀티모달** | 있음 | 없음 | 있음 |
+| **한국어 품질** | 양호 | 보통 | 우수 |
+| **최소 GPU** | 4GB (2B) | 80GB (Scout) | 8GB (7B) |
+
+핵심 차이점을 정리하면:
+
+- **에이전트 워크플로우**가 핵심이라면 → Gemma 4
+- **긴 문서 처리**가 주목적이라면 → [Llama 4 Scout](/blog/ai-tools/llama-4-scout-vs-maverick-llm)
+- **한국어 자연어 처리**가 중요하다면 → [Qwen 3.5](/blog/ai-tools/qwen35-ai)
+- **Android 앱 개발**을 생각한다면 → Gemma 4 (AICore 연동)
+
+---
+
+## 냉정한 평가
+
+Gemma 4가 흥미로운 모델임은 분명하지만, 몇 가지 현실적인 제약도 있습니다.
+
+**좋은 점:**
+- Apache 2.0은 기업 환경에서 진짜 자유롭습니다
+- Gemini Nano 4 연동은 Android 개발자에게 명확한 로드맵을 제공합니다
+- TurboQuant 6x 압축은 실질적인 비용 이점입니다
+- 에이전트 특화 설계는 기존 범용 모델과 다른 포지셔닝입니다
+
+**아쉬운 점:**
+- 벤치마크 독립 검증 결과가 아직 충분하지 않습니다
+- Llama 4 Maverick이나 GPT-5 수준의 순수 언어 성능은 기대하기 어렵습니다
+- AICore Developer Preview는 아직 프로덕션 수준이 아닙니다
+- 에이전트 특화라는 주장을 실제 작업으로 입증하려면 더 많은 커뮤니티 검증이 필요합니다
+
+[AI 코딩 도구 비용 전쟁](/blog/dev-life/ai-2026)이라는 맥락에서 보면, Gemma 4는 **비용을 줄이면서 에이전트 기능을 유지하고 싶은 팀**에게 가장 명확한 가치를 제공합니다. 특히 Android 생태계와 연동되는 미래 로드맵을 생각하면, 지금 시점에 익혀두는 것이 손해는 아닙니다.
+
+---
+
+## 마무리
+
+Gemma 4가 오픈소스 LLM 시장에서 의미 있는 이유는 성능 수치 때문만이 아닙니다. **에이전트 AI 시대에 맞춘 설계 철학**, **Android 온디바이스와의 연동**, **Apache 2.0의 완전한 개방성**이 맞물린 패키지이기 때문입니다.
+
+Llama 4가 컨텍스트 길이로, Qwen 3.5가 다국어로 포지셔닝했다면, Gemma 4는 **에이전트 워크플로우와 온디바이스**라는 축으로 자신의 영역을 잡았습니다. 2026년 하반기 Gemini Nano 4 출시가 가까워질수록 Gemma 4의 전략적 위치는 더 분명해질 것입니다.
+
+지금 당장 Gemma 4를 실무에 투입하기보다는, AICore Developer Preview로 프로토타입을 만들어보고 커뮤니티 벤치마크 결과를 지켜보는 것이 현명한 접근입니다. 2026년 하반기를 기다리는 동안 익혀둘 모델로는 충분히 매력적입니다.
+
+---
+
+**참고 자료:**
+1. [Google DeepMind — Gemma 4 공식 발표](https://deepmind.google/models/gemma/)
+2. [Google AI for Developers — AICore Developer Preview](https://ai.google.dev/gemma/docs/core)
+3. [Google TurboQuant — ICLR 2026 논문](https://research.google/pubs/)
+4. [HuggingFace — Gemma 4 모델 허브](https://huggingface.co/google/gemma-4)
+
+**내부 링크:**
+- [Llama 4 Scout vs Maverick: 오픈소스 LLM의 새 기준](/blog/ai-tools/llama-4-scout-vs-maverick-llm)
+- [Qwen 3.5: 알리바바 오픈소스 AI 로컬 실행 리뷰](/blog/ai-tools/qwen35-ai)
+- [Gemini 3.1 Flash: Google AI 검색의 새 기준](/blog/ai-tools/google-search-live-gemini-31-flash)
+- [MCP(Model Context Protocol): AI 에이전트 통합의 표준](/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026)
