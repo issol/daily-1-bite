@@ -70,7 +70,7 @@ export async function getPopularPosts(limit = 10): Promise<PopularPost[]> {
       dimensionFilter: {
         filter: {
           fieldName: 'pagePath',
-          stringFilter: { matchType: 'BEGINS_WITH', value: '/blog/' },
+          stringFilter: { matchType: 'CONTAINS', value: '/blog/' },
         },
       },
       orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
