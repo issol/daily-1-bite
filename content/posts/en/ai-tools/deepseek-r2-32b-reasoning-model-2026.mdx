@@ -1,0 +1,172 @@
+---
+title: "DeepSeek R2: Leaked 1.2T vs Shipped 32B — 92.7% AIME, MIT License [2026 Review]"
+date: "2026-04-12"
+description: "Everyone expected a 1.2T parameter monster. DeepSeek shipped a dense 32B model — and it scored 92.7% on AIME 2025. Here's why smaller won, and what it means for open-source AI."
+category: "ai-tools"
+tags: ["DeepSeek R2", "reasoning AI", "AIME", "MLA", "open source AI", "MIT license", "Chinese AI"]
+---
+
+![Abstract AI circuit network](https://images.unsplash.com/photo-1744640326166-433469d102f2?w=1080&q=80)
+
+_Photo by [Immo Wegmann](https://unsplash.com/@tinkerman?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Everyone expected a trillion-parameter giant. DeepSeek shipped something leaner — and arguably more impressive._
+
+## TL;DR
+
+- **DeepSeek R2**: The latest reasoning-first model from Chinese AI lab DeepSeek
+- **Shipped model**: Dense 32B transformer under **MIT license** (open-weight)
+- Leaked specs from 2025 predicted 1.2T parameters with 78B active MoE — **the actual release is completely different**
+- **AIME 2025: 92.7%**, MATH-500: 89.4%
+- Improved **MLA (Multi-head Latent Attention)** — significantly reduces KV cache memory
+- Available for self-hosting on GPU clouds like Spheron
+
+---
+
+## The Leak vs. Reality: A Story Worth Telling
+
+In late 2025, leaked specifications circulated across AI forums and research communities. The numbers were jaw-dropping: **1.2 trillion parameters with 78 billion active via a Mixture-of-Experts architecture**. DeepSeek R1 had already shaken the industry with its January 2025 release — an open-weight model that outperformed OpenAI's best on math benchmarks while costing a fraction to run. If R2 was going to be a 1.2T behemoth, it seemed poised to redefine what open-source AI could do at scale.
+
+Then the actual release landed: **32 billion parameters, dense transformer**.
+
+No MoE. No trillion parameters. Less than 3% of the rumored size. The reaction in the community split immediately — some called it a disappointment, others looked at the benchmark scores and saw something more interesting.
+
+**AIME 2025: 92.7%.** On one of the hardest math competition problem sets, DeepSeek R2 matched or exceeded every closed-source frontier model.
+
+The paradox: smaller model, stronger performance. Understanding why explains the real story here.
+
+---
+
+## The Dense 32B Secret: MLA and Distillation
+
+DeepSeek hasn't officially explained what happened to the 1.2T MoE architecture from the leaked specs. Two scenarios are technically plausible:
+
+**Scenario 1: The large model was a teacher.** As covered in the [DeepSeek vs. OpenAI distillation controversy](/en/blog/dev-life/deepseek-openai-ai), knowledge distillation compresses a large teacher model's reasoning patterns into a smaller student model. It's likely that DeepSeek trained the 1.2T MoE to high capability, then used its output distributions to train the 32B dense model. The student inherits the teacher's reasoning, not just the answers — which explains the math performance.
+
+**Scenario 2: MLA improvements made density work.** R2 ships with a substantially improved version of DeepSeek's **Multi-head Latent Attention (MLA)** architecture. MLA compresses the Key-Value cache into a low-dimensional latent space, reducing memory footprint significantly compared to standard multi-head attention. With better MLA, a dense 32B model can run with the memory profile closer to a much smaller model — enabling longer context at the same VRAM cost, with faster inference.
+
+The likely reality is both: a distillation pipeline that transferred knowledge from a massive internal model, plus architectural efficiency gains that made the 32B model punch well above its weight.
+
+```python
+# DeepSeek R2 via OpenAI-compatible API
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="YOUR_DEEPSEEK_API_KEY",
+    base_url="https://api.deepseek.com/v1"
+)
+
+response = client.chat.completions.create(
+    model="deepseek-r2",
+    messages=[
+        {
+            "role": "user",
+            "content": "Prove that for any integer n, n² + n is always even."
+        }
+    ]
+    # R2 automatically generates extended chain-of-thought before answering
+)
+
+# The <think> block in the response shows the reasoning trace
+print(response.choices[0].message.content)
+```
+
+The API is fully OpenAI-compatible — switching from GPT or Claude requires only a `base_url` change.
+
+---
+
+## Benchmark Comparison
+
+| Benchmark | DeepSeek R2 | GPT-5.4 | Claude Opus 4.6 | Gemini 3 Pro |
+|-----------|------------|---------|----------------|-------------|
+| **AIME 2025** | **92.7%** | ~91% | ~88% | ~85% |
+| **MATH-500** | **89.4%** | ~88% | ~87% | ~84% |
+| **HumanEval** | ~82% | ~85% | **~88%** | ~81% |
+| **Model size** | 32B (dense) | Undisclosed | Undisclosed | Undisclosed |
+| **License** | **MIT** | Closed | Closed | Closed |
+
+On math and reasoning, R2 is at or above the frontier of closed-source models. On coding tasks, [Claude Opus 4.6](/en/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai) still leads. The key differentiator: R2 is the only model at this benchmark level that you can download, modify, and deploy commercially under a permissive open license.
+
+---
+
+## Running R2 Locally
+
+Dense 32B at full precision requires substantial GPU memory.
+
+**Hardware requirements:**
+- FP16 full precision: **64GB VRAM** (1× A100 80GB, or 2× RTX 4090)
+- 4-bit quantization (GGUF): **~20GB VRAM** (single RTX 4090 is sufficient)
+
+```bash
+# Easiest path: Ollama
+ollama pull deepseek-r2:32b
+ollama run deepseek-r2:32b
+
+# Memory-constrained setup (4-bit quantization)
+ollama pull deepseek-r2:32b-q4_K_M
+ollama run deepseek-r2:32b-q4_K_M
+```
+
+For cloud deployment without local GPUs, **Spheron** offers distributed GPU access where a single H100 handles full-precision R2 inference at around $2–4/hour. The MIT license means no restrictions on what you do with the outputs.
+
+![AI server and GPU cloud infrastructure](https://images.unsplash.com/photo-1718154621928-a14709d0c768?w=1080&q=80)
+
+_Photo by [BoliviaInteligente](https://unsplash.com/@boliviainteligente?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | A single H100 on a cloud provider can run DeepSeek R2 at full precision._
+
+---
+
+## Open-Source Reasoning Model Comparison
+
+| Model | Parameters | Architecture | AIME 2025 | License |
+|-------|-----------|-------------|----------|---------|
+| **DeepSeek R2** | 32B dense | Transformer + MLA | **92.7%** | MIT |
+| Qwen3.5 (full) | 397B (17B active) | MoE | 91.3% | Apache 2.0 |
+| Llama 4 Maverick | 400B+ (17B active) | MoE | ~81% | Llama 4 |
+| Gemma 4 | Undisclosed | Dense | ~79% | Apache 2.0 |
+| DeepSeek R1 | 671B (37B active) | MoE | ~79% | MIT |
+
+The comparison against DeepSeek R1 is particularly striking. R1 required 671B total parameters (37B active) to hit ~79% on AIME. R2 hits 92.7% with 32B dense — no MoE overhead, no massive total parameter count. That's a meaningful efficiency jump driven by distillation and architectural improvement, not just scaling.
+
+[Versus Qwen3.5](/en/blog/ai-tools/qwen35-ai), R2 leads narrowly on math and reasoning but Qwen3.5 has advantages in multilingual coverage (201 languages) and coding breadth. Both are legitimately strong; the right choice depends on your workload. [Llama 4](/en/blog/ai-tools/llama-4-scout-vs-maverick-llm) remains the best open-weights option if multimodal capability matters.
+
+---
+
+## Developer Perspective
+
+After running R2 on several problem types, here's the honest breakdown:
+
+**Where R2 excels:**
+- Math competition problems, formal logic, and algorithm design — the `<think>` reasoning trace is structured and coherent in a way that genuinely aids debugging
+- Drop-in replacement for OpenAI API calls; migration is trivial
+- MIT license removes legal friction for commercial deployments, particularly where data privacy rules out cloud APIs
+
+**Where R2 falls short:**
+- Long-form prose generation is noticeably below Claude or GPT in naturalness
+- Full-precision local deployment requires hardware most individual developers don't have
+- Complex multi-file code generation still favors [Claude Opus 4.6](/en/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai) in practice
+
+**The sweet spot:** scientific computing, mathematical reasoning, competitive programming preparation, and any use case where you need strong chain-of-thought reasoning with full data locality.
+
+---
+
+## Verdict
+
+DeepSeek R2 makes the "smaller but stronger" paradox real. The 1.2T leaked specs generated hype; the actual 32B release delivered results. From a practical standpoint, this is the better outcome. A 1.2T model deployed only on expensive cloud infrastructure would have limited open-source value. A 32B model under MIT license that you can run on a single A100 — and that hits 92.7% on AIME — changes what's possible for independent developers and organizations with data privacy requirements.
+
+On math and reasoning specifically, R2 is the current best in open-source. The gap against closed frontier models like GPT-5.4 and Claude Opus 4.6 has narrowed to statistical noise territory on these benchmarks. For general coding and long-form writing, those models still lead.
+
+The bigger signal: a Chinese AI lab shipped an open-weight reasoning model competitive with every major closed-source lab — at 32 billion parameters. Whatever you think about the 1.2T rumors, the actual product is the more impressive story.
+
+---
+
+**Related posts:**
+
+- [DeepSeek vs. OpenAI: The Model Distillation Controversy, Explained](/en/blog/dev-life/deepseek-openai-ai) (Essential context for understanding how R2's distillation likely worked)
+- [Claude Opus 4.6 vs GPT-5.3 Codex — Two AIs Released on the Same Day](/en/blog/ai-tools/claude-opus-46-vs-gpt-53-codex-ai) (The closed-source models R2 is now benchmarking against)
+- [Qwen3.5 Review: Running Alibaba's Open Source AI Locally](/en/blog/ai-tools/qwen35-ai) (The closest open-source competitor to R2 on math benchmarks)
+- [Llama 4 Scout vs Maverick: Full Analysis](/en/blog/ai-tools/llama-4-scout-vs-maverick-llm) (Meta's open-source alternative for different use cases)
+
+**References:**
+
+1. DeepSeek R2 Technical Report (2026)
+2. AIME 2025 official results and AI model comparison (AoPS)
+3. HuggingFace model card: deepseek-ai/DeepSeek-R2 — architecture and training details
+4. Spheron Network — DeepSeek R2 Deployment Guide (2026)
