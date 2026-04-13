@@ -11,9 +11,7 @@ tags: ["AI환각", "CAG", "ChatGPT", "llm", "MCP"]
  
 ![AI 기술을 상징하는 반도체 칩 클로즈업](https://images.unsplash.com/photo-1697577418970-95d99b5a55cf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwdGVjaG5vbG9neXxlbnwwfDB8fHwxNzcyNzYwNjk3fDA&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by
-- [Igor Omilaev](https://unsplash.com/@omilaev?utm\_source=daily-1-bite&utm\_medium=referral) on
-- [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | LLM의 정확성 한계를 넘어서는 새로운 접근법이 등장했다_
+_LLM의 정확성 한계를 넘어서는 새로운 접근법이 등장했다 | 사진: Igor Omilaev, Unsplash_
 
  근데 2026년 2월, Stephen Wolfram이 흥미로운 걸 발표했습니다. [Wolfram Foundation Tool](https://writings.stephenwolfram.com/2026/02/making-wolfram-tech-available-as-a-foundation-tool-for-llm-systems/)이라는 건데, 핵심 개념이 **CAG(Computation-Augmented Generation, 계산 증강 생성)**입니다. RAG가 "문서를 찾아서 끼워 넣는" 거라면, CAG는 "실시간으로 계산해서 끼워 넣는" 겁니다. 이게 왜 중요하고, 실제로 어떻게 쓸 수 있는지 정리해봤습니다.
 
@@ -25,7 +23,7 @@ _Photo by
 ## CAG란 무엇인가? RAG와 뭐가 다른가
  **CAG는 LLM의 출력 스트림에 실시간 계산 결과를 주입하는 방식입니다.** 기존 RAG(Retrieval-Augmented Generation)와 비교하면 차이가 명확해집니다.
 
-    항목 RAG (검색 증강 생성) CAG (계산 증강 생성)    데이터 소스 사전 저장된 문서/벡터DB Wolfram 계산 엔진 (실시간)   응답 방식 기존 문서에서 관련 구절 검색 쿼리에 맞게 즉석 계산   한계 문서에 없으면 답 못 함 계산 가능한 영역에 한정   환각 대응 관련 문서로 맥락 보강 정확한 계산 결과로 대체   적합한 질문 "이 문서에서 X는?" "X의 값은?", "A와 B의 차이는?"   솔직히 처음엔 "그냥 Wolfram Alpha API 갖다 쓰는 거 아닌가?" 싶었습니다. 근데 좀 다릅니다. CAG는 LLM이 "아, 여기서 계산이 필요하겠다"고 판단하면 자동으로 Wolfram 엔진을 호출하고, 그 결과를 자연어 응답에 녹여내는 구조입니다. 개발자가 일일이 "여기선 API 호출해" 같은 분기를 짤 필요가 없어요.
+    항목 RAG (검색 증강 생성) CAG (계산 증강 생성)    데이터 소스 사전 저장된 문서/벡터DB Wolfram 계산 엔진 (실시간)   응답 방식 기존 문서에서 관련 구절 검색 쿼리에 맞게 즉석 계산   한계 문서에 없으면 답 못 함 계산 가능한 영역에 한정   환각 대응 관련 문서로 맥락 보강 정확한 계산 결과로 대체   적합한 질문 "이 문서에서 X는?" "X의 값은?", "A와 B의 차이는?"   처음엔 "그냥 Wolfram Alpha API 갖다 쓰는 거 아닌가?" 싶었습니다. 근데 좀 다릅니다. CAG는 LLM이 "아, 여기서 계산이 필요하겠다"고 판단하면 자동으로 Wolfram 엔진을 호출하고, 그 결과를 자연어 응답에 녹여내는 구조입니다. 개발자가 일일이 "여기선 API 호출해" 같은 분기를 짤 필요가 없어요.
 
  [이전에 GPT-5.2의 40만 토큰 컨텍스트를 다뤘을 때](https://daily1bite.com/blog/ai-tools/gpt-52-40)도 느꼈지만, 컨텍스트 윈도우가 아무리 커져도 "계산 정확성"은 별개의 문제입니다. 토큰을 100만 개 넣는다고 1+1=3이 되지 않는 것처럼요.
 
@@ -40,9 +38,7 @@ _Photo by
   Wolfram 계정 (무료 티어 존재) MCP 호환 LLM 클라이언트 (Claude Desktop, ChatGPT 등) Node.js 18+ (로컬 MCP 서버 실행 시)  
 ![수학 공식이 적힌 노트](https://images.unsplash.com/photo-1754304342501-54bad0a6d195?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxtYXRoZW1hdGljcyUyMGNvbXB1dGF0aW9ufGVufDB8MHx8fDE3NzI3NjA2MjZ8MA&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by
-- [Bozhin Karaivanov](https://unsplash.com/@bkaraivanov?utm\_source=daily-1-bite&utm\_medium=referral) on
-- [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | CAG의 핵심은 "검색" 대신 "계산"이다_
+_CAG의 핵심은 "검색" 대신 "계산"이다 — Photo: Bozhin Karaivanov/Unsplash_
 
  
 ## 단계별 실전 연동 — MCP로 Wolfram 붙이기
@@ -69,13 +65,11 @@ CAG 적용 후: Wolfram 엔진이 실시간 데이터를 계산해서 정확한 
  
 ![노트북 화면에 코드가 표시된 개발 환경](https://images.unsplash.com/photo-1763568258388-25a20ddd8a95?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxkZXZlbG9wZXIlMjBsZWFybmluZyUyMGNvZGV8ZW58MHwwfHx8MTc3Mjc2MTA5M3ww&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by
-- [Daniil Komov](https://unsplash.com/@dkomow?utm\_source=daily-1-bite&utm\_medium=referral) on
-- [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | Agent One API는 기존 OpenAI SDK와 호환된다_
+_Agent One API는 기존 OpenAI SDK와 호환된다 (Photo by Daniil Komov on Unsplash)_
 
  
 ## CAG가 진짜 빛나는 영역
- **모든 질문에 CAG가 필요한 건 아닙니다.** 솔직히 "파이썬에서 리스트 정렬하는 법"을 물어보는 데 Wolfram 엔진을 돌릴 필요는 없죠. CAG가 진짜 효과적인 영역을 정리하면 이렇습니다.
+ **모든 질문에 CAG가 필요한 건 아닙니다.** "파이썬에서 리스트 정렬하는 법"을 물어보는 데 Wolfram 엔진을 돌릴 필요는 없죠. CAG가 진짜 효과적인 영역을 정리하면 이렇습니다.
 
  
 ### 1\. 수치 계산이 포함된 질문
@@ -83,7 +77,7 @@ _Photo by
 ### 2\. 실시간 데이터가 필요한 질문
  "오늘 금 시세는?" → 실시간 시세 조회 + 환산 "서울에서 런던까지 비행 거리는?" → 좌표 기반 정확한 대권 거리 계산
 ### 3\. 복합 변환/단위 계산
- "5 gallon은 몇 리터?" → 단순하지만 LLM이 종종 틀리는 영역 "화씨 451도는 섭씨로?" → 232.78°C (LLM은 가끔 230°C로 반올림)TMI인데, 제가 Wolfram 연동을 테스트하면서 가장 놀랐던 건 화학식 관련 질문이었습니다. "카페인의 분자량은?"이라고 물었을 때, 일반 ChatGPT는 "약 194 g/mol"이라고 했는데 실제로는 194.19 g/mol이거든요. 큰 차이는 아니지만, 논문이나 연구 코드에서 이런 소수점 차이가 결과를 바꿀 수 있습니다.
+ "5 gallon은 몇 리터?" → 단순하지만 LLM이 종종 틀리는 영역 "화씨 451도는 섭씨로?" → 232.78°C (LLM은 가끔 230°C로 반올림) 참고로, 제가 Wolfram 연동을 테스트하면서 가장 놀랐던 건 화학식 관련 질문이었습니다. "카페인의 분자량은?"이라고 물었을 때, 일반 ChatGPT는 "약 194 g/mol"이라고 했는데 실제로는 194.19 g/mol이거든요. 큰 차이는 아니지만, 논문이나 연구 코드에서 이런 소수점 차이가 결과를 바꿀 수 있습니다.
 
  
 ## 자주 발생하는 문제와 해결법
@@ -110,9 +104,7 @@ _Photo by
  
 ![커피와 함께 노트북으로 작업하는 개발자 책상](https://images.unsplash.com/photo-1502900476531-ca62d0f2b679?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxkZXZlbG9wZXIlMjBsZWFybmluZyUyMGNvZGV8ZW58MHwwfHx8MTc3Mjc2MTA5M3ww&ixlib=rb-4.1.0&q=80&w=1080)
 
-_Photo by
-- [John Salzarulo](https://unsplash.com/@johnsalzarulo?utm\_source=daily-1-bite&utm\_medium=referral) on
-- [Unsplash](https://unsplash.com/?utm\_source=daily-1-bite&utm\_medium=referral) | RAG와 CAG를 조합하면 실무에서 더 강력하다_
+_RAG와 CAG를 조합하면 실무에서 더 강력하다_
 
  
 ## 정리 + 다음 단계
@@ -133,7 +125,7 @@ _Photo by
 - [It's 2026\. Why Are LLMs Still Hallucinating? — Duke University Libraries Blog](https://blogs.library.duke.edu/blog/2026/01/05/its-2026-why-are-llms-still-hallucinating/)
 - [Beyond Retrieval: The Expanding Universe of Augmented Generation in AI — IEEE Computer Society](https://www.computer.org/publications/tech-news/trends/augmented-generation-in-ai) 
 
-**함께 읽으면 좋은 글:**
+**더 읽어볼 만한 글:**
 
 
 - [GPT-5.2의 40만 토큰 컨텍스트 시대: 긴 문서 처리, 정말 달라졌을까?](https://daily1bite.com/blog/ai-tools/gpt-52-40) - LLM 컨텍스트 확장이 정확성 문제를 해결하는지 분석

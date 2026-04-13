@@ -1,12 +1,12 @@
 ---
 title: "Memobase: ChatGPT·Claude 기억을 하나로 잇는 AI 유니버설 메모리, 써볼 만할까?"
 date: "2026-03-05"
-description: "솔직히 말씀드리면, \"AI 메모리 통합\"이라는 말을 처음 들었을 때 저는 콧방귀를 꼈습니다. 아니, ChatGPT에도 메모리 있고 Claude에도 메모리 생겼는데, 굳이 또 뭘 끼워넣어야 하나? 그냥 마케팅용 래퍼 아닌가 싶었거든요. Photo by Zach M on Unsplash..."
+description: "\"AI 메모리 통합\"이라는 말을 처음 들었을 때 저는 콧방귀를 꼈습니다. 아니, ChatGPT에도 메모리 있고 Claude에도 메모리 생겼는데, 굳이 또 뭘 끼워넣어야 하나? 그냥 마케팅용 래퍼 아닌가 싶었거든요. Photo by Zach M on Unsplash..."
 category: "ai-tools"
 tags: ["AI 도구 리뷰", "ai 메모리", "ai 생산성", "ChatGPT Claude 연동", "MCP"]
 ---
 
-솔직히 말씀드리면, "AI 메모리 통합"이라는 말을 처음 들었을 때 저는 콧방귀를 꼈습니다. 아니, ChatGPT에도 메모리 있고 Claude에도 메모리 생겼는데, 굳이 또 뭘 끼워넣어야 하나? 그냥 마케팅용 래퍼 아닌가 싶었거든요.
+"AI 메모리 통합"이라는 말을 처음 들었을 때 저는 콧방귀를 꼈습니다. 아니, ChatGPT에도 메모리 있고 Claude에도 메모리 생겼는데, 굳이 또 뭘 끼워넣어야 하나? 그냥 마케팅용 래퍼 아닌가 싶었거든요.
 
  
 ![AI와 인간 두뇌의 연결을 상징하는 디지털 아트](https://images.unsplash.com/photo-1770233621425-5d9ee7a0a700?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwbWVtb3J5fGVufDB8MHx8fDE3NzI2NzI4MzJ8MA&ixlib=rb-4.1.0&q=80&w=1080)
@@ -49,7 +49,7 @@ _Photo by
 
  \{ "mcpServers": \{ "memobase": \{ "url": "https://mcp.memobase.ai/sse" \} \} \} **ChatGPT 설정:**
 
- ChatGPT는 MCP를 네이티브로 지원하지 않아서 조금 다릅니다. Developer Mode를 켜고 Custom GPT를 만들어야 하는데, 솔직히 이 과정은 좀 번거로웠어요. Memobase 측에서 제공하는 [사전 구성된 Memobase GPT](https://memobase.ai/)를 쓰면 설정 없이 바로 사용할 수 있긴 합니다.
+ ChatGPT는 MCP를 네이티브로 지원하지 않아서 조금 다릅니다. Developer Mode를 켜고 Custom GPT를 만들어야 하는데, 이 과정은 좀 번거로웠어요. Memobase 측에서 제공하는 [사전 구성된 Memobase GPT](https://memobase.ai/)를 쓰면 설정 없이 바로 사용할 수 있긴 합니다.
 
  
 ## 실제 사용: "이걸 기억하고 있네?"
@@ -68,7 +68,7 @@ _Photo by
 
  Claude Desktop에서 이렇게 말했습니다:
 
- "현재 프로젝트는 Next.js 15 App Router + Supabase + TailwindCSS 4 조합이야. DB 스키마에 users, posts, comments 테이블이 있고, 인증은 Supabase Auth를 쓰고 있어."Memobase가 이 정보를 자동으로 저장했고, 20분 뒤 Cursor에서 새 파일을 작성할 때 "현재 프로젝트 스택이 뭐였지?" 하고 물으니까 방금 Claude에 말한 내용이 그대로 나왔습니다. 이건 좀 놀랐습니다.
+ "현재 프로젝트는 Next.js 15 App Router + Supabase + TailwindCSS 4 조합이야. DB 스키마에 users, posts, comments 테이블이 있고, 인증은 Supabase Auth를 쓰고 있어."Memobase가 이 정보를 자동으로 저장했고, 20분 뒤 Cursor에서 새 파일을 작성할 때 "현재 프로젝트 스택이 뭐였지?" 하고 물으니까 방금 Claude에 말한 내용이 그대로 나왔습니다. 놀랍더라고요.
 
  **시나리오 2: 개인 선호도 기억**
 
@@ -86,7 +86,7 @@ _Photo by
 
     구성 요소 기술 역할    저장 PostgreSQL + pgvector 메모리 영구 저장   검색 IVFFlat 코사인 인덱싱 의미 기반 유사도 검색   보안 Row-Level Security (RLS) 사용자별 데이터 격리   프로토콜 MCP (Model Context Protocol) AI 도구 간 표준 연결   인증 OAuth 2.0 안전한 접근 제어   메모리는 시맨틱(의미), 에피소딕(사건), 절차적(방법), 결정 기반의 네 가지 유형으로 분류됩니다. 이게 단순한 키-밸류 저장소가 아니라는 뜻인데요.
 
- TMI인데, v0.0.40 업데이트에서 LLM 호출 횟수를 기존 310회에서 고정 3회로 줄여서 토큰 비용이 약 4050% 절감됐다고 합니다. 이 부분은 개발자로서 꽤 인상적이었어요.
+ 참고로, v0.0.40 업데이트에서 LLM 호출 횟수를 기존 310회에서 고정 3회로 줄여서 토큰 비용이 약 4050% 절감됐다고 합니다. 이 부분은 개발자로서 꽤 인상적이었어요.
 
  
 ![개발자의 코딩 작업 환경과 모니터](https://images.unsplash.com/photo-1566915896913-549d796d2166?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxkZXZlbG9wZXIlMjB3b3Jrc3BhY2UlMjBjb2Rpbmd8ZW58MHwwfHx8MTc3MjY3MjgzNXww&ixlib=rb-4.1.0&q=80&w=1080)
@@ -103,7 +103,7 @@ _Photo by
 
  제 체감으로는 하루 평균 저장 35건, 검색 1520건 정도 발생했습니다. 한 달이면 저장 약 100건(1,000크레딧) + 검색 약 500건(500크레딧) = 1,500크레딧. 무료 플랜으로는 부족하고, Pro($9/월)면 넉넉합니다.
 
- 솔직히 $9면 커피 두 잔 값인데, 매일 AI 컨텍스트 재설명에 쓰는 20분을 아낄 수 있다면 나쁘지 않다고 봅니다.
+ $9면 커피 두 잔 값인데, 매일 AI 컨텍스트 재설명에 쓰는 20분을 아낄 수 있다면 나쁘지 않다고 봅니다.
 
  
 ## 누구에게 추천하고, 누구에게 비추천하나
@@ -133,7 +133,7 @@ _Photo by
  플랫폼 내장 메모리(ChatGPT Memory, Claude Memory)는 각자의 울타리 안에서는 잘 동작하지만 "다리"가 없습니다. Anthropic이 최근 ChatGPT 메모리 임포트 기능을 출시한 것도([Digital Trends, 2026년 3월 기준](https://www.digitaltrends.com/computing/claude-makes-its-ai-memory-feature-free-for-all-users-in-battle-against-chatgpt/)) 이 문제를 인식하고 있다는 방증이지만, 일회성 이관이지 실시간 동기화는 아닙니다.
 
  
-## 솔직한 아쉬운 점
+## 아쉬운 점
  칭찬만 하면 광고 같으니까 불편했던 점도 적겠습니다.
 
  **첫째, ChatGPT 연동이 번거롭습니다.** Claude와 Cursor는 MCP 네이티브라 매끄러운 반면, ChatGPT는 Custom GPT를 만들어야 합니다. OpenAI가 MCP를 공식 채택하지 않는 한 이 불편함은 계속될 것 같아요.
@@ -168,7 +168,7 @@ _Photo by
 - [Claude Memory 무료 전환 및 ChatGPT 사용자 유치 전략](https://www.digitaltrends.com/computing/claude-makes-its-ai-memory-feature-free-for-all-users-in-battle-against-chatgpt/) (Digital Trends, 2026년 3월)
 - [Mem0 – The Memory Layer for AI Apps](https://mem0.ai/) 
 
-**함께 읽으면 좋은 글:**
+**더 읽어볼 만한 글:**
 
 
 - [GPT-5.2의 40만 토큰 컨텍스트 시대: 긴 문서 처리, 정말 달라졌을까?](https://daily1bite.com/blog/ai-tools/gpt-52-40) - 컨텍스트 윈도우 확장과 메모리, 결국 같은 문제를 다른 방향에서 풀고 있습니다

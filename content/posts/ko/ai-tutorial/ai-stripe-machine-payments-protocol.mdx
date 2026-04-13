@@ -46,7 +46,7 @@ _출처: [Forrester](https://www.forrester.com/blogs/why-stripes-machine-payment
 
 **4단계**: 리소스가 전달됩니다.
 
- HTTP 402 상태 코드, 혹시 아시나요? 1990년대에 "나중에 쓰려고" 예약해둔 코드인데, 30년 만에 드디어 제 역할을 찾은 겁니다. 솔직히 좀 감동적이기까지 하더라고요.
+ HTTP 402 상태 코드, 혹시 아시나요? 1990년대에 "나중에 쓰려고" 예약해둔 코드인데, 30년 만에 드디어 제 역할을 찾은 겁니다. 좀 감동적이기까지 하더라고요.
 
  \{ "type": "https://paymentauth.org/problems/payment-required", "title": "Payment Required", "status": 402, "detail": "Payment is required to access this resource.", "challengeId": "ch\_abc123..." \} 여기서 핵심은 **세션(Session)** 개념입니다. Stripe는 이걸 "OAuth for money"라고 부르는데, 비유가 정확합니다. OAuth가 "이 앱에 내 구글 계정 접근 권한을 줄게"인 것처럼, MPP 세션은 "이 에이전트에 N달러까지 결제 권한을 줄게"인 거예요. 에이전트가 한 번 승인받으면, 설정된 한도 안에서 마이크로페이먼트를 스트리밍합니다. 매번 승인 안 받아도 됩니다.
 
@@ -68,7 +68,7 @@ _출처: [Forrester](https://www.forrester.com/blogs/why-stripes-machine-payment
 ## 이미 돌아가는 실전 사례들
  "그래서 진짜 쓰는 데가 있어?"라는 질문이 당연히 나올 텐데, 이미 몇 군데가 MPP로 운영 중입니다.
 
-    서비스 용도 과금 방식    **Browserbase** AI 에이전트가 헤드리스 브라우저 실행 세션당 과금   **PostalForm** 에이전트가 실물 우편 인쇄·발송 건당 과금   **Prospect Butcher Co.** 에이전트가 샌드위치 주문 (뉴욕 픽업/배송) 주문당 과금   **Stripe Climate** 에이전트가 탄소 제거에 기여 금액 지정   TMI인데, 에이전트가 샌드위치를 주문한다는 게 좀 웃기면서도 미래가 느껴지더라고요. "점심 뭐 먹지" 고민하는 시대가 진짜 끝날 수도 있겠다 싶었습니다.
+    서비스 용도 과금 방식    **Browserbase** AI 에이전트가 헤드리스 브라우저 실행 세션당 과금   **PostalForm** 에이전트가 실물 우편 인쇄·발송 건당 과금   **Prospect Butcher Co.** 에이전트가 샌드위치 주문 (뉴욕 픽업/배송) 주문당 과금   **Stripe Climate** 에이전트가 탄소 제거에 기여 금액 지정   에이전트가 샌드위치를 주문한다는 게 좀 웃기면서도 미래가 느껴지더라고요. "점심 뭐 먹지" 고민하는 시대가 진짜 끝날 수도 있겠다 싶었습니다.
 
  
 ![디지털 결제 기술을 상징하는 신용카드와 계산기](https://images.unsplash.com/photo-1633526544365-a98d534c9201?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxkaWdpdGFsJTIwcGF5bWVudCUyMHRlY2hub2xvZ3l8ZW58MHwwfHx8MTc3NDMzNjA4Nnww&ixlib=rb-4.1.0&q=80&w=1080)
@@ -87,7 +87,7 @@ _Photo by
 
  
 ## 주의할 점: 에이전트에게 지갑을 맡긴다는 것
- 솔직히 한 가지 불안한 점이 있습니다. 에이전트에게 결제 권한을 주면, 과금 폭주(runaway spending)가 생길 수 있잖아요?
+ 한 가지 불안한 점이 있습니다. 에이전트에게 결제 권한을 주면, 과금 폭주(runaway spending)가 생길 수 있잖아요?
 
  MPP는 세션에 **지출 한도(spending cap)**를 설정할 수 있어서 어느 정도 안전장치가 있습니다. 하지만 이건 사전에 한도를 잘 설계해야 한다는 뜻이기도 합니다. "일단 100달러 한도로 열어두지"라고 했다가, 에이전트가 반복 루프에 빠져서 100달러를 1분 만에 쓸 수도 있거든요.
 
@@ -112,7 +112,7 @@ _Photo by
 - [PYMNTS - Stripe-Backed Protocol Lets AI Agents Transact Autonomously](https://www.pymnts.com/news/payment-methods/2026/stripe-backed-protocol-lets-ai-agents-transact-autonomously/) (2026.03)
 - [Google Cloud Blog - Announcing Agent Payments Protocol (AP2)](https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol) (2025.09)   
 
-**함께 읽으면 좋은 글:**
+**더 읽어볼 만한 글:**
 
 
 - [AI 에이전트 도입 현실: 기업의 8.6%만 프로덕션, 나머지 91.4%는 어디서 막혔나](https://daily1bite.com/blog/dev-life/ai-86percent-914percent) - 에이전트가 프로덕션까지 가려면 무엇이 필요한지

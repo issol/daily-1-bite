@@ -13,7 +13,7 @@ tags: ["AI 도구 비교", "ai 비디오", "ai 영상 생성", "Google Deepmind"
 
 _AI 영상 생성 기술이 2026년 들어 본격적인 실용 단계에 접어들었습니다. (Photo by Alan Alves on Unsplash)_
 
- 2025년까지만 해도 AI 영상은 "신기하긴 한데 쓸 데가 없다"는 반응이 대부분이었습니다. 손가락이 6개인 사람, 갑자기 녹아내리는 배경, 입 모양과 안 맞는 음성. 솔직히 저도 그 시절엔 "장난감 수준"이라고 생각했습니다. 그런데 2026년 초, OpenAI의 Sora 2와 Google DeepMind의 Veo 3.1이 거의 동시에 메이저 업데이트를 하면서 상황이 완전히 달라졌습니다. 이번 글에서 두 도구를 직접 써보고, 어떤 상황에서 어느 쪽이 더 나은지 정리해보겠습니다.
+ 2025년까지만 해도 AI 영상은 "신기하긴 한데 쓸 데가 없다"는 반응이 대부분이었습니다. 손가락이 6개인 사람, 갑자기 녹아내리는 배경, 입 모양과 안 맞는 음성. 저도 그 시절엔 "장난감 수준"이라고 생각했습니다. 그런데 2026년 초, OpenAI의 Sora 2와 Google DeepMind의 Veo 3.1이 거의 동시에 메이저 업데이트를 하면서 상황이 완전히 달라졌습니다. 이번 글에서 두 도구를 직접 써보고, 어떤 상황에서 어느 쪽이 더 나은지 정리해보겠습니다.
 
  
 ## 한눈에 보는 스펙 비교
@@ -36,7 +36,7 @@ _Sora 2는 "프롬프트를 넣고 기도하는" 단계를 넘어, 연출이 가
 ### API로 써보기
  Sora 2는 아직 API 접근이 제한적이지만, Pro 플랜 이상에서 API 베타를 사용할 수 있습니다. 간단한 호출 예시는 이렇습니다:
 
- import openai client = openai.OpenAI() # Sora 2 영상 생성 요청 response = client.videos.generate( model="sora-2", prompt="A developer sitting in a modern office, typing on a mechanical keyboard. " "Camera slowly zooms in. Warm afternoon light through the window.", duration=12, # 최대 25초 (Pro) resolution="1080p", audio=True, # 오디오 동기화 활성화 aspect\_ratio="16:9" ) print(f"영상 URL: \{response.url\}") print(f"생성 시간: \{response.generation\_time\}초") # 실제 결과: 생성 시간 약 28초, 영상 품질은 기대 이상 솔직히 프롬프트를 한국어로 넣으면 영어보다 결과가 떨어집니다. 영어로 최대한 구체적으로 쓰는 게 핵심입니다. "camera slowly zooms in"처럼 카메라 움직임을 명시하면 결과물이 훨씬 좋아집니다.
+ import openai client = openai.OpenAI() # Sora 2 영상 생성 요청 response = client.videos.generate( model="sora-2", prompt="A developer sitting in a modern office, typing on a mechanical keyboard. " "Camera slowly zooms in. Warm afternoon light through the window.", duration=12, # 최대 25초 (Pro) resolution="1080p", audio=True, # 오디오 동기화 활성화 aspect\_ratio="16:9" ) print(f"영상 URL: \{response.url\}") print(f"생성 시간: \{response.generation\_time\}초") # 실제 결과: 생성 시간 약 28초, 영상 품질은 기대 이상 프롬프트를 한국어로 넣으면 영어보다 결과가 떨어집니다. 영어로 최대한 구체적으로 쓰는 게 핵심입니다. "camera slowly zooms in"처럼 카메라 움직임을 명시하면 결과물이 훨씬 좋아집니다.
 
  
 ## Veo 3.1: 4K + 접근성의 조합
