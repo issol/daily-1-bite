@@ -1,0 +1,123 @@
+---
+title: "에이전틱 AI 96% 도입했는데 94%가 스프롤 우려: 기업 AI 에이전트의 현실 [2026]"
+date: "2026-04-15"
+description: "OutSystems 조사: 기업 96%가 AI 에이전트 도입, 94%가 스프롤로 복잡성·보안 리스크 증가 우려. 1,900명 IT 리더 대상 연구 결과와 개발자 시사점."
+category: "dev-life"
+tags: ["에이전틱 AI", "AI 스프롤", "기업 AI", "OutSystems", "AI 거버넌스", "AI 에이전트", "기술 부채"]
+---
+
+96%가 도입했는데 94%가 걱정한다. 이 숫자가 지금 기업 AI 에이전트 시장의 현실입니다.
+
+OutSystems가 1,900명의 글로벌 IT 리더를 대상으로 조사한 결과가 나왔습니다. 거의 모든 기업이 AI 에이전트를 쓰고 있고, 97%는 조직 전체 에이전틱 AI 전략까지 검토 중입니다. 그런데 동시에 94%가 **AI 스프롤** — 에이전트가 통제 없이 늘어나면서 복잡성, 기술 부채, 보안 리스크가 커지는 현상 — 을 걱정하고 있어요.
+
+도입은 빠른데 관리는 못 따라가는 상황. 이게 2026년 기업 AI의 가장 큰 문제입니다.
+
+---
+
+## 핵심 숫자
+
+![기업 AI 자동화](https://images.unsplash.com/photo-1758626099012-2904337e9c60?w=1080&q=80)
+_기업 AI 에이전트 도입은 빠르지만 관리 체계는 뒤처지고 있습니다 — Photo: Jo Lin/Unsplash_
+
+| 지표 | 수치 | 의미 |
+|------|------|------|
+| AI 에이전트 도입률 | **96%** | 거의 모든 기업이 사용 중 |
+| 조직 전체 에이전틱 전략 검토 | **97%** | 파일럿 → 전사 확대 단계 |
+| AI 스프롤 우려 | **94%** | 복잡성·부채·보안 리스크 증가 |
+| 고급/전문가 수준 자가 평가 | **49%** | 절반은 아직 초중급 |
+| 중앙화된 관리 플랫폼 도입 | **12%** | 대다수가 거버넌스 부재 |
+| 커스텀+프리빌트 혼합 사용 | **38%** | 표준화 어려운 AI 스택 |
+
+가장 충격적인 건 **12%**입니다. 96%가 에이전트를 쓰는데, 중앙화된 관리 플랫폼을 갖춘 기업은 8분의 1도 안 됩니다.
+
+---
+
+## "AI 스프롤"이 뭔가요
+
+AI 스프롤은 **AI 에이전트가 조직 내에서 통제 없이 확산되는 현상**입니다.
+
+마치 2010년대 초반에 각 팀이 자기들끼리 SaaS 도구를 가입하고 쓰다가 IT 부서가 관리 못 하게 된 "SaaS 스프롤"과 같은 패턴이에요. 이번엔 규모가 다릅니다. SaaS는 데이터를 읽기만 했지만, AI 에이전트는 **행동**합니다.
+
+### 스프롤이 만드는 구체적 문제
+
+- **보안 리스크**: 각 팀이 만든 에이전트가 어떤 데이터에 접근하는지 아무도 모름
+- **기술 부채**: 커스텀 에이전트 + 프리빌트 에이전트 + 벤더 에이전트가 뒤섞여 유지보수 불가
+- **비용 폭발**: 에이전트마다 API 호출 비용이 발생하는데, 중복 에이전트가 같은 작업을 반복
+- **규정 준수 불가**: [EU AI Act](https://daily1bite.com/ko/blog/ai-tutorial/eu-ai-act-developer-compliance-2026) 같은 규제에서 요구하는 감사 로그를 남길 수 없음
+
+---
+
+## 38%가 혼합 스택: 왜 문제인가
+
+조사에서 **38%의 기업이 커스텀 빌트와 프리빌트 에이전트를 혼합** 사용한다고 답했습니다. 이건 현실적인 선택이지만, 관리 측면에서는 악몽이에요.
+
+```
+팀 A: LangChain으로 만든 커스텀 에이전트
+팀 B: Microsoft Copilot Cowork (프리빌트)
+팀 C: Salesforce AI 에이전트 (벤더 제공)
+팀 D: 내부 Python 스크립트 + OpenAI API 직접 호출
+
+→ 보안 정책? 팀마다 다름
+→ 감사 로그? 통합 불가
+→ 비용 추적? 각자 알아서
+```
+
+[NVIDIA Agent Toolkit의 OpenShell](https://daily1bite.com/ko/blog/ai-tutorial/nvidia-agent-toolkit-enterprise-ai)이나 [Microsoft Agent 365](https://daily1bite.com/ko/blog/ai-tutorial/microsoft-copilot-cowork-agent-365)가 이 문제를 해결하려는 도구인데, 실제로 도입한 기업은 12%에 불과합니다.
+
+---
+
+## PwC 보고서와 겹치는 지점
+
+![AI 통합 서비스](https://images.unsplash.com/photo-1758626104169-6835c0bd03e3?w=1080&q=80)
+_에이전트 관리 플랫폼 없이 확산되는 AI는 리스크가 됩니다 — Photo: Jo Lin/Unsplash_
+
+며칠 전 [PwC AI 격차 분석](https://daily1bite.com/ko/blog/dev-life/pwc-ai-gap-top-20-percent-2026)에서 다뤘던 내용과 정확히 맞물립니다.
+
+PwC는 "상위 20% 기업이 AI 이익의 74%를 가져간다"고 했습니다. OutSystems 데이터를 보면 그 이유가 보여요. **상위 기업은 중앙화된 거버넌스로 스프롤을 통제**하고, 나머지 80%는 에이전트가 늘어나기만 하고 관리는 못 하는 겁니다.
+
+| | 상위 기업 (PwC 20%) | 나머지 (80%) |
+|---|---|---|
+| 에이전트 관리 | 중앙 플랫폼 | 팀별 각자 |
+| 거버넌스 | 교차기능 보드 | 없거나 형식적 |
+| 스프롤 대응 | 표준화 + 감사 | 방치 |
+| ROI | 측정 가능 | 불명확 |
+
+---
+
+## 개발자에게 의미하는 것
+
+### 1. "에이전트 관리" 역량이 "에이전트 개발"만큼 중요
+
+에이전트를 만드는 건 이제 누구나 합니다. 차별화는 **만든 에이전트를 안전하고 효율적으로 운영하는 능력**에서 납니다. 모니터링, 로깅, 비용 추적, 접근 권한 관리 — 이런 역량이 점점 중요해집니다.
+
+### 2. MCP + 거버넌스 레이어 = 필수 스킬
+
+[MCP가 Linux Foundation으로 간 것](https://daily1bite.com/ko/blog/ai-tutorial/mcp-linux-foundation-open-governance-2026)도 이 맥락입니다. 에이전트 간 표준 프로토콜(MCP) + 거버넌스 레이어(OpenShell, Agent 365)를 이해하는 개발자가 스프롤 문제를 해결할 수 있어요.
+
+### 3. 12%에 들어가는 기업을 도와라
+
+중앙화된 관리 플랫폼을 도입한 기업이 12%밖에 안 됩니다. 이건 **거대한 시장 기회**입니다. 에이전트 관리 도구, 비용 최적화 대시보드, 보안 감사 자동화 — 이런 솔루션에 대한 수요가 폭발할 겁니다.
+
+---
+
+## 정리
+
+96% 도입, 94% 걱정. 이 갭이 2026년 기업 AI의 핵심 과제입니다.
+
+에이전트를 더 많이 만드는 게 답이 아닙니다. **이미 있는 에이전트를 관리하고, 표준화하고, 보안을 확보하는 것**이 다음 단계예요.
+
+[AI 에이전트 도입 현실](https://daily1bite.com/ko/blog/dev-life/ai-86percent-914percent)에서 "8.6%만 프로덕션"이라고 했던 데이터가 96%로 바뀐 건, 도입 자체는 해결됐다는 뜻입니다. 남은 문제는 **관리**입니다.
+
+---
+
+## 출처
+
+- [Agentic AI Goes Mainstream in the Enterprise, but 94% Raise Concern About Sprawl](https://www.businesswire.com/news/home/20260407749542/en/) — BusinessWire, 2026년 4월 7일
+- [State of AI Development 2026: The Move to Agentic AI](https://www.outsystems.com/1/state-ai-development/) — OutSystems, 2026년
+- [94% of enterprises concerned about agentic AI sprawl](https://vir.com.vn/94-of-enterprises-concerned-about-agentic-ai-sprawl-outsystems-finds-150476.html) — VIR, 2026년 4월
+- [Agentic AI Goes Mainstream](https://www.prnewswire.com/apac/news-releases/agentic-ai-goes-mainstream-in-the-enterprise-but-94-raise-concern-about-sprawl-outsystems-research-finds-302739251.html) — PR Newswire, 2026년 4월
+
+**관련 글:**
+
+- [PwC: AI 이익의 75%를 상위 20% 기업이 독점](https://daily1bite.com/ko/blog/dev-life/pwc-ai-gap-top-20-percent-2026) — 거버넌스와 ROI의 상관관계
+- [AI 에이전트 도입 현실: 기업의 8.6%만 프로덕션](https://daily1bite.com/ko/blog/dev-life/ai-86percent-914percent) — 도입 장벽의 변화
