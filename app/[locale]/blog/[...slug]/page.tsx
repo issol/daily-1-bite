@@ -129,7 +129,7 @@ export default async function PostPage({params}: Props) {
 
   const popularPosts = await getPopularPosts(100);
   const viewData = popularPosts.find(
-    (p) => p.path.replace(/^\/blog\//, '').replace(/\/$/, '') === fullSlug
+    (p) => p.path.replace(/^\/(ko|en)\/blog\//, '').replace(/^\/blog\//, '').replace(/\/$/, '') === fullSlug
   );
   const views = viewData?.pageViews || 0;
 

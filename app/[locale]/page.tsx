@@ -22,7 +22,7 @@ export default async function HomePage({params}: Props) {
 
   const enrichedPopular = popularPosts
     .map((p) => {
-      const slug = p.path.replace(/^\/blog\//, '').replace(/\/$/, '');
+      const slug = p.path.replace(/^\/(ko|en)\/blog\//, '').replace(/^\/blog\//, '').replace(/\/$/, '');
       const post = allPosts.find((a) => a.slug === slug);
       return post ? {post, pageViews: p.pageViews} : null;
     })

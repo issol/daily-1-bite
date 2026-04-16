@@ -33,7 +33,7 @@ export default async function StatsPage({ params }: Props) {
   const isKo = locale === 'ko';
 
   const enrichedPosts = popularPosts.map((p, i) => {
-    const slug = p.path.replace(/^\/blog\//, '').replace(/\/$/, '');
+    const slug = p.path.replace(/^\/(ko|en)\/blog\//, '').replace(/^\/blog\//, '').replace(/\/$/, '');
     const post = allPosts.find((a) => a.slug === slug);
     return { ...p, rank: i + 1, displayTitle: post?.title || p.title || slug, slug };
   });

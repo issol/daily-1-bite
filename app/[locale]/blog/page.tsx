@@ -33,7 +33,7 @@ export default async function BlogPage({params}: Props) {
   const popularPosts = await getPopularPosts(100);
   const viewsMap: Record<string, number> = {};
   for (const p of popularPosts) {
-    const slug = p.path.replace(/^\/blog\//, '').replace(/\/$/, '');
+    const slug = p.path.replace(/^\/(ko|en)\/blog\//, '').replace(/^\/blog\//, '').replace(/\/$/, '');
     viewsMap[slug] = p.pageViews;
   }
 
