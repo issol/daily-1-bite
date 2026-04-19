@@ -1,0 +1,169 @@
+---
+title: "Claude Code Routines: Scheduled Cloud Automation Without Cron Jobs [2026-04]"
+date: "2026-04-19"
+description: "Anthropic's Claude Code Routines (research preview, April 14 2026) let you automate scheduled tasks, API triggers, and GitHub webhooks — all running on Anthropic-managed cloud, no laptop required. Developer guide covering setup, trigger types, connectors, plan limits, and real-world use cases."
+category: "ai-tutorial"
+tags: ["Claude Code", "AI automation", "cloud automation", "scheduled tasks", "GitHub webhook", "Anthropic"]
+---
+
+If you've used Claude Code for a while, you've probably hit the same wall I did: Claude is great at a task, but you have to be there to kick it off. Nightly doc audits, PR triage every morning, weekly dependency checks — all useful, all requiring you to open a terminal and type something.
+
+Anthropic opened the research preview for **Claude Code Routines** on April 14, 2026, and it's the answer to that problem. Routines let Claude run autonomously on a schedule, on API call, or in response to GitHub events — on Anthropic-managed cloud, not on your machine.
+
+## What a Routine Actually Is
+
+A routine is a saved configuration with four components:
+
+1. **Prompt** — what you want Claude to do
+2. **Repositories** — which repos to give Claude access to
+3. **Connectors** — external services Claude can read from or write to (Slack, Linear, Google Drive, GitHub)
+4. **Trigger** — what starts the routine
+
+You set it up once. Claude runs it autonomously, with no manual approvals during execution, on Anthropic's infrastructure. Your laptop doesn't need to be on.
+
+## Three Trigger Types
+
+### 1. Schedule
+
+The simplest trigger. Set a cadence — hourly, nightly, or weekly — and Claude runs your prompt at that interval.
+
+```
+Trigger: schedule
+Cadence: nightly (02:00 UTC)
+Prompt: "Scan all open GitHub issues created in the last 24 hours.
+         Categorize them by type (bug, feature, question) and post
+         a summary to #triage in Slack."
+```
+
+This replaces the cron job + shell script + Slack webhook setup most teams have cobbled together for this kind of task.
+
+### 2. API
+
+Routines expose a unique HTTP endpoint. POST to it — from your CI pipeline, your internal tooling, anywhere — and the routine runs.
+
+```bash
+# Trigger a routine via API
+curl -X POST https://api.claude.ai/code/routines/{routine-id}/trigger \
+  -H "Authorization: Bearer $CLAUDE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"context": "deploy completed on production"}'
+```
+
+This is useful when you want to tie Claude's judgment to an existing workflow event — deploy finished, test suite passed, ticket status changed — without rebuilding everything inside Claude Code.
+
+### 3. GitHub Webhook
+
+The most interesting trigger for most developers. Connect a routine to a GitHub repository, and it fires on repository events: `pull_request`, `push`, `issue`, `check_run`, `workflow_run`, `discussion`, `release`, `merge_queue`.
+
+```
+Trigger: GitHub webhook
+Event: pull_request.opened
+Prompt: "Review this PR for security issues, API contract changes,
+         and missing tests. Post a structured comment on the PR with
+         findings organized by severity."
+```
+
+This is where Routines gets genuinely powerful. Instead of a static linting check, you get Claude's actual judgment on your PR — running automatically, without a reviewer having to remember to look.
+
+## Connectors: What Claude Can Read and Write
+
+Beyond repositories, routines can connect to:
+
+- **Slack** — post messages, read channel history
+- **Linear** — read and update issues
+- **Google Drive** — read documents, sheets
+- **GitHub** — beyond the triggering repo, Claude can access additional repos and write comments, create issues, update PRs
+
+For most team automation use cases, Slack + GitHub covers the majority of what you need.
+
+## Plan Limits
+
+| Plan | Daily Runs |
+|------|-----------|
+| Pro | 5 |
+| Max | 15 |
+| Team / Enterprise | 25 |
+
+Routines require Claude Code on the web to be enabled. You manage them at `claude.ai/code/routines` or via the CLI with `/schedule`.
+
+## Practical Use Cases
+
+**Nightly backlog triage**
+```
+Trigger: schedule (nightly)
+Prompt: "Review all open issues in the repo. For each issue older
+         than 14 days with no activity, add a 'needs-triage' label
+         and post a summary to #engineering-triage in Slack."
+```
+
+**PR security review**
+```
+Trigger: GitHub webhook (pull_request.opened)
+Prompt: "Review this PR for OWASP Top 10 vulnerabilities, hardcoded
+         secrets, and unsafe dependencies. Post findings as a PR
+         review comment with severity ratings."
+```
+
+**Deploy verification**
+```
+Trigger: API (called from CI after deploy)
+Prompt: "Check the production health endpoints, scan the latest
+         deploy logs for error patterns, and post a status summary
+         to #deployments. Flag anything that needs immediate attention."
+```
+
+**Weekly documentation drift**
+```
+Trigger: schedule (weekly, Monday 09:00)
+Prompt: "Compare the API documentation in /docs against the actual
+         routes in /src/routes. List any endpoints that are documented
+         but removed, or implemented but undocumented. Open a GitHub
+         issue with the findings."
+```
+
+## What's Different from GitHub Actions or Cron
+
+The honest answer: Routines don't replace GitHub Actions for deterministic tasks. If your automation is "run tests, check coverage, fail if below threshold" — GitHub Actions is better. It's faster, more auditable, and handles that class of problem well.
+
+Routines are better when the task requires **judgment**, not just execution. "Triage these issues" is hard to encode in a YAML workflow. "Review this PR for security issues" can't be a bash script. That's where Claude's comprehension actually matters, and that's where Routines adds something GitHub Actions can't provide.
+
+The practical question is: would you normally have a person do this task? If yes, Routines is a reasonable fit. If no — if it's pure automation logic — stick with Actions.
+
+## Research Preview Limitations
+
+This is a research preview, which means a few things:
+
+- Run limits are per-plan (5–25/day) and may change
+- Not all connector types are available in all regions yet
+- The GitHub webhook event list may expand; the current supported set is: `pull_request`, `push`, `issue`, `check_run`, `workflow_run`, `discussion`, `release`, `merge_queue`
+- Audit logs for routine runs are available in the web UI but not yet exportable via API
+
+## Setup in 5 Minutes
+
+1. Go to `claude.ai/code/routines`
+2. Click **New Routine**
+3. Write your prompt (be specific about output format)
+4. Add repositories
+5. Add connectors (authorize Slack, Linear, etc. if needed)
+6. Set your trigger
+7. Save and enable
+
+Or via CLI:
+
+```bash
+# Start the routine setup wizard
+claude /schedule
+```
+
+The CLI wizard walks through the same steps with prompts.
+
+---
+
+The most interesting thing about Routines isn't the scheduling — it's what it signals about Anthropic's direction for Claude Code. Moving from "terminal tool you invoke" to "cloud automation platform you configure once" is a significant shift. Whether Routines at 5–25 runs/day is enough for serious team workflows depends on your use case, but the foundation is solid.
+
+Worth setting up one routine this week, even a simple nightly summary, to get a feel for how autonomous Claude behaves when you're not watching.
+
+**Related:**
+
+- [Claude Code April 2026 Update: /powerup, MCP 500K, Session Stability](https://daily1bite.com/en/blog/ai-tutorial/claude-code-april-2026-update) (Earlier April updates)
+- [OpenAI Codex CLI April 2026 Update](https://daily1bite.com/en/blog/ai-tutorial/openai-codex-cli-april-2026-update) (Comparing approaches to CLI AI automation)
