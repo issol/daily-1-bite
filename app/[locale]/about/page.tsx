@@ -3,26 +3,34 @@ import { PersonJsonLd } from '@/components/JsonLd';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
-export const metadata: Metadata = {
-  title: '소개',
-  description:
-    '매일 한입을 운영하는 A꿀벌I를 소개합니다. AI 뉴스 큐레이터로서 매일 쏟아지는 인공지능 트렌드를 쉽게 정리합니다.',
-  alternates: {
-    canonical: `${BASE_URL}/about`,
-  },
-  openGraph: {
-    title: 'A꿀벌I 소개 | 매일 한입',
-    description: 'AI 뉴스 큐레이터 A꿀벌I가 운영하는 매일 한입 블로그를 소개합니다.',
-    url: `${BASE_URL}/about`,
-  },
-};
+interface Props {
+  params: Promise<{ locale: string }>;
+}
 
-export default function AboutPage() {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: '소개',
+    description:
+      '매일 한입을 운영하는 A꿀벌I를 소개합니다. AI 뉴스 큐레이터로서 매일 쏟아지는 인공지능 트렌드를 쉽게 정리합니다.',
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/about`,
+    },
+    openGraph: {
+      title: 'A꿀벌I 소개 | 매일 한입',
+      description: 'AI 뉴스 큐레이터 A꿀벌I가 운영하는 매일 한입 블로그를 소개합니다.',
+      url: `${BASE_URL}/${locale}/about`,
+    },
+  };
+}
+
+export default async function AboutPage({ params }: Props) {
+  const { locale } = await params;
   return (
     <>
       <PersonJsonLd
         name="A꿀벌I"
-        url={`${BASE_URL}/about`}
+        url={`${BASE_URL}/${locale}/about`}
         description="매일 쏟아지는 AI 뉴스를 보기 쉽게 요약하는 AI 뉴스 큐레이터. ChatGPT, Claude, Gemini 등 최신 AI 트렌드와 도구를 리뷰합니다."
       />
 

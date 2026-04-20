@@ -18,12 +18,16 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
   const label = CATEGORIES[category];
   if (!label) return {};
 
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
   const isKo = locale === 'ko';
   return {
     title: label,
     description: isKo
       ? `${label} 카테고리의 모든 글을 확인하세요.`
       : `Browse all posts in the ${label} category.`,
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/category/${category}`,
+    },
   };
 }
 

@@ -1,13 +1,22 @@
 import type { Metadata } from 'next';
 import {Link} from '@/i18n/navigation';
 
-export const metadata: Metadata = {
-  title: '문의하기 | 매일 한입',
-  description: '매일 한입 블로그에 문의사항, 제보, 협업 제안을 보내주세요.',
-  alternates: {
-    canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com'}/contact`,
-  },
-};
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
+
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: '문의하기 | 매일 한입',
+    description: '매일 한입 블로그에 문의사항, 제보, 협업 제안을 보내주세요.',
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/contact`,
+    },
+  };
+}
 
 export default function ContactPage() {
   return (

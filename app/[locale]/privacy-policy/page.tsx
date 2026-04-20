@@ -1,11 +1,23 @@
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = {
-  title: '개인정보처리방침',
-  description: '매일 한입 블로그의 개인정보처리방침입니다.',
-};
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
-export default function PrivacyPolicyPage() {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  return {
+    title: '개인정보처리방침',
+    description: '매일 한입 블로그의 개인정보처리방침입니다.',
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/privacy-policy`,
+    },
+  };
+}
+
+export default function PrivacyPolicyPage(_props: Props) {
   return (
     <div className="max-w-2xl mx-auto px-4 py-16">
       <h1 className="text-2xl font-bold text-gray-900 mb-8">개인정보처리방침</h1>
