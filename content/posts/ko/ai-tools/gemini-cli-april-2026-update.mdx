@@ -1,0 +1,204 @@
+---
+title: "Gemini CLI 4월 업데이트: 서브에이전트·챕터·컨텍스트 압축 완전 정리 [2026]"
+date: "2026-04-20"
+description: "Gemini CLI v0.38.1에서 서브에이전트 공개 출시. @codebase_investigator 등 기본 에이전트, 병렬 실행, 커스텀 .md 정의까지 — 챕터, 컨텍스트 압축, 터미널 버퍼 등 4월 업데이트 전부 정리했습니다."
+category: "ai-tools"
+tags: ["Gemini CLI", "서브에이전트", "AI 코딩 도구", "Google AI", "LLM 업데이트"]
+---
+
+> "각 서브에이전트는 자체 컨텍스트 윈도우, 커스텀 시스템 지시사항, 그리고 엄선된 도구 세트 안에서 작동합니다." — Jack Wotherspoon & Abhi Patel, Google Developers Blog, 2026년 4월 15일
+
+## TL;DR
+
+Gemini CLI v0.38.1이 2026년 4월 15일 출시됐습니다. 이번 달 가장 큰 변화는 **서브에이전트(Subagents) 공개 출시**입니다. 단일 에이전트가 모든 작업을 처리하면서 생기는 컨텍스트 오염 문제를, 이제 전문화된 서브에이전트에 위임하는 방식으로 구조적으로 해결합니다.
+
+| 기능 | 버전 | 출시일 |
+|------|------|--------|
+| 서브에이전트 공개 출시 | v0.38.1 | 2026-04-15 |
+| 컨텍스트 압축 서비스 | v0.38.0 | 2026-04 |
+| 챕터(Chapters) · 워크트리 | v0.37.0 | 2026-04-08 |
+| 동적 샌드박스 확장 | v0.37.0 | 2026-04-08 |
+
+---
+
+## 왜 이번 업데이트가 눈에 띄었나
+
+솔직히 말하면, 저는 Gemini CLI를 Claude Code의 보조 수단 정도로만 봐왔습니다. 기능은 비슷하고, 이미 Claude Code 워크플로우에 익숙해져 있었으니까요. 근데 이번 v0.38.1은 생각을 좀 바꿔놨습니다.
+
+Claude Code를 포함한 대부분의 AI 코딩 에이전트가 가진 공통 불편함 — 긴 세션에서 컨텍스트가 점점 오염되는 문제 — 을 Gemini CLI가 서브에이전트 아키텍처로 구조적 해결책을 내놓은 겁니다. 각 서브에이전트가 완전히 독립된 컨텍스트 윈도우를 갖기 때문에, 메인 세션에 영향을 주지 않습니다.
+
+[Claude Code 4월 업데이트 총정리](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-april-2026-update)와 비교하면서 이번 업데이트가 어떤 의미인지 짚어보겠습니다.
+
+![Gemini CLI 서브에이전트 개요](https://storage.googleapis.com/gweb-developer-goog-blog-assets/images/Gemini_CLI_subagents_hero_image.original.png)
+_출처: [Google Developers Blog](https://developers.googleblog.com/subagents-have-arrived-in-gemini-cli/) | Gemini CLI 서브에이전트 공식 발표_
+
+---
+
+## 핵심 업데이트 ①: 서브에이전트 공개 출시 (v0.38.1)
+
+### 기본 제공 에이전트 3개
+
+v0.38.1을 업데이트하면 바로 쓸 수 있는 기본 서브에이전트입니다.
+
+- **@cli_help**: Gemini CLI 명령어와 설정 질문 전담
+- **@codebase_investigator**: 코드베이스 분석·조사 전문
+- **@generalist**: 범용 작업 처리
+
+사용법은 간단합니다. 프롬프트 앞에 `@에이전트명`을 붙이면 됩니다.
+
+```bash
+# 코드베이스 구조 파악
+@codebase_investigator "auth 모듈이 어떻게 동작하는지 설명해줘"
+
+# CLI 명령어 확인
+@cli_help "/agents 사용법 알려줘"
+
+# 명시 안 해도 됨 — 메인 에이전트가 자동으로 위임
+"이 레포지토리의 의존성 구조가 어떻게 돼 있어?"
+```
+
+에이전트를 명시하지 않아도 됩니다. 메인 에이전트가 작업 특성을 보고 적합한 서브에이전트에 자동으로 위임합니다.
+
+### 병렬 실행 지원
+
+같은 서브에이전트 여러 인스턴스를 동시에 실행할 수 있습니다. 프론트엔드와 백엔드 코드베이스를 동시에 분석해야 하는 경우, `@codebase_investigator` 두 개를 병렬로 돌리면 됩니다.
+
+![Gemini CLI 병렬 서브에이전트 실행](https://storage.googleapis.com/gweb-developer-goog-blog-assets/images/Gemini_CLI_-_Parallel_Subagents.original.png)
+_출처: [Google Developers Blog](https://developers.googleblog.com/subagents-have-arrived-in-gemini-cli/) | 병렬 서브에이전트 실행 화면_
+
+기다리는 시간이 줄어드는 건 좋은데, API 사용량은 배로 늘어납니다. 무료 플랜 사용자라면 주의하세요.
+
+### 커스텀 에이전트 정의
+
+팀 공통으로 쓸 커스텀 에이전트를 YAML frontmatter가 있는 마크다운 파일로 만들 수 있습니다.
+
+```markdown
+---
+name: frontend_specialist
+description: React, TypeScript, 성능 최적화, 접근성 전문가
+tools:
+  - read_file
+  - grep_search
+  - glob
+  - web_fetch
+---
+
+당신은 프론트엔드 아키텍처 전문가입니다.
+React, TypeScript 코드베이스에서
+WCAG 2.1+ 접근성과 Core Web Vitals 최적화를 항상 고려합니다.
+```
+
+- **개인 전용**: `~/.gemini/agents/frontend_specialist.md`
+- **팀 공유**: `.gemini/agents/frontend_specialist.md` (레포에 커밋)
+
+현재 활성 에이전트 목록은 `/agents` 명령어로 확인합니다.
+
+![Gemini CLI /agents 명령어](https://storage.googleapis.com/gweb-developer-goog-blog-assets/images/Gemini_CLI__agents.original.png)
+_출처: [Google Developers Blog](https://developers.googleblog.com/subagents-have-arrived-in-gemini-cli/) | /agents 명령어 실행 화면_
+
+---
+
+## 핵심 업데이트 ②: 챕터(Chapters) — v0.37.0
+
+긴 세션을 주제별로 자동 그룹화하는 기능입니다. 작업이 진행되면서 자연스럽게 챕터가 생기고, 특정 챕터로 돌아가서 맥락을 확인하거나 확장할 수 있습니다.
+
+저처럼 한 세션에서 여러 파일을 고치다가 흐름을 잃는 분들에게 실용적인 기능입니다. 아 그리고 v0.38.1부터 compact tool output이 기본값으로 켜졌는데, 터미널 출력이 훨씬 깔끔해졌습니다.
+
+---
+
+## 핵심 업데이트 ③: 컨텍스트 압축 서비스 — v0.38.0
+
+긴 대화에서 컨텍스트 윈도우가 가득 차면 에이전트 성능이 떨어지는 문제가 있었습니다. 컨텍스트 압축 서비스는 대화 히스토리를 효율적으로 요약해서 핵심 정보를 유지하면서 토큰을 절약합니다.
+
+배경 메모리와 프로세스 모니터링도 같이 추가됐습니다. 비동기 작업이 어디까지 진행됐는지 모니터링하기 훨씬 편해졌습니다.
+
+---
+
+## 기타 변경 사항
+
+**터미널 버퍼 모드 (v0.38.1):** 렌더링 깜박임 문제가 해결됐습니다. 이전까지 긴 출력에서 화면이 깜박이는 게 있었는데, 이 모드로 안정적으로 동작합니다.
+
+**영구 정책 승인:** 신뢰하는 워크플로우에서 매번 수동 확인 없이 진행할 수 있는 컨텍스트 인식 승인 기능이 추가됐습니다. 반복 작업이 많은 분들에게 편리합니다.
+
+**동적 샌드박스 + 워크트리 (v0.37.0):** Linux와 Windows에서 워크트리 지원이 추가됐습니다.
+
+---
+
+## v0.38.1 이후 달라진 것 한눈에
+
+| 항목 | 이전 | v0.38.1 이후 |
+|------|------|-------------|
+| 컨텍스트 관리 | 단일 세션, 오염 빈번 | 서브에이전트별 독립 컨텍스트 |
+| 병렬 처리 | 순차 실행 | 서브에이전트 병렬 실행 |
+| 세션 구조 | 단일 플로우 | 챕터 기반 주제 그룹화 |
+| 터미널 안정성 | 렌더링 깜박임 | 터미널 버퍼 모드 |
+| 승인 워크플로우 | 매번 수동 확인 | 영구 정책 승인 |
+| 커스터마이징 | 제한적 | .md 파일로 팀 에이전트 공유 |
+
+---
+
+## 장단점 솔직하게
+
+**좋았던 것:**
+- 서브에이전트 컨텍스트 분리가 생각보다 잘 됩니다. 레거시 코드 분석 + 새 기능 작성을 동시에 할 때 확실히 효과가 있습니다
+- 커스텀 에이전트 정의가 마크다운 파일이라 진입 장벽이 낮습니다. 5분이면 팀 에이전트를 만들고 공유할 수 있습니다
+- 터미널 버퍼 모드로 렌더링 깜박임이 해결됐습니다. 이게 의외로 신경 많이 쓰였는데 뿌듯하더라고요
+
+**아쉬운 것:**
+- 서브에이전트 생태계가 아직 초기입니다. MCP 서버 생태계에 비하면 커뮤니티 에이전트가 부족합니다
+- 서브에이전트 디버깅이 쉽지 않습니다. 어떤 에이전트가 어떤 판단을 했는지 추적이 불투명할 때가 있습니다
+- 병렬 실행은 강력하지만 API 비용이 올라갑니다. 무료 플랜이라면 제한에 걸릴 수 있습니다
+
+---
+
+## 누구에게 추천하나
+
+**추천 ✅:**
+- 대형 코드베이스에서 멀티-도메인 작업이 잦은 개발자 — 컨텍스트 분리 효과가 큽니다
+- 팀 단위로 AI 코딩 도구를 표준화하려는 분 — 커스텀 에이전트 공유가 편합니다
+- Google Cloud / Firebase 기반 프로젝트 개발자 — 구글 생태계 통합이 자연스럽습니다
+- Claude Code 컨텍스트 오염에 불편함을 느끼는 분 — 대안으로 한번 시도해볼 만합니다
+
+**비추천 ❌:**
+- 이미 Claude Code나 Cursor에 만족하는 분 — 굳이 바꿀 이유는 없습니다
+- 가벼운 단일 작업 위주인 분 — 서브에이전트 기능이 오버스펙일 수 있습니다. [Windsurf vs Cursor 비교](https://daily1bite.com/ko/blog/ai-tools/windsurf-2026-cursor)도 참고해보세요
+
+---
+
+## 업데이트 방법
+
+```bash
+# npx로 바로 실행 (설치 불필요)
+npx @google/gemini-cli
+
+# 글로벌 설치 / 최신 버전으로 업데이트
+npm install -g @google/gemini-cli@latest
+
+# 버전 확인
+gemini --version
+
+# 서브에이전트 목록 확인
+/agents
+```
+
+---
+
+## 마무리
+
+Gemini CLI는 이번 업데이트로 꽤 의미 있는 도약을 했습니다. 서브에이전트는 단순한 기능 추가가 아니라 에이전트 작동 방식 자체를 바꾸는 아키텍처 변화입니다. Claude Code, Copilot, Cursor가 각자의 방향으로 발전하는 가운데, Gemini CLI는 '병렬 멀티에이전트'라는 차별점을 만들어가고 있습니다.
+
+당장 주력 도구를 바꿀 이유는 아닐 수 있지만, 주시할 가치는 충분히 있습니다.
+
+---
+
+## 참고 자료
+
+- [Subagents have arrived in Gemini CLI](https://developers.googleblog.com/subagents-have-arrived-in-gemini-cli/) — Google Developers Blog, 2026년 4월 15일
+- [Gemini CLI v0.38.1 release notes](https://geminicli.com/docs/changelogs/latest/) — geminicli.com, 2026년 4월 15일
+- [Google Announces Subagents for Gemini CLI](https://www.c-sharpcorner.com/news/google-announces-subagents-for-gemini-cli-orchestrating-teams-of-expert-ai) — C# Corner, 2026년 4월 16일
+- [Gemini CLI: Subagents are here — Discussion #25562](https://github.com/google-gemini/gemini-cli/discussions/25562) — GitHub, 2026년 4월 15일
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Code 4월 업데이트 총정리: /powerup, MCP 500K, 세션 안정성](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-april-2026-update) - Claude Code와 비교해서 읽으면 더 좋습니다
+- [Windsurf 2026: Cursor의 유력한 대안인가?](https://daily1bite.com/ko/blog/ai-tools/windsurf-2026-cursor) - AI 코딩 도구 선택 가이드

@@ -1,0 +1,206 @@
+---
+title: "Gemini CLI April 2026 Update: Subagents Are Here — Chapters & Context Compression Too"
+date: "2026-04-20"
+description: "Gemini CLI v0.38.1 launches public subagents with parallel execution, @agent_name routing, and custom .md definitions. Plus Chapters for session structure and Context Compression. Full April 2026 breakdown."
+category: "ai-tools"
+tags: ["Gemini CLI", "Subagents", "AI coding tool", "Google AI", "LLM update 2026"]
+---
+
+> "Each subagent operates within its own separate context window, custom system instructions, and curated set of tools." — Jack Wotherspoon & Abhi Patel, Google Developers Blog, April 15, 2026
+
+## TL;DR
+
+Gemini CLI v0.38.1 dropped on April 15, 2026, and the headline feature is **public subagents**. If you've ever watched your AI coding session spiral into context chaos after a long refactor, this is Google's structural answer to that problem. Each subagent runs in a completely isolated context window — so your main session stays clean while specialized experts handle the heavy lifting.
+
+| Feature | Version | Date |
+|---------|---------|------|
+| Public Subagents launch | v0.38.1 | Apr 15, 2026 |
+| Context Compression Service | v0.38.0 | Apr 2026 |
+| Chapters + Worktree support | v0.37.0 | Apr 8, 2026 |
+| Dynamic Sandbox expansion | v0.37.0 | Apr 8, 2026 |
+
+---
+
+## Why This Update Matters
+
+I'll be honest — I've been treating Gemini CLI as a secondary tool to Claude Code for most of this year. Similar capabilities, but I was already locked into Claude Code's workflow and ecosystem. The v0.38.1 update made me reconsider.
+
+The context pollution problem is real in every AI coding tool right now. You start a session to refactor an auth module, then ask about performance optimizations, then debugging a completely unrelated bug — and by hour two, the agent has lost the thread of your original architecture decisions. It's a fundamental limitation of the single-context-window model.
+
+Subagents are Gemini CLI's structural fix. Instead of one agent trying to remember everything, specialized subagents take over specific domains while keeping the main session clean. If you've been following Claude Code's recent updates, check out [Claude Code April 2026 roundup](https://daily1bite.com/en/blog/ai-tutorial/claude-code-april-2026-update) to see how these tools compare.
+
+![Gemini CLI Subagents Overview](https://storage.googleapis.com/gweb-developer-goog-blog-assets/images/Gemini_CLI_subagents_hero_image.original.png)
+_Source: [Google Developers Blog](https://developers.googleblog.com/subagents-have-arrived-in-gemini-cli/) | Official Gemini CLI subagents announcement_
+
+---
+
+## Update #1: Public Subagents (v0.38.1)
+
+### Three Built-in Agents Ready to Go
+
+Out of the box, v0.38.1 ships with three default subagents:
+
+- **@cli_help** — Handles questions about Gemini CLI commands and configuration
+- **@codebase_investigator** — Specialized in repository analysis and code exploration
+- **@generalist** — General-purpose task handling
+
+Using them is straightforward — prefix your prompt with `@agent_name`:
+
+```bash
+# Route to codebase specialist
+@codebase_investigator "How does the auth module work in this repo?"
+
+# Quick CLI reference
+@cli_help "What does the /agents command do?"
+
+# Or just ask normally — the main agent delegates automatically
+"What's the dependency tree for this project?"
+```
+
+If you don't specify an agent, the main orchestrator evaluates the task and decides whether to delegate. Ask "how does the auth system work?" and it may route directly to `@codebase_investigator` without you doing anything.
+
+### Parallel Execution
+
+This is the part I found genuinely interesting. You can spin up multiple instances of the same subagent simultaneously.
+
+![Gemini CLI Parallel Subagents](https://storage.googleapis.com/gweb-developer-goog-blog-assets/images/Gemini_CLI_-_Parallel_Subagents.original.png)
+_Source: [Google Developers Blog](https://developers.googleblog.com/subagents-have-arrived-in-gemini-cli/) | Parallel subagent execution_
+
+Practical example: you need to analyze both the frontend and backend codebases at the same time. Spin up two `@codebase_investigator` instances in parallel. The wall-clock time drops significantly. Trade-off: API usage doubles. Free tier users, budget accordingly.
+
+### Defining Custom Subagents
+
+Team-shared custom agents are defined with a simple Markdown file and YAML frontmatter:
+
+```markdown
+---
+name: frontend_specialist
+description: React, TypeScript, performance optimization, accessibility expert
+tools:
+  - read_file
+  - grep_search
+  - glob
+  - web_fetch
+  - google_web_search
+---
+
+You are a frontend architecture specialist.
+Focus on React and TypeScript codebases.
+Always consider WCAG 2.1+ accessibility compliance
+and Core Web Vitals optimization in your recommendations.
+```
+
+- **Personal agents**: `~/.gemini/agents/frontend_specialist.md`
+- **Team agents**: `.gemini/agents/frontend_specialist.md` (commit to repo)
+
+Check your active agents with the `/agents` command:
+
+![Gemini CLI /agents command](https://storage.googleapis.com/gweb-developer-goog-blog-assets/images/Gemini_CLI__agents.original.png)
+_Source: [Google Developers Blog](https://developers.googleblog.com/subagents-have-arrived-in-gemini-cli/) | /agents command showing available subagents_
+
+---
+
+## Update #2: Chapters — v0.37.0
+
+Chapters automatically group your session by topic as you work. Long debugging sessions that jump between database issues, API changes, and UI fixes no longer collapse into an undifferentiated wall of tool calls. You can navigate back to a specific chapter to recover context or expand on a thread.
+
+Since v0.38.1, compact tool output is on by default too — the terminal output is noticeably cleaner. Small thing, but it matters when you're staring at it for hours.
+
+---
+
+## Update #3: Context Compression Service — v0.38.0
+
+When a conversation history fills the context window, agent performance degrades. The Context Compression Service addresses this by efficiently summarizing conversation history — preserving focus and key decisions while trimming tokens.
+
+Background memory and process monitoring were also added in v0.38.0, giving better visibility into async tasks running in the background.
+
+---
+
+## Other Changes Worth Noting
+
+**Terminal Buffer Mode (v0.38.1):** Fixes rendering flicker on long outputs. This was quietly annoying in previous versions — glad it's resolved.
+
+**Persistent Policy Approvals:** Grant context-aware, persistent approval for trusted tools. If you're running repetitive automated workflows, you no longer need to confirm every tool call manually.
+
+**Dynamic Sandbox + Worktree Support (v0.37.0):** Linux and Windows now support worktrees and dynamic sandbox expansion, bringing them closer to macOS feature parity.
+
+---
+
+## Before vs. After v0.38.1
+
+| Area | Before | After v0.38.1 |
+|------|--------|---------------|
+| Context management | Single session, frequent pollution | Isolated context per subagent |
+| Parallel tasks | Sequential execution | Multiple subagents in parallel |
+| Session structure | Flat conversation flow | Chapter-based topic grouping |
+| Terminal stability | Rendering flicker | Terminal Buffer mode |
+| Approval workflow | Manual confirmation each time | Persistent policy approvals |
+| Team customization | Limited | Shareable .md agent definitions |
+
+---
+
+## Honest Assessment
+
+**What works well:**
+- Context isolation genuinely helps on large, multi-domain tasks. Running `@codebase_investigator` on legacy code while the main agent works on new features is a real workflow improvement
+- Custom agent definition via Markdown is low-friction. Takes about five minutes to write a team agent and commit it to the repo
+- Terminal Buffer mode eliminating render flicker — small but appreciated
+
+**What's still rough:**
+- The subagent ecosystem is early. Compared to MCP server integrations available for Claude Code, community-built agents are sparse
+- Debugging subagent decisions is opaque. When something goes wrong mid-delegation, tracing which agent made which call takes effort
+- Parallel execution increases API costs proportionally. Not a problem for paid plans, but free tier users will hit limits fast
+
+---
+
+## Who Should Use This
+
+**Worth trying if you:**
+- Work on large codebases with distinct frontend/backend/infra domains — context isolation pays off
+- Lead a team wanting to standardize AI coding workflows — shareable agent definitions in the repo
+- Primarily use Google Cloud, Firebase, or Google Workspace — native integrations are smoother
+- Have been frustrated by context pollution in Claude Code or Cursor and want to compare alternatives. Also check the [Windsurf 2026 vs Cursor comparison](https://daily1bite.com/en/blog/ai-tools/windsurf-2026-cursor) for context on the broader landscape
+
+**Probably skip if you:**
+- Are already satisfied with your current AI coding tool — the switching cost isn't justified yet
+- Primarily do small, focused single-file tasks — subagent overhead is overkill
+
+---
+
+## How to Update
+
+```bash
+# Run instantly with npx (no install needed)
+npx @google/gemini-cli
+
+# Or install/update globally
+npm install -g @google/gemini-cli@latest
+
+# Check version
+gemini --version
+
+# List available subagents
+/agents
+```
+
+---
+
+## Wrapping Up
+
+This isn't just a features-and-fixes release. Subagents represent a meaningful architectural shift in how Gemini CLI handles complex tasks — moving from a single overloaded agent toward a coordinated team of specialists. Whether that model proves superior to the MCP-based approach Claude Code uses, or Cursor's native context management, will become clearer over the next few months.
+
+It's not a reason to switch your primary tool today. But if you haven't looked at Gemini CLI since early 2025, the April 2026 releases are a good reason to look again.
+
+---
+
+## References
+
+- [Subagents have arrived in Gemini CLI](https://developers.googleblog.com/subagents-have-arrived-in-gemini-cli/) — Google Developers Blog, April 15, 2026
+- [Gemini CLI v0.38.1 release notes](https://geminicli.com/docs/changelogs/latest/) — geminicli.com, April 15, 2026
+- [Google Announces Subagents for Gemini CLI](https://www.c-sharpcorner.com/news/google-announces-subagents-for-gemini-cli-orchestrating-teams-of-expert-ai) — C# Corner, April 16, 2026
+- [Gemini CLI: Subagents are here — Discussion #25562](https://github.com/google-gemini/gemini-cli/discussions/25562) — GitHub, April 15, 2026
+
+**Related Posts:**
+
+- [Claude Code April 2026 Update: /powerup, MCP 500K & Session Stability](https://daily1bite.com/en/blog/ai-tutorial/claude-code-april-2026-update) - Compare with Claude Code's latest to see how the tools diverge
+- [Windsurf 2026: A Real Cursor Alternative?](https://daily1bite.com/en/blog/ai-tools/windsurf-2026-cursor) - AI coding tool landscape overview
