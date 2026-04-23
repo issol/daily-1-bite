@@ -13,6 +13,8 @@ interface Props {
   params: Promise<{locale: string}>;
 }
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
+
 export async function generateMetadata({params}: Props): Promise<Metadata> {
   const {locale} = await params;
   const isKo = locale === 'ko';
@@ -21,6 +23,14 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
     description: isKo
       ? '매일 한입 블로그의 모든 글을 확인하세요. AI 뉴스 요약, 도구 리뷰, 튜토리얼.'
       : 'Browse all posts on the Daily 1 Bite blog. AI news, tool reviews, and tutorials.',
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/blog`,
+      languages: {
+        ko: `${BASE_URL}/ko/blog`,
+        en: `${BASE_URL}/en/blog`,
+        'x-default': `${BASE_URL}/ko/blog`,
+      },
+    },
   };
 }
 

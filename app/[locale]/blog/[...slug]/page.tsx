@@ -53,6 +53,9 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
     }
   }
 
+  // EN 포스트는 KO를 canonical로 지정 — 동일 주제 중복 콘텐츠 해소
+  const canonicalUrl = isKo ? url : `${BASE_URL}/ko/blog/${fullSlug}`;
+
   return {
     title: post.title,
     description: post.description,
@@ -65,7 +68,7 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
     ],
     authors: [{name: 'A꿀벌I', url: `${BASE_URL}/about`}],
     alternates: {
-      canonical: url,
+      canonical: canonicalUrl,
       languages,
     },
     openGraph: {
