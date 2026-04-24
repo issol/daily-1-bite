@@ -67,6 +67,8 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
       isKo ? '매일 한입' : 'Daily 1 Bite',
     ],
     authors: [{name: 'A꿀벌I', url: `${BASE_URL}/about`}],
+    // EN 포스트는 noindex — canonical(KO)로 색인 통합
+    robots: isKo ? undefined : { index: false, follow: true },
     alternates: {
       canonical: canonicalUrl,
       languages,
