@@ -1,0 +1,139 @@
+---
+title: "Google TPU 8th Gen: Why Splitting Training (8t) and Inference (8i) Into Two Chips Changes Everything [Apr 2026]"
+date: "2026-04-24"
+description: "Google's 8th-gen TPU splits into training-focused 8t and inference-focused 8i. 121 ExaFlops training, 80% inference cost savings — here's what developers need to know."
+category: "ai"
+tags: ["Google TPU", "AI chip", "TPU 8th gen", "AI infrastructure", "NVIDIA competition", "cloud AI"]
+---
+
+> **TL;DR**: Google unveiled 8th-generation TPUs at Google Cloud Next on April 22, 2026 — not one chip, but two: **TPU 8t** (training) and **TPU 8i** (inference). TPU 8t scales to 9,600 chips delivering 121 ExaFlops. TPU 8i cuts inference costs by up to 80% over Ironwood. Anthropic committed to multi-gigawatt usage. Both support JAX, PyTorch, and vLLM. GA expected H2 2026.
+
+---
+
+"Can't one chip handle both training and inference?"
+
+That's what I used to think. Spin up a GPU, fine-tune your model, then use the same GPU to serve it. Simple enough, right?
+
+Then Google announced two entirely separate TPU architectures for its 8th generation — one for training, one for inference — and I realized how much I'd been glossing over the fundamental differences between these two workloads.
+
+![Google Cloud Next 2026 keynote](https://storage.googleapis.com/gweb-uniblog-publish-prod/original_images/GCN26_103A_BlogHeader_2096x1182_Opt_3_Light.jpg)
+_Source: [Google Cloud Blog](https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/) | Google Cloud Next 2026 where TPU 8th gen was unveiled_
+
+## Why Training and Inference Actually Need Different Hardware
+
+Let me break this down because it genuinely matters.
+
+**Training** is like climbing a mountain. You're updating hundreds of billions of parameters, iterating over massive datasets, and coordinating synchronized updates across thousands of chips. What matters most: **raw compute throughput and inter-chip communication bandwidth**. The chip needs to crunch numbers fast and talk to its neighbors even faster.
+
+**Inference** is the descent. You have a finished model; you need to answer questions as fast and cheaply as possible. The bottleneck here isn't raw compute — it's **memory bandwidth**. How quickly can you read the model weights from memory? How efficiently can you manage the KV cache for long-context agentic workflows?
+
+These two workloads have fundamentally different hardware requirements. Training wants massive compute density and scale-up bandwidth. Inference wants enormous memory bandwidth and low latency. Every single GPU generation until now has tried to balance these competing needs in one chip. With TPU 8th gen, Google said: stop compromising.
+
+## TPU 8t: Built for Frontier Model Training
+
+The 't' stands for Training. Here's what Google shipped:
+
+![TPU 8t and TPU 8i — the two-chip architecture](https://storage.googleapis.com/gweb-uniblog-publish-prod/images/two_chips_for_the_agentic_era_her.max-1400x1050.format-webp.webp)
+_Source: [Google Blog](https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/) | Two chips for the agentic era_
+
+| Spec | TPU 8t |
+|------|--------|
+| Superpod scale | Up to 9,600 chips |
+| Shared HBM | 2 petabytes |
+| Peak performance | 121 ExaFlops |
+| Storage access | 10x faster than Ironwood |
+| Training price-performance | 2.7x over Ironwood |
+| Linear scaling | Up to 1 million chips |
+
+The architecture choices here are deliberate. TPU 8t uses a **3D Torus ICI topology** paired with the new **Virgo network**, delivering 47 petabits/second of non-blocking bisectional bandwidth across a 9,600-chip superpod. Google reports ~97% "goodput" — meaning almost all compute time is actually doing productive work, not waiting on communication.
+
+Native FP4 support is worth highlighting specifically. By training with 4-bit floating point, TPU 8t halves memory bandwidth requirements for many operations, which is especially beneficial for Mixture-of-Experts (MoE) models that have seen massive adoption in frontier training runs.
+
+To put the scale in context: Anthropic has already committed to multi-gigawatt TPU usage from Google — [a deal I covered when the $19B ARR announcement dropped](https://daily1bite.com/en/blog/dev-life/anthropic-19b-revenue-google-tpu-2026). TPU 8t is almost certainly what Anthropic will be training on.
+
+## TPU 8i: Built for the Inference-Heavy Agentic Era
+
+The 'i' stands for Inference. The design philosophy here is "memory, more of it, faster":
+
+![TPU 8i technical architecture](https://storage.googleapis.com/gweb-uniblog-publish-prod/images/TPU_8_Cloud_inline_1.max-1400x1050.format-webp.webp)
+_Source: [Google Cloud Blog](https://cloud.google.com/blog/products/compute/tpu-8t-and-tpu-8i-technical-deep-dive) | TPU 8i technical deep dive_
+
+| Spec | TPU 8i |
+|------|--------|
+| HBM capacity | 288 GB |
+| On-chip SRAM (Vmem) | 384 MB (3x previous gen) |
+| HBM bandwidth | 8,601 GB/s |
+| ICI bandwidth | 19.2 Tb/s |
+| Inference price-performance | Up to 80% improvement over Ironwood |
+| Max pod size | 1,024 active chips |
+
+The headline innovation is the **Collectives Acceleration Engine (CAE)**. Google replaced four SparseCores with a single CAE that reduces on-chip collective operation latency by 5x. In multi-agent AI systems — where dozens or hundreds of agents run concurrently and need to coordinate results — this latency directly impacts user-facing response time. The CAE is unambiguously designed for the agentic AI workloads Google sees dominating inference demand.
+
+The **Boardfly topology** is equally interesting. Instead of the 3D torus used in TPU 8t, Boardfly uses a hierarchical structure that reduces maximum network diameter by over 50%, cutting all-to-all communication latency in half. And that 384 MB on-chip SRAM (3x increase) means the KV cache for large MoE models can live on-chip, dramatically reducing the latency hit from long-context reasoning chains.
+
+## How This Plays Against NVIDIA Rubin
+
+NVIDIA announced the Rubin platform around the same time, with cloud providers planning Rubin-based instances for H2 2026. NVIDIA's claims: 10x inference token cost reduction and 4x fewer GPUs needed for training versus Blackwell.
+
+So how does Google TPU 8th gen compare?
+
+Honestly, a direct apples-to-apples comparison is hard. NVIDIA still takes the single-chip approach that handles both training and inference, while Google has committed to specialization. The ecosystems are also fundamentally different: NVIDIA's CUDA moat is massive, while Google TPU is strongest in the JAX/Pathways world.
+
+What's clear is that [the broader AI chip competition is intensifying](https://daily1bite.com/en/blog/ai-tools/cerebras-wse3-ipo-nvidia) — Cerebras, AMD, and a wave of well-funded startups are all chasing NVIDIA's dominance. Google's two-chip bet signals confidence that the era of "one chip for everything" is ending as AI workloads mature and specialize.
+
+For developers, more competition means lower costs. That's a good outcome regardless of which vendor wins.
+
+## What Developers Need to Know Right Now
+
+**Software compatibility**
+
+Both TPU 8t and 8i support the main frameworks:
+- **JAX** (primary, recommended)
+- **PyTorch** (native preview support)
+- **vLLM** (inference serving)
+- **MaxText**, **Keras**, **SGLang**
+
+CUDA code doesn't run directly on TPUs — that's the same situation as previous generations. If you're already in the JAX/XLA world, migration overhead is manageable. If you're running CUDA-native workflows, porting remains a significant investment.
+
+**Availability**
+
+Both chips are targeting H2 2026 GA. Google has an early access interest form on the Cloud TPU page. Expect hyperscaler and large enterprise customers (think Anthropic-scale users) to get access first. If you're an independent developer or small team, budget a few months after the official GA date for availability at reasonable quotas.
+
+**Pricing**
+
+Not announced yet. Given the 80% inference efficiency improvement claim on TPU 8i versus Ironwood, you'd hope to see meaningfully lower per-token pricing when it launches — but we'll see how Google actually prices it in the market.
+
+**What about existing TPU users?**
+
+If you're already running workloads on Ironwood (TPU v7), your existing JAX/PyTorch code should migrate without major surgery. Google has maintained backward compatibility across TPU generations for their core software stack. The XLA compiler handles much of the hardware-specific optimization automatically, and the Boardfly topology of TPU 8i is abstracted away by the compiler. That said, if you have hand-tuned kernel code using Pallas or Mosaic, you'll want to revisit those optimizations for the new memory hierarchy — especially around the 3x larger on-chip SRAM in TPU 8i.
+
+## A Note on Ecosystem Lock-In
+
+One honest concern worth raising: the deeper you go into Google's TPU ecosystem, the harder it becomes to move to NVIDIA later. JAX and XLA are genuinely excellent tools, but the CUDA ecosystem's breadth — third-party libraries, community support, tutorials, hire-ability of engineers who know it — remains an advantage that Google hasn't closed.
+
+My read: if you're already a Google Cloud user with workloads in JAX, TPU 8th gen is a compelling upgrade path. If you're starting fresh and want optionality, the CUDA ecosystem remains the safer default until TPU availability and pricing are clearer. The two-chip architecture is clever, but clever doesn't automatically translate to affordable or accessible for teams outside the hyperscaler tier.
+
+## The Bottom Line
+
+![TPU 8t vs 8i comparison summary](https://storage.googleapis.com/gweb-uniblog-publish-prod/images/TPU_8_Cloud_inline_2.max-1400x1050.format-webp.webp)
+_Source: [Google Cloud Blog](https://cloud.google.com/blog/products/compute/tpu-8t-and-tpu-8i-technical-deep-dive) | TPU 8t and TPU 8i compared_
+
+Google's decision to split TPU 8th gen into two chips reflects a maturation of the AI infrastructure market. Training and inference aren't just "different speeds" of the same operation — they have fundamentally different hardware requirements, and building one chip that does both means compromising on both.
+
+TPU 8i, with its focus on latency and memory bandwidth, arrives at exactly the right time: the agentic AI era that Google has been positioning for. When millions of AI agents run concurrently and every millisecond of latency affects product quality, purpose-built inference silicon starts making a lot of sense.
+
+I'll be watching the H2 GA launch carefully. If early access opens up before then, testing TPU 8i's actual inference throughput on vLLM is first on my list. Anyone else planning to try it out?
+
+---
+
+## References
+
+- [Our eighth generation TPUs: two chips for the agentic era](https://blog.google/innovation-and-ai/infrastructure-and-cloud/google-cloud/eighth-generation-tpu-agentic-era/) — Google Blog, April 22, 2026
+- [TPU 8t and TPU 8i technical deep dive](https://cloud.google.com/blog/products/compute/tpu-8t-and-tpu-8i-technical-deep-dive) — Google Cloud Blog, April 22, 2026
+- [Google dual tracks TPU 8 to conquer training and inference](https://www.theregister.com/2026/04/22/google_tpu8_dual_track_training_inference/) — The Register, April 22, 2026
+- [Google unveils chips for AI training and inference in latest shot at Nvidia](https://www.cnbc.com/2026/04/22/google-launches-training-and-inference-tpus-in-latest-shot-at-nvidia.html) — CNBC, April 22, 2026
+
+**Related Posts:**
+
+- [Anthropic's $19B Revenue + Google TPU Gigawatt Deal: The OpenAI Chase](https://daily1bite.com/en/blog/dev-life/anthropic-19b-revenue-google-tpu-2026) - Google TPU and Anthropic's strategic partnership
+- [Cerebras WSE-3 Deep Dive: 4 Trillion Transistors vs NVIDIA](https://daily1bite.com/en/blog/ai-tools/cerebras-wse3-ipo-nvidia) - Another challenger in the AI chip race
