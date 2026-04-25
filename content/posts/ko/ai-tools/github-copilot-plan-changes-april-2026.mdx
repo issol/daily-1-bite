@@ -1,0 +1,192 @@
+---
+title: "GitHub Copilot 2026년 4월 플랜 개편: 신규 가입 중단·Autopilot 출시·Pro vs Pro+ 전면 비교"
+date: "2026-04-25"
+description: "GitHub가 4월 20일 Copilot 개인 플랜을 전면 개편했습니다. 신규 가입 중단, Pro 모델 제한, Autopilot 출시까지 — Pro($10)와 Pro+($39) 중 어떤 선택이 맞는지 정리했습니다."
+category: "ai-tools"
+tags: ["GitHub Copilot", "AI 코딩 도구", "Copilot Pro", "Copilot Pro+", "Autopilot", "에이전트 AI"]
+---
+
+지난 수요일 아침이었습니다. VS Code를 켜고 평소처럼 GitHub Copilot으로 코드 리뷰를 시작하려는데, 인박스에 이메일 한 통이 와 있더군요. 제목: "Important changes to your GitHub Copilot plan."
+
+아, 이런 제목의 이메일은 항상 좀 긴장됩니다. 열어보니 내용은 짧았지만 임팩트는 컸습니다. 신규 가입 즉시 중단, 사용량 한도 강화, 모델 접근 변경. 처음엔 단순한 가격 조정이라 생각했는데, 자세히 읽어보니 에이전트 워크플로우가 Copilot의 인프라 비용 구조를 근본적으로 바꿔놓은 상황이었습니다.
+
+오늘은 이 변경 사항을 전부 분해해서, 지금 어떤 플랜을 선택해야 하는지까지 정리해보겠습니다.
+
+## TL;DR
+
+| 항목 | 내용 |
+|------|------|
+| 시행일 | 2026년 4월 20일 |
+| 신규 가입 | Pro·Pro+·학생 플랜 모두 중단 (Free tier 제외) |
+| Pro | $10/월, Opus 모델 삭제, 사용량 한도 강화 |
+| Pro+ | $39/월, Opus 4.7 유지, Pro의 5배+ 한도 |
+| 신규 기능 | Autopilot(자율 에이전트), 브라우저 디버깅, 중첩 서브에이전트 |
+| 환불 마감 | 2026년 5월 20일까지 잔여 기간 비례 환불 |
+
+---
+
+## 왜 갑자기 바뀐 걸까? — 에이전트가 원인이다
+
+GitHub의 공식 발표는 솔직했습니다. **에이전트 워크플로우가 예상보다 훨씬 많은 컴퓨팅 자원을 소모한다**는 것이 핵심입니다.
+
+기존 Copilot은 "자동완성 + 인라인 채팅" 위주였습니다. 질문 한 번, 응답 한 번, 끝. 그런데 에이전트 모드가 도입되면서 상황이 완전히 달라졌습니다. 에이전트는 하나의 작업을 완료하기 위해 코드를 읽고, 수정하고, 테스트를 돌리고, 에러를 분석하고, 다시 수정하는 루프를 반복합니다. 이 과정이 전부 LLM 호출이고, 토큰 소모입니다.
+
+GitHub는 공식 블로그에서 "일부 사용자의 단 몇 번의 에이전트 세션이 월간 플랜 비용 전체를 초과하는 상황이 발생했다"고 밝혔습니다. 에이전트가 Copilot을 더 강력하게 만들었지만, 동시에 기존 플랜 구조를 지속 불가능하게 만든 거죠.
+
+비슷한 맥락으로 [Google Gemini API도 2026년 4월 무료 Pro 티어를 완전 종료](https://daily1bite.com/ko/blog/ai-tools/gemini-api-free-tier-pro-removed-2026)했습니다. 에이전트 시대의 인프라 비용이 그만큼 크다는 것을 보여주는 업계 전반의 흐름입니다.
+
+![GitHub Copilot 모델 선택 화면 — GPT-5.5 포함](https://github.blog/wp-content/uploads/2026/04/583502326-0412c2e3-8173-4775-8c9f-e5801b2b5f45.png?resize=800%2C400)
+_출처: [GitHub Changelog](https://github.blog/changelog/month/04-2026/) | Copilot 모델 선택 화면. GPT-5.5를 포함한 다양한 모델을 플랜별로 다르게 제공합니다_
+
+---
+
+## Pro vs Pro+ 전면 비교
+
+### 핵심 차이 한눈에
+
+| 항목 | Copilot Pro | Copilot Pro+ |
+|------|-------------|--------------|
+| 월 요금 | $10 | $39 |
+| 사용량 한도 | 기준선 | Pro의 5배+ |
+| Claude Opus 4.7 | ❌ 삭제됨 | ✅ 유지 |
+| Claude Opus 4.5/4.6 | ❌ 삭제됨 | ❌ 삭제 예정 |
+| GPT-5.4 / GPT-5.5 | ✅ | ✅ |
+| Gemini 2.5 계열 | ✅ | ✅ |
+| Autopilot (자율 에이전트) | ✅ Preview | ✅ Preview |
+| 통합 브라우저 디버깅 | ✅ | ✅ |
+| 75% 한도 경고 | ✅ | ✅ |
+| 신규 가입 | ❌ 중단 | ❌ 중단 |
+
+### Pro의 변화: 무엇이 사라졌나
+
+가장 눈에 띄는 변화는 Opus 모델 삭제입니다. Claude Opus 4.5, 4.6이 Pro에서 모두 빠졌고, Opus 4.7은 Pro+에만 남아 있습니다.
+
+솔직히 말하면, 일반적인 자동완성이나 인라인 수정 작업에는 Opus가 필수적이지 않습니다. GPT-5.4나 Claude Sonnet 계열로도 충분하거든요. 문제는 **사용량 한도**입니다. 에이전트를 자주 쓴다면, Pro의 강화된 한도가 생각보다 빠르게 채워질 수 있습니다.
+
+### Pro+의 포지셔닝: 에이전트 헤비 유저를 위한 플랜
+
+Pro+는 사실상 "에이전트를 매일 쓰는 개발자"를 위한 플랜으로 재포지셔닝됐습니다. 5배+ 높은 한도는 에이전트 집중 사용자에게 의미 있는 차이이고, Opus 4.7 유지도 복잡한 추론 작업에서 체감이 납니다.
+
+단, $39/월은 부담스러운 가격입니다. [Windsurf나 Cursor](https://daily1bite.com/ko/blog/ai-tools/windsurf-2026-cursor)가 비슷하거나 더 낮은 가격대에서 강력한 에이전트 기능을 제공하고 있다는 점에서, Copilot 생태계(GitHub Actions, PR 통합, IDE 네이티브)에서 얼마나 가치를 뽑아낼 수 있느냐가 선택의 핵심입니다.
+
+![GitHub Copilot 플랜 변경 공식 공지](https://github.blog/wp-content/themes/github-2021-child/assets/img/featured-v3-deprecations.svg)
+_출처: [GitHub Blog](https://github.blog/changelog/2026-04-20-changes-to-github-copilot-plans-for-individuals/) | GitHub Copilot 개인 플랜 변경 공식 공지 — 2026년 4월 20일 시행_
+
+---
+
+## 신규 기능: Autopilot이 가장 중요하다
+
+이번 개편의 진짜 하이라이트는 플랜 변경보다 **Autopilot 출시**입니다.
+
+Autopilot을 한 줄로 정리하면: **에이전트가 사람의 승인 없이 스스로 작업을 완료하는 모드.** 기존 에이전트 모드는 파일 수정이나 터미널 명령 실행마다 "이거 해도 될까요?" 승인을 요청했습니다. 안전하지만, 복잡한 작업에서는 "승인 → 승인 → 승인..."의 반복이 꽤 피로했거든요.
+
+Autopilot 모드에서 에이전트는 다음을 자동으로 처리합니다:
+- 파일 읽기 / 수정 / 삭제
+- 터미널 명령 실행
+- 에러 발생 시 자동 재시도
+- 작업 완료까지 루프 반복
+
+```json
+// .vscode/settings.json — 권한 레벨 설정
+{
+  "github.copilot.chat.agent.permissions": "autopilot"
+}
+```
+
+세 가지 권한 레벨이 있습니다:
+
+- **Default**: 모든 작업마다 승인 요청 (기존 방식)
+- **Bypass Approvals**: 안전한 작업은 자동 처리
+- **Autopilot**: 완전 자율 — 에러도 자동 재시도, 완료까지 루프
+
+저는 개발/테스트 환경에서만 Autopilot을 활성화하고 있습니다. 프로덕션 관련 작업에는 여전히 Default 모드를 유지하고요. Preview 상태인 만큼, 민감한 파일이나 배포 파이프라인에 Autopilot이 접근하는 건 아직 조심스럽습니다.
+
+![개발자 코딩 화면](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1080&q=80)
+_Photo by [Ilya Pavlov](https://unsplash.com/@ilyapavlov?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Autopilot 모드 — AI가 사람의 승인 없이 코드를 스스로 완성하는 시대_
+
+---
+
+## 함께 출시된 3가지 에이전트 기능
+
+### 통합 브라우저 디버깅
+
+VS Code 내에서 브레이크포인트 설정, 변수 검사, 코드 스텝-스루를 바로 할 수 있게 됐습니다. Chrome/Edge 설정과 호환되고, 외부 DevTools를 따로 켜지 않아도 됩니다. 개인적으로 Autopilot만큼이나 실용적인 업데이트라고 봅니다. 프론트엔드 디버깅 흐름이 꽤 달라질 것 같습니다.
+
+### 중첩 서브에이전트
+
+에이전트가 다른 에이전트를 직접 호출할 수 있게 됐습니다. 예를 들어 "전체 프로젝트 테스트 커버리지 개선" 같은 복잡한 작업을 상위 에이전트가 받아서, 파일 분석 서브에이전트 → 테스트 작성 서브에이전트 → 커밋 서브에이전트 순서로 호출하는 식의 구성이 가능해집니다.
+
+```json
+// settings.json — 서브에이전트 간 호출 허용
+{
+  "chat.subagents.allowInvocationsFromSubagents": true
+}
+```
+
+이 방향성은 [Claude Code의 멀티 에이전트 아키텍처](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-april-2026-update)와 개념적으로 겹칩니다. 복잡한 워크플로우를 모듈화하는 것이 AI 코딩 도구들의 공통된 진화 방향이 되고 있습니다.
+
+### 이미지/영상 첨부 지원
+
+채팅에 스크린샷이나 영상을 첨부해서 "이 화면의 버그 고쳐줘"를 바로 할 수 있습니다. UI 디버깅에 꽤 실용적이고, 특히 디자인-개발 협업에서 맥락 전달이 훨씬 쉬워질 것 같습니다.
+
+![VS Code 코딩 환경](https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=1080&q=80)
+_Photo by [Juanjo Jaramillo](https://unsplash.com/@juanjojaramillo?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | VS Code Copilot — 브라우저 디버깅, 서브에이전트, 미디어 첨부까지 기능이 대폭 확장됐다_
+
+---
+
+## 세 가지 시나리오: 어떤 선택이 맞나
+
+### 시나리오 A: 자동완성 위주로 사용하는 개발자
+
+솔직히 Pro 플랜으로도 충분합니다. Opus 모델이 빠졌지만 GPT-5.4나 Claude Sonnet 계열로 인라인 완성은 문제없습니다. 에이전트를 거의 안 쓴다면 한도 강화도 크게 체감되지 않을 겁니다.
+
+**추천**: Pro 유지. 75% 한도 경고 알림 켜두고 모니터링.
+
+### 시나리오 B: 에이전트를 매일 사용하는 개발자
+
+이 경우 Pro와 Pro+의 차이가 실제로 체감됩니다. Autopilot 세션 몇 번이면 Pro 한도가 꽤 빠르게 소모될 수 있습니다. 에이전트로 절약하는 개발 시간을 감안하면 Pro+의 월 $29 추가 비용이 투자 가치가 있을 수 있습니다.
+
+**추천**: Pro+ 업그레이드 진지하게 고려. 한 달 사용 후 결정해도 늦지 않음.
+
+### 시나리오 C: 아직 Copilot 플랜이 없는 개발자
+
+신규 가입이 중단된 상태입니다. GitHub는 "조만간 재개 예정"이라 했지만, 정확한 날짜는 미공개입니다. 당장 AI 코딩 도구가 필요하다면 Free tier로 시작하거나, [Windsurf](https://daily1bite.com/ko/blog/ai-tools/windsurf-2026-cursor)나 Claude Code를 임시 대안으로 사용하는 방법이 있습니다.
+
+**추천**: GitHub Copilot Free tier 시작, 또는 신규 가입 재개 대기.
+
+![팀 개발 협업 환경](https://images.unsplash.com/photo-1618477247222-acbdb0e159b3?w=1080&q=80)
+_Photo by [AltumCode](https://unsplash.com/@altumcode?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | AI 코딩 도구 선택은 팀과 워크플로우에 맞는 전략적 결정이 필요하다_
+
+---
+
+## 5월 20일 전에 해야 할 것
+
+환불 정책을 놓치면 아깝습니다. 이번 변경이 맘에 들지 않는다면, **5월 20일 이전에 Billing 설정에서 구독을 취소하면 잔여 기간 비례 환불**을 받을 수 있습니다.
+
+취소 경로: **Settings → Billing and Licensing → Licensing → 구독 취소**
+
+그리고 이제 VS Code와 Copilot CLI 모두에서 사용량 한도를 실시간으로 볼 수 있습니다. 75% 소모 시 경고가 뜨고, 한도 리셋 날짜도 표시됩니다. 갑자기 한도에 걸려서 당황하는 상황은 이제 예방이 가능해졌습니다.
+
+---
+
+## 마무리: 에이전트 시대의 비용이 개발자에게 내려오고 있다
+
+이번 변경을 보면서 드는 생각은 하나입니다. "AI 도구가 더 강력해질수록, 그 비용은 결국 어딘가에서 충당된다." Gemini API 무료 Pro 종료도, Copilot 플랜 개편도, 같은 흐름 위에 있습니다.
+
+저는 Pro+로 업그레이드를 고민 중입니다. 에이전트를 자주 쓰는 편이라 한도 문제가 실제로 올 것 같거든요. 한 달 써보고, 한도 경고가 자주 뜬다면 그때 결정할 예정입니다.
+
+GitHub Copilot이 이번에 [GitHub Actions 연동 cloud agent 기능](https://daily1bite.com/ko/blog/ai-tools/github-copilot-cloud-agent-april-2026)도 함께 강화한 만큼, Copilot 생태계를 이미 깊게 쓰고 있는 팀이라면 Pro+의 가치는 더 명확해질 것 같습니다.
+
+---
+
+## 참고 자료
+
+- [Changes to GitHub Copilot Individual plans](https://github.blog/news-insights/company-news/changes-to-github-copilot-individual-plans/) — GitHub Blog, 2026년 4월 22일
+- [Changes to GitHub Copilot plans for individuals](https://github.blog/changelog/2026-04-20-changes-to-github-copilot-plans-for-individuals/) — GitHub Changelog, 2026년 4월 20일
+- [GitHub Copilot in Visual Studio Code, March Releases](https://github.blog/changelog/2026-04-08-github-copilot-in-visual-studio-code-march-releases/) — GitHub Changelog, 2026년 4월 8일
+- [Announcement & FAQ: Changes to GitHub Copilot Individual Plans](https://github.com/orgs/community/discussions/192963) — GitHub Community, 2026년 4월 기준
+
+**함께 읽으면 좋은 글:**
+
+- [Gemini CLI 4월 업데이트: 서브에이전트·챕터·컨텍스트 압축 완전 정리](https://daily1bite.com/ko/blog/ai-tools/gemini-cli-april-2026-update) - 비교를 위한 경쟁 AI 코딩 도구 에이전트 기능
+- [Claude Code 4월 2026 업데이트 총정리](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-april-2026-update) - Copilot과 같은 방향으로 진화 중인 AI 코딩 어시스턴트
