@@ -1,4 +1,4 @@
-import {notFound} from 'next/navigation';
+import {notFound, permanentRedirect} from 'next/navigation';
 import {getAllSlugs, getPostBySlug, getPostsByCategory, CATEGORIES, hasTranslation} from '@/lib/posts';
 import type {Locale} from '@/lib/posts';
 import MDXContent from '@/components/MDXContent';
@@ -108,20 +108,7 @@ export default async function PostPage({params}: Props) {
   if (!post) {
     const otherLocale = locale === 'ko' ? 'en' : 'ko';
     if (hasTranslation(fullSlug, otherLocale as Locale)) {
-      return (
-        <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-          <div className="text-5xl mb-6">🌐</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            {t('post.notAvailable')}
-          </h1>
-          <a
-            href={`/${otherLocale}/blog/${fullSlug}`}
-            className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-amber-400 text-white font-medium hover:bg-amber-500 transition-colors"
-          >
-            {t('post.viewOriginal')}
-          </a>
-        </div>
-      );
+      permanentRedirect(`/${otherLocale}/blog/${fullSlug}`);
     }
     notFound();
   }

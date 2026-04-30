@@ -60,7 +60,7 @@ export default async function AboutPage({ params }: Props) {
             </p>
 
             <p>
-              그러다 보니 "이 도구 진짜 어때요?"라는 질문을 주변에서 자주 받게 됐어요.
+              그러다 보니 &ldquo;이 도구 진짜 어때요?&rdquo;라는 질문을 주변에서 자주 받게 됐어요.
               마케팅 자료나 벤치마크 수치가 아니라, 실제로 써본 개발자 입장에서
               솔직하게 얘기해주는 사람이 필요하다는 걸 느꼈습니다. 그래서 이 블로그를 시작했습니다.
             </p>
@@ -141,7 +141,7 @@ export default async function AboutPage({ params }: Props) {
             <p>
               그래서 매일 한입은 <strong>개발자에게 실제로 중요한 것만 골라서 정리</strong>합니다.
               발표 날짜, 버전 번호, 공식 출처를 명시하고, 직접 써보지 않은 도구는
-              "공식 발표 기반 분석"임을 명확히 밝힙니다.
+              &ldquo;공식 발표 기반 분석&rdquo;임을 명확히 밝힙니다.
             </p>
 
             <ul className="space-y-3">

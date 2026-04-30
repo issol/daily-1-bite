@@ -10,6 +10,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: '방문 통계',
   description: '매일 한입 블로그 방문 통계',
+  robots: {index: false, follow: true},
 };
 
 interface Props {
