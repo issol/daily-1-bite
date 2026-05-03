@@ -1,0 +1,164 @@
+---
+title: "Google I/O 2026 Developer Preview: Gemini 4 (2M Context), Android 17 AI Core, and the Agentic Coding Tool"
+date: "2026-05-03"
+description: "Google I/O 2026 runs May 19–20. Three things developers should know before the keynote: Gemini 4's 2M-token context window, Android 17's on-device AI Core API (free inference, no network required), and Google's agentic coding tool built on Firebase Studio and MCP."
+category: "ai"
+tags: ["Google I/O 2026", "Gemini 4", "Android 17", "agentic coding", "Firebase", "AI Core API", "Flutter GenUI"]
+---
+
+Google I/O 2026 is May 19–20. Sixteen days away.
+
+This year feels different from previous I/Os. The announced session topics — agentic coding, on-device AI inference, agent-native platforms — suggest Google is making a coordinated move to own the AI development stack end-to-end. Not just a model announcement or a framework update, but a claim on where AI-powered development happens.
+
+Here's what's coming, broken down by what actually matters for developers.
+
+## TL;DR
+
+- **Gemini 4**: 2M-token context window — entire large codebases fit in context without RAG
+- **Android 17 AI Core API**: Third-party apps can call on-device Gemma Nano for free, no network, no API costs
+- **Google's agentic coding tool**: Claude Code competitor built on Firebase Studio + Stitch + MCP
+- **Flutter GenUI**: AI-generated adaptive interfaces, details at I/O
+- **Schedule**: Main keynote 10am PT May 19, Developer keynote 1:30pm PT May 19
+
+---
+
+![Google developer conference](https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=1080&q=80)
+_Photo by [Unsplash](https://unsplash.com/) | Google I/O 2026 is shaping up to be one of the most developer-dense I/Os in years_
+
+## Schedule: What to Watch and When
+
+| Date | Time (PT) | Content |
+|------|-----------|---------|
+| May 12 | TBD | Android 17 user features preview |
+| May 19 | 10:00 AM | **Main Keynote** — AI, Gemini model reveals |
+| May 19 | 1:30 PM | **Developer Keynote** — Firebase, Android Studio, agentic coding |
+| May 19–20 | All day | Sessions, codelabs, Q&A |
+
+The developer keynote is the one to prioritize if you only have time for one. Google has officially named three developer stories for this I/O: Gemini 4, Android 17 AI integration, and the agentic coding tool.
+
+---
+
+## Gemini 4: What a 2M-Token Context Window Actually Changes
+
+The headline spec for Gemini 4 is a **2 million token context window** — roughly 10x the current context limits of Claude Opus 4.7 (200K) and GPT-5.5 (256K).
+
+```
+Context window comparison (May 2026)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GPT-5.5          256K tokens
+Claude Opus 4.7  200K tokens
+Gemini 4 (TBA)   2,000K tokens  ← ~10x
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+In practical terms: at 2M tokens, an entire large codebase fits in context without retrieval-augmented generation. That's not a marginal improvement — it changes how you'd architect AI-assisted development workflows.
+
+The current standard approach for large-codebase analysis looks like this: identify relevant files → chunk → embed → build a RAG pipeline → search → pass results to the model. That pipeline takes real engineering effort to build and maintain.
+
+With 2M context, you hand over the repository directly. RAG still makes sense in specific scenarios — very large codebases, real-time retrieval requirements — but for mid-size projects and prototyping, it stops being a required step.
+
+Gemini 4 will be previewed at I/O, with broader availability expected in late 2026 or early 2027. API access will roll out through Google AI Studio and Vertex AI.
+
+---
+
+## Android 17 AI Core API: On-Device Inference Without the Tradeoffs
+
+For Android developers specifically, the most immediately impactful announcement is the **Android AI Core API** in Android 17.
+
+Until now, Android apps had two options for AI inference: call a cloud API (network dependency, per-token costs) or bundle a model locally (complex deployment, larger APK). Both have friction.
+
+The Android AI Core API takes a different approach.
+
+```java
+// Conceptual Android AI Core API usage
+AIManager aiManager = AIManager.getInstance(context);
+AIInferenceSession session = aiManager.createSession(
+    AIModel.GEMMA_NANO,
+    AISessionConfig.builder()
+        .setTask(AITask.TEXT_GENERATION)
+        .build()
+);
+
+String result = session.run("Summarize this user note: " + input);
+```
+
+Third-party apps can call the Gemma Nano model that Android manages at the OS level — no model bundling, no cloud calls. The system handles the model; developers call an API.
+
+Three concrete implications:
+
+**No API costs.** On-device inference means no per-token billing. For consumer apps where AI features need to scale to millions of users, this changes the cost model significantly.
+
+**No network latency.** Works offline. Relevant for keyboard apps, real-time translation, accessibility tools, any feature where response time is user-visible.
+
+**No APK size increase.** The OS manages the model file. Developers don't include it in the app bundle.
+
+The Developer Preview for Android 17 will be available starting May 19, the same day as the keynote.
+
+![On-device AI and mobile development](https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1080&q=80)
+_Photo by [Unsplash](https://unsplash.com/) | Android 17's AI Core API lets third-party apps use on-device Gemma Nano inference without network calls or API costs_
+
+---
+
+## Google's Agentic Coding Tool: The Firebase Studio Play
+
+The session descriptions for I/O 2026 name a Google agentic coding tool as one of the three main developer stories — positioned explicitly as a competitor to [Claude Code](https://daily1bite.com/en/blog/ai-tutorial/claude-code-april-2026-update) and Cursor.
+
+What's known about the stack:
+
+- **Firebase Studio**: The hub for moving from AI prototyping to production deployment on Google Cloud
+- **Stitch**: UI component generation and editing layer
+- **Antigravity**: Full-stack application building tool within Firebase
+- **MCP integration**: [Model Context Protocol](https://daily1bite.com/en/blog/ai-tutorial/mcp-linux-foundation-open-governance-2026) for connecting external tools
+
+Firebase is described in session copy as evolving into an "agent-native platform," with an explicit path from AI Studio prototyping through to Google Cloud production. Android Studio sessions cover Gemini integration directly into the development workflow.
+
+The differentiator over Claude Code and Cursor would likely be deep Google Cloud integration — if you're already running on GCP, Firebase, or using Google Workspace, the toolchain integration could be meaningfully tighter than what third-party tools offer. Whether the actual coding agent capability is competitive is something we'll know after the demos.
+
+---
+
+## Flutter GenUI and Other Developer Updates
+
+**Flutter GenUI** is a new Flutter capability being unveiled at I/O. The premise: instead of fixed UI components, the app dynamically generates and adapts its interface based on user context — input patterns, screen size, accessibility settings. Implementation details haven't been fully disclosed pre-I/O.
+
+Flutter also gets general performance updates. For developers building cross-platform apps, this will be worth tracking on the second day of sessions.
+
+---
+
+## What to Do Before May 19
+
+**1. Set up Android 17 Developer Preview environment**
+If you want to start testing the AI Core API immediately after the keynote, have Android Studio (latest canary) and Android 17 preview SDK ready in advance.
+
+**2. Join Firebase Studio waitlist**
+Access at [firebase.google.com/studio](https://firebase.google.com/studio). Being on the waitlist puts you closer to the front of post-I/O access.
+
+**3. Secure a Gemini API key**
+When Gemini 4 previews drop, quota will be competitive. Having a Google AI Studio account set up avoids the setup delay when access opens.
+
+**4. Check the session catalog**
+[io.google/2026](https://io.google/2026) has the session list. With two days of content across multiple tracks, knowing which sessions match your stack before the event makes the replay queue manageable.
+
+---
+
+## The Bigger Picture
+
+Gemini 4's 2M context, Android AI Core, and the Firebase agentic coding tool are each independently significant. Together they point in the same direction: Google is building toward owning the full AI development pipeline — from cloud infrastructure to on-device inference, from prototyping to production deployment.
+
+Whether the I/O announcements deliver on that ambition is a question for May 19. But the session structure alone signals this isn't a scattered product update — it's a coordinated positioning move.
+
+Worth watching closely.
+
+---
+
+## Sources
+
+- [Get ready for Google I/O 2026](https://developers.googleblog.com/get-ready-for-google-io-2026/) — Google Developers Blog
+- [Google I/O 2026 Developer Preview: Gemini 4, Android 17, Agentic Coding](https://www.abhs.in/blog/google-io-2026-may-19-gemini-4-android-17-agentic-coding-developer-preview) — Abhishek Gautam
+- [What to Expect from Google I/O 2026](https://android.gadgethacks.com/news/what-to-expect-from-google-io-2026-dates-gemini-android-17/) — Gadget Hacks
+- [Gemma 4: The new standard for local agentic intelligence on Android](https://android-developers.googleblog.com/2026/04/gemma-4-new-standard-for-local-agentic-intelligence.html) — Android Developers Blog
+- [Google I/O 2026 AI Announcements: Gemini 4 & Beyond](https://www.mejba.me/blog/google-io-2026-ai-announcements) — mejba.me
+
+**Related reading:**
+
+- [Claude Code April 2026 Update](https://daily1bite.com/en/blog/ai-tutorial/claude-code-april-2026-update) — Current state of the tool Google's agentic coder is competing with
+- [MCP Hits 97M Installs: The Linux Foundation Takeover](https://daily1bite.com/en/blog/ai-tutorial/mcp-linux-foundation-open-governance-2026) — Background on the MCP standard Google's tool is adopting

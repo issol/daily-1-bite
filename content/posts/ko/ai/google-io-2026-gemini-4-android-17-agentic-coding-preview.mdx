@@ -1,0 +1,175 @@
+---
+title: "Google I/O 2026 개발자 완전 정리: Gemini 4 2M 컨텍스트·Android 17 On-Device AI·에이전틱 코딩 도구 [5월 19일]"
+date: "2026-05-03"
+description: "Google I/O 2026이 5월 19~20일 열립니다. Gemini 4 2M 토큰 컨텍스트, Android 17 AI Core API(온디바이스 추론 무료), Firebase 에이전틱 코딩 도구까지 — 개발자가 지금 미리 알아야 할 것들을 정리했습니다."
+category: "ai"
+tags: ["Google I/O 2026", "Gemini 4", "Android 17", "에이전틱 코딩", "Firebase", "AI Core API", "Flutter GenUI"]
+---
+
+> **TL;DR**: Google I/O 2026은 5월 19~20일입니다. 개발자가 주목할 세 가지는 **Gemini 4(2M 토큰 컨텍스트)**, **Android 17 AI Core API(온디바이스 Nano 모델, API 비용 없음)**, **Google 에이전틱 코딩 도구(Firebase Studio + MCP 기반 Claude Code 대항마)** 입니다. I/O 전에 미리 파악해두면 발표 당일 흐름이 훨씬 빠르게 잡힙니다.
+
+---
+
+5월 19일까지 2.5주가 남았습니다.
+
+Google I/O 2026이 다가오고 있습니다. 올해는 예년과 좀 다르게 느껴집니다. AI 코딩 도구, 온디바이스 추론, 에이전트 플랫폼 — 이번 I/O는 단순한 제품 발표가 아니라 Google이 개발자 생태계에서 어떤 포지션을 가져가려는지 보여주는 무대가 될 것 같습니다.
+
+예전엔 I/O가 끝나고 나서야 "이게 있었구나" 하고 뒤늦게 쫓아갔는데, 올해는 미리 챙겨보기로 했습니다.
+
+---
+
+**이 글에서 다루는 것:**
+- 일정과 키노트 구성 (뭘 언제 봐야 하는지)
+- Gemini 4: 2M 컨텍스트 창이 개발자에게 의미하는 것
+- Android 17 AI Core API: 비용 없는 온디바이스 추론
+- Google 에이전틱 코딩 도구: Claude Code와 어떻게 다른지
+- Flutter GenUI와 Firebase 에이전트 플랫폼 전환
+
+---
+
+![Google I/O 개발자 컨퍼런스](https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=1080&q=80)
+_Photo by [Unsplash](https://unsplash.com/) | Google I/O 2026은 5월 19~20일, 에이전틱 AI 개발자 생태계를 겨냥한 역대 가장 개발자 친화적인 I/O가 될 전망입니다_
+
+## 일정과 키노트 구성
+
+| 날짜 | 시간 (PT) | 내용 |
+|------|-----------|------|
+| 5월 19일 | 오전 10시 | **메인 키노트** — AI·Gemini 모델 발표 |
+| 5월 19일 | 오후 1시 30분 | **개발자 키노트** — Firebase·Android Studio·에이전틱 코딩 |
+| 5월 12일 | 별도 | Android 17 사용자 기능 사전 공개 |
+| 5월 20일 | 종일 | 세션, Q&A, 실습 |
+
+한국 시간으로 메인 키노트는 5월 20일 새벽 2시입니다. 실시간으로 보기 어렵다면 개발자 키노트 VOD가 더 실용적입니다.
+
+이번 I/O의 개발자 키노트 핵심 테마는 공식적으로 세 가지입니다: **Gemini 4**, **Android 17 AI 통합**, **에이전틱 코딩 도구**. 각각을 풀어보겠습니다.
+
+---
+
+## Gemini 4: 2M 토큰 컨텍스트가 개발자에게 의미하는 것
+
+I/O에서 공개될 Gemini 4의 가장 큰 변화는 **컨텍스트 창 2M 토큰**입니다.
+
+2M 토큰이 어느 정도냐면, 대형 코드베이스 전체를 RAG 없이 컨텍스트에 넣을 수 있는 수준입니다. 현재 Claude Opus 4.7과 GPT-5.5가 각각 200K, 256K 수준인 것과 비교하면 10배 가까운 차이입니다.
+
+```
+컨텍스트 창 비교 (2026년 5월 기준)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GPT-5.5          256K tokens
+Claude Opus 4.7  200K tokens
+Gemini 4 (예정)  2,000K tokens  ← 약 10배
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+이게 실제로 어떤 변화인지를 생각해보면:
+
+**현재 방식**: 대형 코드베이스 분석 → 관련 파일 선별 → 청킹 → 임베딩 → RAG 파이프라인 구축 → 검색 → 모델에 전달. 이 파이프라인을 설계하고 유지하는 게 상당한 공수입니다.
+
+**2M 컨텍스트 이후**: 레포지토리 전체를 그냥 던져도 됩니다. 물론 모든 상황에서 RAG가 불필요해지진 않겠지만, 프로토타이핑 단계나 중소 규모 코드베이스에선 파이프라인 없이 작업하는 게 현실적인 선택이 됩니다.
+
+Gemini 4는 I/O에서 프리뷰로 공개되고, 광범위한 배포는 2026년 말~2027년 초 예정입니다. API 접근은 Google AI Studio와 Vertex AI를 통해 순차 제공될 것으로 보입니다.
+
+![대형 컨텍스트 창과 코드베이스 분석](https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=1080&q=80)
+_Photo by [Unsplash](https://unsplash.com/) | 2M 토큰 컨텍스트는 대형 코드베이스 전체를 RAG 없이 모델에 전달할 수 있게 합니다_
+
+---
+
+## Android 17 AI Core API: 비용 없는 온디바이스 추론
+
+Android 17에서 개발자에게 가장 직접적으로 영향을 미칠 기능은 **Android AI Core API**입니다.
+
+지금까지 Android 앱에서 AI 추론을 쓰려면 두 가지 선택지뿐이었습니다. 클라우드 API를 호출하거나(네트워크 필요, API 비용 발생), 모델을 로컬에 직접 배포하거나(구현 복잡, 앱 용량 증가). 둘 다 제약이 있었습니다.
+
+Android AI Core API는 이 구조를 바꿉니다.
+
+```java
+// Android AI Core API 개념적 사용 예시
+AIManager aiManager = AIManager.getInstance(context);
+AIInferenceSession session = aiManager.createSession(
+    AIModel.GEMMA_NANO,
+    AISessionConfig.builder()
+        .setTask(AITask.TEXT_GENERATION)
+        .build()
+);
+
+String result = session.run("이 코드에서 버그를 찾아줘: " + code);
+```
+
+핵심은 **서드파티 앱이 OS 레벨의 Gemma Nano 모델을 직접 호출할 수 있다**는 것입니다. 개발자가 모델을 직접 번들링할 필요 없이, Android 시스템이 관리하는 온디바이스 모델을 API로 사용합니다.
+
+이게 의미하는 것 세 가지:
+
+1. **API 비용 없음**: 클라우드 호출이 아니니 토큰당 비용이 발생하지 않습니다
+2. **네트워크 지연 없음**: 온디바이스 추론이라 인터넷 연결 없이도 동작합니다
+3. **앱 용량 증가 없음**: OS가 모델을 관리하니 개발자가 모델 파일을 APK에 넣지 않아도 됩니다
+
+오프라인 동작이 필요한 앱, 실시간 응답이 중요한 기능(키보드 자동완성, 실시간 번역, 접근성 도구), 비용 구조가 민감한 소비자 앱에서 실질적인 변화가 생깁니다.
+
+Android 17 개발자 프리뷰는 I/O 당일(5월 19일)부터 테스트할 수 있습니다.
+
+---
+
+## Google 에이전틱 코딩 도구: Claude Code 대항마
+
+이번 I/O에서 가장 관심을 끄는 건 Google의 에이전틱 코딩 도구입니다.
+
+공개된 세션 정보에 따르면, 이 도구는 **Firebase Studio + Stitch + MCP** 기반으로 구성됩니다. [Claude Code](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-april-2026-update)와 직접 경쟁하는 위치에 놓이게 됩니다.
+
+구체적으로 알려진 구성:
+
+- **Firebase Studio**: AI 프로토타이핑부터 Google Cloud 프로덕션 배포까지의 통합 경로
+- **Stitch**: UI 컴포넌트 생성 및 편집 레이어
+- **Antigravity**: Firebase 기반 풀스택 애플리케이션 빌딩 도구
+- **MCP 통합**: [Model Context Protocol](https://daily1bite.com/ko/blog/ai-tutorial/mcp-linux-foundation-open-governance-2026)을 통한 외부 도구 연결
+
+Firebase를 "에이전트 네이티브 플랫폼"으로 전환한다는 표현이 세션 설명에 명시됐습니다. AI Studio와의 통합도 포함됩니다.
+
+Claude Code나 Cursor를 쓰는 입장에서 이 도구가 어떤 차별점을 가져오느냐가 관건입니다. Google Cloud와의 통합, Firebase 에코시스템과의 연결, Gemini 4 컨텍스트가 조합된다면 특히 **Google Cloud 기반 프로젝트**에서 의미 있는 선택지가 될 수 있습니다. I/O에서 실제 데모를 보고 판단해야겠지만, 방향성 자체는 분명합니다.
+
+---
+
+## Flutter GenUI와 기타 개발자 발표
+
+**Flutter GenUI**는 이번 I/O에서 공개될 Flutter 신기능입니다. AI가 컨텍스트에 맞게 인터페이스를 동적으로 생성하는 기능인데, 고정된 UI 컴포넌트 대신 사용자 상황에 따라 레이아웃이 적응하는 방식입니다.
+
+실용적 시나리오: 사용자의 입력 패턴, 화면 크기, 접근성 설정을 반영해 앱이 스스로 인터페이스를 조정합니다. 아직 구현 세부사항은 I/O에서 공개될 예정이지만, Flutter를 쓰는 개발자라면 주목할 만한 방향입니다.
+
+Android Studio에서도 Gemini 기반 개발 워크플로우 통합이 강화됩니다. 코드 완성을 넘어, 에이전트적으로 작업을 이어가는 방식으로 발전하는 것으로 보입니다.
+
+---
+
+## 개발자로서 지금 준비할 것
+
+I/O 전에 미리 해두면 좋은 것들:
+
+**1. Android 17 개발자 프리뷰 준비**
+5월 19일 이후 AI Core API 테스트를 바로 시작하려면, Android Studio 최신 버전과 Android 17 프리뷰 SDK를 미리 환경에 올려두는 게 좋습니다.
+
+**2. Firebase Studio 베타 접근 신청**
+지금 [Firebase Studio 웨이트리스트](https://firebase.google.com/studio)에 올라가 있으면 I/O 직후 액세스가 빠를 수 있습니다.
+
+**3. Gemini API 키 확보**
+Gemini 4 프리뷰가 공개되면 API 쿼터 경쟁이 붙을 가능성이 높습니다. Google AI Studio에 계정이 없다면 지금 만들어두는 게 낫습니다.
+
+**4. 개발자 키노트 세션 미리 확인**
+[io.google/2026](https://io.google/2026)에서 세션 목록을 미리 보고, 자신의 스택에 맞는 세션을 체크해두면 2일치 콘텐츠를 훨씬 효율적으로 소화할 수 있습니다.
+
+---
+
+Gemini 4 2M 컨텍스트, Android AI Core API, 에이전틱 코딩 도구 — 이 세 가지가 I/O 2026의 중심입니다. 각각이 독립적으로도 의미 있는 변화지만, 조합됐을 때의 방향은 더 명확합니다: **Google은 클라우드부터 온디바이스까지, 프로토타이핑부터 프로덕션까지 AI 개발 파이프라인 전체를 자기 생태계 안으로 당기려 하고 있습니다.**
+
+5월 19일, 발표가 어떻게 나오는지 봐야 실제 제품이 그 방향을 얼마나 따라가는지 알 수 있겠지만, 지금까지 공개된 세션 정보만 봐도 이번 I/O는 꽤 밀도 있는 개발자 행사가 될 것 같습니다.
+
+---
+
+## 참고 자료
+
+- [Get ready for Google I/O 2026](https://developers.googleblog.com/get-ready-for-google-io-2026/) — Google Developers Blog
+- [Google I/O 2026 Developer Preview: Gemini 4, Android 17, Agentic Coding](https://www.abhs.in/blog/google-io-2026-may-19-gemini-4-android-17-agentic-coding-developer-preview) — Abhishek Gautam
+- [What to Expect from Google I/O 2026](https://android.gadgethacks.com/news/what-to-expect-from-google-io-2026-dates-gemini-android-17/) — Gadget Hacks
+- [Gemma 4: The new standard for local agentic intelligence on Android](https://android-developers.googleblog.com/2026/04/gemma-4-new-standard-for-local-agentic-intelligence.html) — Android Developers Blog
+- [Google I/O 2026 AI Announcements: Gemini 4 & Beyond](https://www.mejba.me/blog/google-io-2026-ai-announcements) — mejba.me
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Code 4월 업데이트 총정리](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-april-2026-update) — Google 에이전틱 코딩 도구와 비교해볼 수 있는 Claude Code 현재 상태
+- [MCP가 Linux Foundation으로: 97M 설치 AI 에이전트 표준](https://daily1bite.com/ko/blog/ai-tutorial/mcp-linux-foundation-open-governance-2026) — Google 도구가 채택한 MCP 표준의 배경
