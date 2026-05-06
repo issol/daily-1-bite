@@ -17,7 +17,7 @@ export default async function HomePage({params}: Props) {
   const t = await getTranslations();
 
   const allPosts = getAllPosts(locale as Locale);
-  const recentPosts = allPosts.slice(0, 9);
+  const recentPosts = allPosts.slice(0, 24);
   const popularPosts = await getPopularPosts(5);
 
   const enrichedPopular = popularPosts

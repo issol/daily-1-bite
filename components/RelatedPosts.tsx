@@ -7,10 +7,21 @@ interface RelatedPostsProps {
   maxCount?: number;
 }
 
-export default function RelatedPosts({ currentSlug, posts, maxCount = 4 }: RelatedPostsProps) {
-  const related = posts
-    .filter((p) => p.slug !== currentSlug)
-    .slice(0, maxCount);
+export default function RelatedPosts({ currentSlug, posts, maxCount = 8 }: RelatedPostsProps) {
+  const others = posts.filter((p) => p.slug !== currentSlug);
+  // 인바운드 링크 분산: 최신 절반 + 오래된 글 절반에서 슬러그 해시 기반 결정적 선택
+  const half = Math.ceil(maxCount / 2);
+  const latest = others.slice(0, half);
+  const older = others.slice(half);
+  // 결정적 시드(현재 슬러그 해시)로 오래된 글 중 일부 선택 — 매 빌드 일관
+  const hash = currentSlug.split('').reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0);
+  const olderPicks: typeof older = [];
+  for (let i = 0; i < half && older.length > 0; i++) {
+    const idx = Math.abs(hash + i * 7919) % older.length;
+    olderPicks.push(older[idx]);
+    older.splice(idx, 1);
+  }
+  const related = [...latest, ...olderPicks].slice(0, maxCount);
 
   if (related.length === 0) return null;
 

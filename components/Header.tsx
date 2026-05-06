@@ -10,7 +10,7 @@ export default function Header() {
   const t = useTranslations();
   const locale = useLocale();
 
-  const categories = ['dev-life', 'ai-tools', 'ai-tutorial', 'seo', 'blog-info'] as const;
+  const categories = ['ai', 'dev-life', 'ai-tools', 'ai-tutorial', 'seo', 'blog-info'] as const;
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">

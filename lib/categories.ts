@@ -1,4 +1,5 @@
 export const CATEGORIES: Record<string, string> = {
+  'ai': 'AI News',
   'dev-life': 'Dev Life & Opinion',
   'ai-tools': 'AI Tools & Review',
   'ai-tutorial': 'AI Tutorial & How-to',
