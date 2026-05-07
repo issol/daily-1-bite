@@ -1,0 +1,205 @@
+---
+title: "Claude Code 5월 업데이트 총정리: 플러그인 URL 설치·세션 ID·MCP 메모리 누수 수정 [2026]"
+date: "2026-05-07"
+description: "Claude Code v2.1.132 5월 업데이트 총정리. MCP 10GB 메모리 누수 수정·--plugin-url·Ctrl+R 전체 검색 등 핵심 변경사항 한눈에 정리했습니다."
+category: "ai-tools"
+tags: ["Claude Code", "Claude Code 업데이트", "MCP", "플러그인", "AI 코딩 도구", "Anthropic", "AI 터미널"]
+thumbnail: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1080&q=80"
+---
+
+## TL;DR
+
+- **2026년 5월 6일**, Anthropic이 Claude Code v2.1.129 → v2.1.131 → v2.1.132를 하루 사이에 세 번 릴리스했습니다.
+- **가장 중요한 수정**: MCP stdio 서버가 비프로토콜 데이터를 출력할 때 **RAM 10GB+**가 계속 쌓이던 메모리 누수 버그 패치
+- **신규 기능**: `--plugin-url` 플래그로 ZIP URL에서 플러그인 바로 설치, `CLAUDE_CODE_SESSION_ID`로 서브에이전트 추적
+- **워크플로우 개선**: Ctrl+R 히스토리 검색이 이제 **전 프로젝트 통합 검색**으로 기본값 변경
+- **비용 절감 버그 수정**: 1시간 프롬프트 캐시 TTL이 5분으로 사일런트 다운그레이드되던 문제 해결
+
+---
+
+어제 새벽 1시쯤이었습니다. 사이드 프로젝트에서 Claude Code를 통해 여러 MCP 서버를 연결해 두고 작업을 돌리던 중이었어요. 슬쩍 시스템 모니터를 봤더니 RAM이 10GB를 넘어가고 있었습니다.
+
+"뭔가 이상한데?" 싶어서 `htop`을 확인했더니 Claude Code 프로세스가 범인이었습니다. 재시작하면 잠깐 줄었다가 다시 차오르는 패턴. 결국 그날 새벽 작업은 접어야 했습니다.
+
+다음 날 아침 업데이트 로그를 확인해보니 v2.1.132에서 정확히 이 문제가 패치됐더라고요. 타이밍이 묘하게 딱 맞았습니다. 5월 6일 하루 동안 세 번이나 릴리스가 나온 이번 업데이트, 뭐가 바뀌었는지 정리해봤습니다.
+
+---
+
+## 가장 중요한 패치: MCP 메모리 누수 수정
+
+이번 릴리스에서 단연 가장 중요한 수정입니다. v2.1.132 공식 릴리스 노트에는 이렇게 기록되어 있습니다.
+
+> Fixed unbounded memory growth (10GB+ RSS) from stdio MCP servers writing non-protocol data
+
+정확히 어떤 상황에서 터지냐면 — MCP 서버가 프로토콜 규격에 없는 데이터를 stdout에 찍을 때입니다. 예를 들면 Python MCP 서버 개발 중에 `print()` 디버그 로그를 남겨두거나, Node.js 서버에서 `console.log()`를 섞어 쓰는 경우가 대표적입니다.
+
+Claude Code 프로세스가 이 비프로토콜 데이터를 내부 버퍼에 계속 쌓으면서 메모리가 무한정 증가했던 거고, 이제는 프로토콜 외 데이터를 감지해서 무시하도록 바뀌었습니다. 아울러 MCP 서버가 `tools/list` 호출에 실패했을 때 툴 목록이 0개인 채로 멈추던 버그도 같이 잡혔습니다. 이제 한 번 재시도 후 상태를 업데이트합니다.
+
+커스텀 MCP 서버를 직접 운영하거나 서드파티 서버를 여러 개 연결해서 쓰는 분들이라면 즉시 업데이트를 권장합니다.
+
+```bash
+# 현재 메모리 사용량 확인 (MB 단위)
+ps aux | grep "[c]laude" | awk '{print $6/1024 " MB"}'
+
+# 업데이트 후 버전 확인
+claude --version
+# 정상이면: @anthropic-ai/claude-code 2.1.132
+```
+
+MCP 서버 개발자 분들은 추가로 서버 stdout에 프로토콜 메시지만 내보내도록 점검하는 게 좋습니다. 디버그 로그는 stderr으로 보내면 됩니다.
+
+![터미널에서 Claude Code 실행 화면](https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=1080&q=80)
+_Photo by [Mohammad Rahmani](https://unsplash.com/@afgprogrammer?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | MCP 서버를 연결한 Claude Code 터미널 환경_
+
+---
+
+## 신규 기능 1: --plugin-url로 ZIP URL에서 플러그인 바로 설치
+
+v2.1.129에서 추가된 기능입니다. 기존에는 npm에 등록된 패키지만 `claude plugin install`로 설치할 수 있었는데, 이제 ZIP 아카이브 URL을 직접 넘길 수 있습니다.
+
+```bash
+# 기존 방식: npm 패키지만 가능
+claude plugin install @company/my-plugin
+
+# 새로운 방식: URL에서 직접 플러그인 설치
+claude --plugin-url https://internal.company.com/claude-plugins/debug-helper.zip
+claude --plugin-url https://github.com/user/plugin/releases/download/v1.0/plugin.zip
+```
+
+이게 왜 유용하냐면 — 팀 내부 전용 플러그인을 npm에 퍼블리싱하지 않고도 바로 배포할 수 있습니다. S3나 GitHub Releases에 ZIP 올려두고 URL만 공유하면 되거든요. 특히 사내 보안 정책상 외부 npm 레지스트리 사용이 제한된 환경에서 유용합니다.
+
+단, 현재 세션에만 적용된다는 점은 알고 쓰셔야 합니다. 영속적으로 설치하려면 `claude plugin install`을 써야 하고, 플러그인 manifest에서 `themes`와 `monitors`를 선언할 때는 이제 `"experimental"` 키 아래에 넣어야 합니다.
+
+```json
+// 플러그인 manifest 변경사항
+{
+  "name": "my-plugin",
+  "experimental": {
+    "themes": ["dark-claude"],
+    "monitors": ["token-watch"]
+  }
+}
+```
+
+---
+
+## 신규 기능 2: Homebrew·WinGet 자동 업데이트 지원
+
+`CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE` 환경 변수가 새로 생겼습니다. Homebrew(macOS)나 WinGet(Windows)으로 Claude Code를 설치한 경우, 이 변수를 설정하면 백그라운드에서 자동으로 업그레이드 명령을 실행합니다.
+
+```bash
+# ~/.zshrc 또는 ~/.bashrc에 추가
+export CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE=1
+```
+
+재시작 프롬프트가 뜨는 방식이라 업데이트 여부를 사용자가 확인하고 승인하는 구조입니다. 강제 자동 업데이트가 아니라서 안심하고 써도 됩니다.
+
+---
+
+## 워크플로우 개선: Ctrl+R 전 프로젝트 통합 검색
+
+![플러그인 설치 및 개발 환경](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1080&q=80)
+_Photo by [Ilya Pavlov](https://unsplash.com/@ilyapavlov?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Claude Code 플러그인과 함께 쓰는 개발 환경_
+
+솔직히 저한테 가장 체감이 큰 변화가 이겁니다.
+
+이전까지 Ctrl+R로 히스토리를 검색하면 현재 세션과 프로젝트의 기록만 뒤졌습니다. "저번에 그 긴 프롬프트 뭐였더라" 싶을 때 다른 프로젝트에서 썼던 거면 찾을 수가 없었어요. 이번 업데이트로 기본값이 전 프로젝트 통합 검색으로 바뀌었습니다. 현재 프로젝트로 좁히고 싶으면 Ctrl+S를 눌러서 필터링할 수 있습니다.
+
+제 경우엔 회사 프로젝트 서너 개랑 사이드 프로젝트를 동시에 돌리는데, 공들여 만든 프롬프트를 다른 프로젝트에서 재활용하기가 확연히 쉬워졌습니다. 아직 대화 검색이 아니라 입력했던 프롬프트 텍스트 검색이라는 점은 동일하지만, 커버리지가 늘어난 것만으로도 충분히 유용합니다.
+
+---
+
+## 신규 기능 3: CLAUDE_CODE_SESSION_ID로 서브에이전트 추적
+
+v2.1.132에서 추가된 환경 변수입니다. Bash 도구의 하위 프로세스 환경에 `CLAUDE_CODE_SESSION_ID`가 자동으로 들어가서, 스크립트나 서브에이전트가 자신이 어느 Claude Code 세션에서 호출됐는지를 알 수 있게 됩니다.
+
+```bash
+# 스크립트 안에서 세션 ID 활용 예시
+#!/bin/bash
+SESSION=${CLAUDE_CODE_SESSION_ID:-"unknown"}
+echo "[$SESSION] 빌드 시작: $(date)"
+# 로그에 세션 ID 찍어두면 멀티에이전트 디버깅이 쉬워짐
+echo "[$SESSION] 작업 완료" >> ~/agent-logs/$(date +%Y%m%d).log
+```
+
+복잡한 멀티에이전트 파이프라인을 쓰는 분들, 또는 Claude Code Routines로 자동화 워크플로우를 구성한 분들에게 유용합니다. [Claude Code Routines 자동화 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-routines-cloud-automation-2026)에서 다룬 방식처럼 여러 세션을 병렬로 돌릴 때 어떤 세션이 어떤 작업을 했는지 추적하는 데 쓸 수 있습니다.
+
+아직 실무에서 직접 써보지는 못했지만, 에이전트 디버깅 체계가 필요한 팀이라면 충분히 활용 가치가 있는 기능입니다.
+
+---
+
+## 비용에 영향 주는 버그 수정: 1시간 캐시 TTL 사일런트 다운그레이드
+
+이건 따로 강조하고 싶습니다.
+
+[Claude Code 4월 업데이트 총정리](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-april-2026-update)에서도 프롬프트 캐싱 관련 내용을 다뤘는데, 1시간 TTL 캐싱(`ENABLE_PROMPT_CACHING_1H`)을 쓰면 같은 컨텍스트 반복 호출 비용을 크게 줄일 수 있습니다. 5분 TTL 대비 캐시 히트율이 월등히 높거든요.
+
+그런데 v2.1.129 이전에는 이 1시간 TTL이 **아무 경고 없이 5분으로 강제 다운그레이드**되는 버그가 있었습니다. 로그에도 안 나오고 조용히 떨어지는 방식이라 비용이 예상보다 많이 나오는데 원인을 못 찾는 상황이 생겼을 겁니다. 이 버그가 이번에 수정됐습니다.
+
+추가로 `/clear` 실행 후 "캐시 미스" 경고가 뜨던 노이즈도 제거됐고, `/context` 명령어가 **약 1,600 토큰 상당의 ASCII 시각화를 대화 컨텍스트에 삽입하던 문제**도 수정됐습니다. 이제 시각화는 표시만 되고 컨텍스트에는 들어가지 않아서, `/context`를 자주 확인하는 분들이라면 토큰 비용이 줄어듭니다.
+
+---
+
+## 기타 주목할 수정사항
+
+**VS Code Windows 익스텐션 (v2.1.131)**: Windows에서 Claude Code VS Code 확장이 활성화 실패하던 버그가 수정됐습니다. `createRequire` 폴리필 관련 하드코딩 경로 문제였는데, Windows 사용자 중 익스텐션이 갑자기 안 됐던 분들은 업데이트 후 재설치를 시도해보세요.
+
+**OAuth 웨이크업 로그아웃 수정**: 노트북 절전 후 재개하거나 Ctrl+Z로 Claude Code를 백그라운드에 보낸 뒤 돌아왔을 때 세션이 로그아웃되는 현상이 있었습니다. OAuth 토큰 갱신 타이밍 레이스 컨디션이 원인이었는데 이번에 수정됐습니다. 제가 한 달 정도 이게 왜 이러나 싶었는데 드디어 잡혔습니다.
+
+**이미지 붙여넣기 2000px 자동 다운스케일**: 해상도가 2000px를 초과하는 이미지를 붙여넣으면 세션이 깨지는 문제가 수정됐습니다. 이제 자동으로 스케일다운해서 처리합니다.
+
+**`CLAUDE_CODE_DISABLE_ALTERNATE_SCREEN=1`**: 풀스크린 렌더링을 비활성화하는 옵션이 추가됐습니다. Emacs 터미널 에뮬레이터처럼 alternate screen을 지원하지 않는 환경에서 쓸 수 있습니다.
+
+**절전 후 빈 화면 수정**: 노트북이 절전에서 깨어날 때 또는 Ctrl+Z/`fg`로 Claude Code를 다시 포그라운드로 가져올 때 빈 화면이 뜨던 버그가 수정됐습니다.
+
+![개발자 코딩 환경](https://images.unsplash.com/photo-1580927752452-89d86da3fa0a?w=1080&q=80)
+_Photo by [Fotis Fotopoulos](https://unsplash.com/@ffstop?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Claude Code를 활용한 터미널 개발 환경_
+
+---
+
+## 업데이트 방법
+
+```bash
+# npm으로 설치한 경우
+npm update -g @anthropic-ai/claude-code
+
+# Homebrew (macOS)
+brew upgrade claude-code
+
+# WinGet (Windows)
+winget upgrade Anthropic.ClaudeCode
+
+# 버전 확인
+claude --version
+# 정상: @anthropic-ai/claude-code 2.1.132
+```
+
+---
+
+## 총평 스코어카드
+
+이번 5월 초 릴리스는 화려한 신기능보다 **안정성과 일상 워크플로우 개선에 집중한 업데이트**입니다. 매일 쓰다 보면 반드시 마주치는 문제들 — 메모리 누수, OAuth 로그아웃, 캐시 TTL 버그 — 을 잡아줬다는 점에서 체감 만족도가 높습니다.
+
+| 항목 | 평가 | 비고 |
+|------|------|------|
+| MCP 메모리 누수 패치 | ★★★★★ | MCP 헤비 유저 필수 업데이트 |
+| Ctrl+R 전 프로젝트 검색 | ★★★★☆ | 즉시 체감되는 편의 개선 |
+| 1시간 캐시 TTL 수정 | ★★★★☆ | 비용 절감에 직접 영향 |
+| --plugin-url 신기능 | ★★★☆☆ | 내부 플러그인 팀에 유용 |
+| CLAUDE_CODE_SESSION_ID | ★★★☆☆ | 멀티에이전트 파이프라인용 |
+| OAuth 웨이크업 수정 | ★★★★☆ | 노트북 사용자에게 체감 큼 |
+
+MCP 서버를 여러 개 연결해서 쓰거나 장시간 세션을 유지하는 분들이라면 지금 바로 업데이트를 권장합니다. 다른 [AI Tools & Review](https://daily1bite.com/ko/category/ai-tools) 글도 함께 보세요.
+
+---
+
+## 참고 자료
+
+- [Claude Code v2.1.129 Release Notes](https://github.com/anthropics/claude-code/releases/tag/v2.1.129) — GitHub, 2026년 5월 6일
+- [Claude Code v2.1.132 Release Notes](https://github.com/anthropics/claude-code/releases/tag/v2.1.132) — GitHub, 2026년 5월 6일
+- [Claude Code 공식 Changelog](https://code.claude.com/docs/en/changelog) — Anthropic, 2026년 5월 기준
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Code 4월 업데이트 총정리: /powerup, MCP 500K, 세션 안정성 [2026]](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-april-2026-update) - 4월 주요 업데이트 완전 정리
+- [Claude Code Routines 완전 정리: 크론 없이 스케줄·API·GitHub 웹훅 자동화 [2026-04]](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-routines-cloud-automation-2026) - Claude Code 자동화 워크플로우 심층 가이드
