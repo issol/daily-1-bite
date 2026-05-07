@@ -1,0 +1,208 @@
+---
+title: "Claude Managed Agents 완전 정리: Dreaming·Outcomes·멀티 에이전트 [2026-05]"
+date: "2026-05-07"
+description: "Code w/ Claude 2026 발표: 에이전트가 이전 세션을 복기하는 Dreaming, 성공 루브릭 Outcomes, 멀티 에이전트 병렬 실행까지 정리했습니다."
+category: "ai-tools"
+tags: ["Claude Code", "Managed Agents", "Dreaming", "멀티 에이전트", "Anthropic", "AI 에이전트", "Code with Claude 2026"]
+thumbnail: "https://images.unsplash.com/photo-1749408363244-a847a6ce795d?w=1080&q=80"
+---
+
+## TL;DR
+
+- **2026년 5월 6일** Anthropic이 Code w/ Claude 2026 이벤트에서 Managed Agents 3대 신기능 발표
+- **Dreaming** (연구 프리뷰): 에이전트가 이전 세션을 복기해 반복 실수를 줄이고 스스로 개선
+- **Outcomes** (공개 베타): 성공 루브릭을 정의하면 채점 모델이 결과 평가 → 표준 프롬프팅 대비 최대 **10포인트 향상**
+- **멀티 에이전트 오케스트레이션** (공개 베타): 리드 에이전트가 전문 에이전트들에게 작업 분배, 공유 파일시스템에서 병렬 실행
+- Claude Code: **Auto Mode** Team 사용자로 확대, **Claude Security** 코드 취약점 스캔 공개 베타
+- Pro/Max/Enterprise 5시간 레이트 리밋 **2배 인상**
+
+---
+
+![AI 에이전트가 자율적으로 작업을 수행하는 개념 이미지](https://images.unsplash.com/photo-1749408363244-a847a6ce795d?w=1080&q=80)
+_Photo by [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Code w/ Claude 2026, 2026년 5월 6일 샌프란시스코에서 발표된 Managed Agents 신기능_
+
+지난달에 레거시 코드베이스 마이그레이션 작업을 맡았습니다. 수십 개 파일을 넘나들며 의존성을 추적하고, 중간에 발생하는 에러를 수정하면서 테스트까지 돌리는 꽤 복합적인 작업이었습니다.
+
+Claude Code를 투입해봤습니다. 솔직히 잘 했습니다. 근데 에이전트를 계속 지켜보다 보니 이상한 패턴이 눈에 들어왔습니다. 같은 종류의 실수를 — 예를 들면 `import` 경로를 모듈 구조에 맞게 고치지 않는 것 — 조금씩 다른 파일에서 계속 반복하는 겁니다. "이 에이전트가 자기가 뭘 실수했는지 기억이나 하나?" 생각이 절로 들었습니다.
+
+어제 Anthropic이 Code w/ Claude 2026에서 발표한 내용이 정확히 그 문제를 겨냥하고 있었습니다.
+
+---
+
+## Code w/ Claude 2026: 어제 무슨 일이 있었나
+
+2026년 5월 6일, Anthropic은 샌프란시스코에서 개발자 이벤트 **Code w/ Claude 2026**을 개최했습니다. 키노트의 핵심은 "Claude Managed Agents"였습니다. Managed Agents는 Anthropic 플랫폼에서 장기 에이전트를 호스팅해주는 서비스인데, 이번에 세 가지 큰 기능이 추가됐습니다.
+
+Dreaming, Outcomes, 그리고 멀티 에이전트 오케스트레이션.
+
+이름들이 좀 추상적으로 들릴 수 있는데, 실제로 뜯어보면 각각 구체적인 실무 문제를 해결하는 기능들입니다.
+
+---
+
+## Dreaming: AI 에이전트가 잠드는 이유
+
+### 기능 개요
+
+Dreaming은 에이전트가 **이전 세션을 복기(回顧)하는 도구**입니다. 이름이 "Dreaming"인 이유가 있습니다. 인간의 REM 수면 중 뇌가 낮에 겪은 경험을 재처리하고 기억을 통합하는 것처럼, 에이전트가 "잠드는" 시간 동안 자신의 이전 작업 로그를 돌아보고 패턴을 추출하는 방식으로 설계됐습니다 ([Anthropic Engineering Blog](https://www.anthropic.com/engineering/managed-agents), 2026년 5월).
+
+![AI 에이전트 메모리 통합 개념 시각화](https://images.unsplash.com/photo-1697577418970-95d99b5a55cf?w=1080&q=80)
+_Photo by [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Dreaming: 에이전트가 이전 세션을 복기해 패턴을 추출합니다_
+
+### 실제로 어떻게 동작하나
+
+Dreaming이 활성화된 에이전트는 다음 사이클로 작동합니다:
+
+1. **세션 완료** — 에이전트가 주어진 작업을 마칩니다
+2. **복기 트리거** — 일정 시간 또는 세션 횟수 기준으로 복기 프로세스 시작
+3. **패턴 추출** — 이전 세션 로그에서 반복된 실수, 효율적으로 해결된 패턴, 놓쳤던 맥락 등을 분석
+4. **메모리 큐레이션** — 중요한 패턴은 장기 메모리에 저장, 오래됐거나 중요도 낮은 것은 정리
+5. **다음 세션 반영** — 이후 실행에서 추출된 패턴을 활용해 반복 실수 방지
+
+Anthropic 발표에 따르면 Dreaming이 특히 유용한 경우는 **장기간 반복 실행하는 에이전트**입니다. 매일 배포 작업을 수행하는 에이전트, 주기적으로 코드리뷰를 도는 에이전트 같은 케이스에서 시간이 지날수록 퍼포먼스가 개선되는 효과를 기대할 수 있습니다.
+
+현재 **연구 프리뷰** 상태입니다. 일반 사용자에게 바로 켜고 쓸 수 있는 기능은 아니고, 신청 후 액세스가 부여됩니다. 아직 베타니까 결과가 가끔 들쭉날쭉할 수 있다는 걸 감안해야 합니다.
+
+---
+
+## Outcomes: 성공의 기준을 에이전트에게 알려주다
+
+### 기존 방식의 한계
+
+이전까지 에이전트에게 "이 코드 리팩토링해줘"라고 시키면, 에이전트는 자기 판단으로 "했다"고 판단하는 시점에 멈춥니다. 그게 내가 원한 결과인지 아닌지는 직접 확인해보기 전엔 모릅니다. 아 그리고 잘못됐을 때 다시 시도하려면 수동으로 개입해야 했고요.
+
+### Outcomes가 바꾸는 것
+
+Outcomes는 개발자가 **성공 루브릭(rubric)**을 작성하면, 별도의 채점 모델이 에이전트의 결과물을 평가하고 기준을 충족하지 못하면 수정을 요청하는 방식입니다.
+
+```python
+# Outcomes 사용 예시 (Managed Agents SDK)
+from anthropic import Anthropic
+
+client = Anthropic()
+
+outcome_rubric = """
+성공 기준:
+1. 모든 public 함수에 타입 힌트가 추가되어 있을 것
+2. 기존 테스트가 통과할 것 (pytest -v 결과 확인)
+3. 함수명이 snake_case를 따를 것
+4. 각 함수에 docstring이 있을 것
+실패 조건: 타입 에러가 발생하거나 테스트가 실패하는 경우
+"""
+
+response = client.managed_agents.run(
+    agent_id="my-refactor-agent",
+    task="src/ 디렉토리의 Python 코드를 리팩토링해주세요",
+    outcomes=outcome_rubric,
+    max_revision_rounds=3  # 최대 3회 재시도
+)
+
+print(f"성공 여부: {response.outcome_passed}")
+print(f"시도 횟수: {response.revision_count}")
+```
+
+Anthropic 내부 테스트에서 Outcomes를 적용했을 때 **표준 프롬프팅 루프 대비 태스크 성공률이 최대 10포인트 향상**됐다고 발표했습니다 ([SD Times, 2026년 5월 6일](https://sdtimes.com/ai/new-in-claude-managed-agents-dreaming-outcomes-and-multiagent-orchestration/)). 10포인트라는 수치가 크게 느껴지지 않을 수도 있는데, 에이전트 작업이 100개라면 10개를 더 성공적으로 완료한다는 뜻입니다.
+
+Outcomes는 현재 **공개 베타**로 전환됐습니다. API로 바로 써볼 수 있습니다.
+
+---
+
+## 멀티 에이전트 오케스트레이션: 혼자보다 여럿이 낫다
+
+### 아키텍처
+
+멀티 에이전트 오케스트레이션은 **리드 에이전트(orchestrator)가 복잡한 작업을 전문 에이전트(workers)에게 나눠 주는** 방식입니다. 각 전문 에이전트는 자신만의 모델, 시스템 프롬프트, 도구 세트를 가지고 공유 파일시스템에서 병렬로 실행됩니다.
+
+![멀티 에이전트 오케스트레이션 개념 - 리드 에이전트와 전문 에이전트들의 협력](https://images.unsplash.com/photo-1658534983681-5605173ae10f?w=1080&q=80)
+_Photo by [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 리드 에이전트가 전문 에이전트들을 조율하는 오케스트레이션 구조_
+
+예를 들어 "신규 결제 모듈 추가"라는 작업이 들어오면:
+- **리드 에이전트**: 작업 분해 및 조율
+- **전문 에이전트 A** (백엔드 전문): Stripe API 연동 코드 작성
+- **전문 에이전트 B** (테스트 전문): 단위 테스트 및 통합 테스트 작성
+- **전문 에이전트 C** (보안 전문): 입력 검증, SQL 인젝션, 민감 데이터 처리 검토
+- 모든 에이전트가 **공유 파일시스템에서 병렬 실행** → 결과가 리드 에이전트의 컨텍스트에 통합
+
+Anthropic 엔지니어링 팀이 공개한 구현 세부사항에 따르면, 이 아키텍처는 에이전트의 "두뇌"(Claude와 하네스)를 "손"(샌드박스와 도구)과 "세션 로그"로부터 분리하는 방식으로 설계됐습니다. 이 분리 덕분에 **p50 TTFT(최초 토큰까지 시간)가 약 60% 감소, p95는 90% 이상 감소**했습니다 ([Anthropic Engineering](https://www.anthropic.com/engineering/managed-agents), 2026년 5월).
+
+Claude Console에서 각 에이전트의 실행 상태와 결과를 추적할 수 있어서 어느 에이전트가 어떤 작업을 했는지 투명하게 볼 수 있습니다.
+
+현재 **공개 베타** 상태입니다.
+
+---
+
+## Claude Code 업데이트: 이번에 같이 나온 것들
+
+Managed Agents 외에도 Claude Code 자체 업데이트가 함께 발표됐습니다.
+
+### Auto Mode: Team 사용자로 확대
+
+[지난달 Claude Opus 4.7 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-47-xhigh-auto-mode-guide-2026)에서도 다뤘던 Auto Mode가 이번에 Team 플랜 사용자 대상 연구 프리뷰로 확대됐습니다. Enterprise와 API 롤아웃도 예정됐다고 합니다. Sonnet 4.6과 Opus 4.6에서 동작합니다.
+
+Auto Mode는 권한 프롬프트를 분류기(classifier)로 처리해서 안전한 작업은 자동 승인, 위험한 작업은 차단하는 중간 지점입니다. 매번 권한 확인을 해야 하는 것과 `--dangerously-skip-permissions`를 주는 것 사이의 균형점이라고 보면 됩니다.
+
+### Claude Security 공개 베타
+
+Claude Enterprise 고객 대상으로 **코드 취약점 스캔** 기능이 공개 베타로 출시됐습니다. Opus 4.7 기반으로 코드에서 취약점을 찾고 수정 제안을 제시합니다. 예약 스캔(scheduled scan)과 특정 범위 스캔(targeted scan) 모두 지원하고, 트리아지 추적과 워크플로우 통합도 갖춰졌습니다.
+
+![코드 취약점 스캔 개념 이미지](https://images.unsplash.com/photo-1590248451958-05bf0fa70354?w=1080&q=80)
+_Photo by [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Claude Security: Opus 4.7 기반 코드 취약점 자동 탐지_
+
+### 레이트 리밋 2배 인상
+
+Pro, Max, Enterprise 플랜의 **5시간 레이트 리밋이 2배로 늘었습니다.** 장시간 에이전트 작업을 돌리다가 한도에 걸려 멈추는 경험을 해보신 분들이라면 반가울 소식입니다. 이전에 [Claude Code Routines 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-routines-cloud-automation-2026)에서 스케줄 자동화를 다뤘는데, 레이트 리밋이 풀리면 더 긴 루틴도 안정적으로 돌릴 수 있습니다.
+
+### PR URL 붙여넣기 세션 찾기
+
+`/resume` 검색창에 GitHub, GitLab, Bitbucket PR URL을 붙여넣으면 해당 PR을 만든 세션을 자동으로 찾아줍니다. 이게 의외로 유용합니다. 며칠 전에 만들어둔 PR 관련 작업을 다시 이어가야 할 때, 어느 세션이었는지 뒤지는 게 꽤 귀찮은 작업이었거든요.
+
+---
+
+## 실전 팁 3가지
+
+### 1. Outcomes 루브릭은 구체적일수록 좋다
+
+"잘 리팩토링했는지" 같은 모호한 기준보다 "pytest가 0 failed로 통과하는지", "mypy --strict가 에러 없는지" 처럼 **자동 검증 가능한 조건**을 루브릭에 넣으면 채점 모델의 판단이 훨씬 정확해집니다. 주관적 기준은 채점 모델마다 해석이 달라질 수 있습니다.
+
+### 2. Dreaming은 반복 작업에 먼저 적용하라
+
+처음부터 모든 에이전트에 Dreaming을 붙이는 것보다, 매일 또는 매주 반복하는 작업(배포 검증, 일일 리포트 생성, 정기 코드리뷰 등)에 먼저 적용하는 게 효과적입니다. 반복 횟수가 쌓여야 패턴이 의미 있게 추출됩니다.
+
+### 3. 멀티 에이전트 분배는 "도메인 전문성" 기준으로
+
+작업을 단순히 크기로 나누기보다 (파일 100개를 50개씩 나누는 식), **역할의 전문성**으로 나누는 게 더 효과적입니다. 코드 작성 에이전트 / 테스트 에이전트 / 코드리뷰 에이전트처럼 각자 다른 시스템 프롬프트와 도구를 가진 구성이 리드 에이전트의 조율 부담을 줄입니다.
+
+---
+
+## 총평 — 스코어카드
+
+| 항목 | 점수 | 코멘트 |
+|------|------|--------|
+| **Dreaming** | 7/10 | 방향은 맞지만 연구 프리뷰 수준. 실제 효과 검증 필요 |
+| **Outcomes** | 9/10 | 10포인트 향상 수치 + 즉시 써볼 수 있는 공개 베타 |
+| **멀티 에이전트 오케스트레이션** | 8/10 | p95 TTFT 90% 감소 수치가 인상적. 복잡도 관리가 관건 |
+| **Claude Security** | 6/10 | Enterprise 한정 베타. 일반 사용자는 당장 체감 불가 |
+| **레이트 리밋 2배** | 9/10 | 즉각적이고 실질적인 개선 |
+| **종합** | 8/10 | Managed Agents 방향성 명확. 개발 부채 줄이는 도구들 |
+
+![코드 터미널에서 에이전트가 실행되는 모습](https://images.unsplash.com/photo-1681321570365-df53da7dbaa2?w=1080&q=80)
+_Photo by [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 멀티 에이전트 오케스트레이션 — 여러 전문 에이전트가 공유 환경에서 협력합니다_
+
+솔직히 Dreaming은 아직 "신기한 아이디어" 단계입니다. 연구 프리뷰라는 표현이 괜한 게 아닙니다. 실제로 장기 세션을 수십 번 돌렸을 때 체감할 수 있는 개선이 있는지는 더 써봐야 알겠습니다.
+
+반면 Outcomes와 멀티 에이전트 오케스트레이션은 **지금 당장 써볼 수 있고, 효과를 측정할 수 있습니다.** 특히 에이전트가 같은 작업을 반복하거나 대규모 코드베이스 작업에서 이 두 기능을 결합하면 꽤 의미 있는 차이를 만들 수 있을 것 같습니다.
+
+다른 [AI Tools & Review](https://daily1bite.com/ko/category/ai-tools) 글도 함께 보세요.
+
+---
+
+## 참고 자료
+
+- [Scaling Managed Agents: Decoupling the brain from the hands](https://www.anthropic.com/engineering/managed-agents) — Anthropic Engineering, 2026년 5월
+- [New in Claude Managed Agents: dreaming, outcomes, and multiagent orchestration](https://sdtimes.com/ai/new-in-claude-managed-agents-dreaming-outcomes-and-multiagent-orchestration/) — SD Times, 2026년 5월 6일
+- [Anthropic is letting Claude agents 'dream' so they don't sleep on the job](https://siliconangle.com/2026/05/06/anthropic-letting-claude-agents-dream-dont-sleep-job/) — SiliconANGLE, 2026년 5월 6일
+- [Inside Claude Code Auto Mode: Anthropic's Autonomous Coding System with Human Approval Gates](https://www.infoq.com/news/2026/05/anthropic-claude-code-auto-mode/) — InfoQ, 2026년 5월
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Opus 4.7 실전 가이드: xhigh 기본값·Auto Mode·/ultrareview 완전 정리](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-47-xhigh-auto-mode-guide-2026) - Opus 4.7과 Auto Mode를 더 깊이 이해하고 싶다면
+- [Claude Code Routines 완전 정리: 크론 없이 스케줄·API·GitHub 웹훅 자동화](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-routines-cloud-automation-2026) - 레이트 리밋 인상으로 더 길게 돌릴 수 있는 Routines 자동화 가이드
