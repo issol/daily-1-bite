@@ -21,10 +21,9 @@ const AASA = {
       {
         appIDs: ['MARV67DMQN.app.dayseed.mobile'],
         components: [
-          {
-            '/': '/i/*',
-            comment: 'v1.3 group invite links',
-          },
+          { '/': '/i/*', comment: 'v1.3 group invite links (no locale)' },
+          { '/': '/ko/i/*', comment: 'v1.3 group invite links (ko locale)' },
+          { '/': '/en/i/*', comment: 'v1.3 group invite links (en locale)' },
         ],
       },
     ],
