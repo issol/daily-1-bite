@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["MARV67DMQN.app.dayseed.mobile"],
+        "components": [
+          {
+            "/": "/i/*",
+            "comment": "v1.3 group invite links"
+          }
+        ]
+      }
+    ]
+  }
+}

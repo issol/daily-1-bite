@@ -68,6 +68,17 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // 6) Apple Universal Links: AASA must be served as application/json
+      // with no redirects. The file has no extension so the platform's
+      // default MIME guess is wrong. Apple's validator silently rejects
+      // anything other than application/json.
+      {
+        source: '/.well-known/apple-app-site-association',
+        headers: [
+          { key: 'Content-Type', value: 'application/json' },
+          { key: 'Cache-Control', value: 'public, max-age=300' },
+        ],
+      },
     ];
   },
 };
