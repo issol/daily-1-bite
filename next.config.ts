@@ -68,16 +68,17 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-      // 6) Apple Universal Links: AASA must be served as application/json
-      // with no redirects. The file has no extension so the platform's
-      // default MIME guess is wrong. Apple's validator silently rejects
-      // anything other than application/json.
+    ];
+  },
+  // Apple Universal Links: serve AASA from a route handler so we can
+  // force Content-Type: application/json (Amplify's CDN serves files
+  // in public/ with default MIME detection, and the AASA filename has
+  // no extension → octet-stream → Apple silent reject).
+  async rewrites() {
+    return [
       {
         source: '/.well-known/apple-app-site-association',
-        headers: [
-          { key: 'Content-Type', value: 'application/json' },
-          { key: 'Cache-Control', value: 'public, max-age=300' },
-        ],
+        destination: '/api/aasa',
       },
     ];
   },
