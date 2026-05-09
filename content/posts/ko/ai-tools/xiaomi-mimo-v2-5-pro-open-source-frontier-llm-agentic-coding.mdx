@@ -1,0 +1,254 @@
+---
+title: "Xiaomi MiMo-V2.5-Pro 완전 정리: 오픈소스 1T LLM이 Claude Opus 4.6 앞서다 [2026]"
+date: "2026-05-09"
+description: "Xiaomi MiMo-V2.5-Pro가 SWE-bench 57.2%로 Claude Opus 4.6을 앞섰습니다. $1/M 오픈소스 1T LLM 완전 정리."
+category: "ai-tools"
+tags: ["Xiaomi MiMo", "MiMo-V2.5-Pro", "오픈소스 LLM", "AI 코딩 에이전트", "SWE-bench", "MoE 모델", "오픈웨이트"]
+thumbnail: "https://i.ytimg.com/vi/5JhSI_GTdi0/maxresdefault.jpg"
+---
+
+## TL;DR
+
+2026년 4월 22일, Xiaomi가 **MiMo-V2.5-Pro**를 오픈소스로 공개했습니다. 1.02T 파라미터 MoE 모델로, SWE-bench Pro에서 **57.2%**를 달성해 Claude Opus 4.6(53.4%)을 앞서고 GPT-5.4(57.7%)에 불과 0.5%p 차이입니다. 가격은 입력 **$1/M 토큰, 출력 $3/M 토큰** — Claude Opus 4.6 대비 1/5 수준입니다.
+
+단도직입적으로: **비용이 문제였다면, 이제 선택지가 생겼습니다.**
+
+---
+
+## "스마트폰 회사가 OpenAI를 이긴다고?"
+
+맞습니다. 샤오미, 그 스마트폰 회사입니다.
+
+처음 이 소식을 봤을 때 저도 "에이, 설마" 했습니다. Xiaomi MI 시리즈 팔던 그 회사가 갑자기 1조 파라미터짜리 LLM을 공개한다고? 다시 확인했습니다.
+
+진짜였습니다. 그것도 그냥 "쓸 만한 수준"이 아니라, SWE-bench Pro에서 Claude Opus 4.6을 약 4%p 앞서는 성능입니다. 비용은 경쟁사의 1/5. 가중치는 HuggingFace에 전부 공개.
+
+2026년에 AI 업계가 어디까지 왔는지를 보여주는 상징적인 사건이라고 생각합니다.
+
+이 글에서 다루는 것:
+- MiMo-V2.5-Pro 스펙 + 벤치마크 수치 해석
+- 토큰 효율성이 왜 진짜 핵심인지 (실제 비용 계산)
+- 실전 API 사용 코드 예시
+- 언제 쓰고 언제 안 써야 하는지
+
+---
+
+## 배경: 에이전틱 워크플로우에서 LLM 비용은 얼마나 아픈가
+
+지난 3개월간 사이드 프로젝트로 GitHub 이슈 자동화 에이전트를 만들었습니다. 이슈가 올라오면 관련 코드를 분석하고, 수정 제안과 PR 초안까지 자동 생성하는 파이프라인입니다.
+
+처음엔 Claude Opus 4.6으로 테스트했는데, 문제가 하나 생겼습니다. 에이전틱 워크플로우 특성상 하나의 태스크에 프롬프트가 수십 번 오가다 보니, 예상했던 것보다 토큰이 3~4배 더 쌓이더라고요. 한 달 지나서 API 비용 청구서를 보고 좀 멍했습니다.
+
+[DeepSeek V4가 GPT-5.5 대비 최대 107배 저렴하다](https://daily1bite.com/ko/blog/ai-tools/deepseek-v4-pro-flash-1m-context-open-weights-2026)는 게 화제였던 이유가 바로 이겁니다. 개발자 입장에서 모델 선택은 성능만의 문제가 아닙니다. **같은 성능이라면 저렴한 걸 써야** 서비스가 지속 가능합니다.
+
+MiMo-V2.5-Pro가 주목받는 이유가 정확히 여기에 있습니다.
+
+---
+
+## MiMo-V2.5-Pro 기본 스펙
+
+| 항목 | MiMo-V2.5-Pro |
+|------|---------------|
+| 아키텍처 | MoE (Mixture-of-Experts) |
+| 총 파라미터 수 | **1.02T** (1조 2백억) |
+| 활성 파라미터 수 | **42B** (추론 시) |
+| 컨텍스트 윈도우 | **1,048,576 토큰** (약 1M) |
+| 최대 출력 | 131,072 토큰 |
+| API 입력 가격 | **$1.00 / M 토큰** |
+| API 출력 가격 | **$3.00 / M 토큰** |
+| 공개 방식 | 오픈 웨이트 (HuggingFace) |
+| 공개일 | 2026년 4월 22일 |
+
+MoE 아키텍처 덕분에 총 파라미터는 1조 개를 넘지만, **실제 추론 시 활성화되는 건 42B**입니다. 대략 GPT-3(175B) 연산량 수준으로 훨씬 큰 파라미터 공간의 혜택을 누리는 구조입니다.
+
+Xiaomi 공식 문서에 따르면, 슬라이딩 윈도우 어텐션과 글로벌 어텐션을 5:1 비율로 혼합한 하이브리드 어텐션 구조로 KV-cache 저장량을 일반 방식 대비 약 **6배** 절감한다고 합니다. 1M 토큰 컨텍스트를 다루면서도 메모리 효율이 높은 이유입니다.
+
+![Xiaomi MiMo-V2.5-Pro 공식 소개 영상](https://i.ytimg.com/vi/5JhSI_GTdi0/maxresdefault.jpg)
+_출처: [YouTube — Xiaomi MiMo V2.5 Pro Full Test](https://www.youtube.com/watch?v=5JhSI_GTdi0) | MiMo-V2.5-Pro 실전 테스트 커버_
+
+---
+
+## 벤치마크: 숫자로 보는 성능
+
+공식 발표와 독립 검증에서 확인된 수치만 사용합니다.
+
+### SWE-bench Pro (실제 소프트웨어 엔지니어링 태스크)
+
+SWE-bench Pro는 실제 GitHub 이슈를 모델이 자율적으로 해결하도록 하는 벤치마크입니다. "이 버그 수정해줘"와 유사한 실전 환경이고, 단순한 코드 생성을 넘어 레포지토리 전체를 이해하고 패치를 작성해야 합니다.
+
+| 모델 | SWE-bench Pro | 공개 방식 |
+|------|:-------------:|-------|
+| **MiMo-V2.5-Pro** | **57.2%** | 오픈 웨이트 |
+| GPT-5.4 | 57.7% | 클로즈드 |
+| Claude Opus 4.6 | 53.4% | 클로즈드 |
+| MiMo-V2.5 (기본형) | ~50% | 오픈 웨이트 |
+
+GPT-5.4와 **0.5%p** 차이입니다. Claude Opus 4.6은 오히려 약 4%p 앞섭니다. 오픈소스 모델이 클로즈드 소스 프론티어 모델을 벤치마크에서 앞선다는 건, 숫자 이상의 의미입니다.
+
+### ClawEval (에이전틱 태스크 효율성)
+
+이게 더 흥미롭습니다. ClawEval은 단순히 "얼마나 잘 하는가"뿐 아니라 **"얼마나 효율적으로 하는가"**도 측정합니다.
+
+| 모델 | ClawEval Pass³ | 태스크당 토큰 사용량 |
+|------|:-------------:|:-----------------:|
+| **MiMo-V2.5-Pro** | **63.8%** | ~70K 토큰 |
+| GPT-5.4 | ~64% | ~120–150K 토큰 |
+| Claude Opus 4.6 | ~63% | ~120–150K 토큰 |
+| Gemini 3.1 Pro | ~61% | ~130K 토큰 |
+
+성능은 비슷한데 토큰 사용량이 **40~60% 적습니다**. 에이전틱 워크플로우에서 이 차이는 직접적인 비용 차이로 이어집니다.
+
+### τ3-Bench (복합 장기 추론)
+
+τ3-Bench는 장기 추론, 계획 수립, 도구 사용이 복합된 태스크를 평가합니다. MiMo-V2.5-Pro는 여기서 **72.9%**를 달성했습니다 (Xiaomi 공식 발표 수치).
+
+---
+
+## 토큰 효율성이 실제 비용에서 얼마나 중요한가
+
+추상적 백분율보다 직접적인 돈 이야기를 해봅시다.
+
+**시나리오**: GitHub 이슈 100개를 처리하는 에이전트 파이프라인. 이슈당 평균 입력 50K 토큰, 출력 20K 토큰 사용.
+
+| 모델 | 입력 단가 | 출력 단가 | 100 이슈 처리 비용 |
+|------|:-------:|:-------:|:---------------:|
+| **MiMo-V2.5-Pro** | $1/M | $3/M | **$11** |
+| Claude Opus 4.6 | $5/M | $25/M | **$75** |
+| GPT-5.4 | $10/M | $30/M | **$110** |
+
+(Claude Opus 4.6 가격은 artificialanalysis.ai 기준, GPT-5.4는 OpenAI API 공시 기준 추정)
+
+100개 이슈 처리에 MiMo는 $11, Claude Opus는 $75입니다. 월 1,000 이슈를 처리하는 팀이라면 한 달에 **$640 차이**, 연간 $7,680 차이가 납니다.
+
+여기에 MiMo의 토큰 효율성(같은 작업에 40~60% 적은 토큰)까지 반영하면, 실제 절약 효과는 더 큽니다.
+
+---
+
+## 실전 API 사용 예시
+
+MiMo-V2.5-Pro는 OpenRouter를 통해 바로 접근할 수 있습니다. **OpenAI 호환 API**를 지원해서, 기존 코드에서 모델명만 교체하면 됩니다.
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key="<YOUR_OPENROUTER_KEY>",
+)
+
+# 코드 리뷰 에이전트 예시
+response = client.chat.completions.create(
+    model="xiaomi/mimo-v2.5-pro",  # 여기만 바꾸면 됨
+    messages=[
+        {
+            "role": "system",
+            "content": (
+                "You are a senior software engineer. "
+                "Review the code below for bugs, performance issues, and suggest improvements. "
+                "Be specific and concise."
+            ),
+        },
+        {
+            "role": "user",
+            "content": f"Review this Python code:\n\n```python\n{code_to_review}\n```",
+        },
+    ],
+    max_tokens=4096,
+)
+
+print(response.choices[0].message.content)
+```
+
+기존에 `model="claude-opus-4-6"` 또는 `model="gpt-5.4"` 를 쓰던 코드라면 저 한 줄만 바꾸면 됩니다. 나머지 인터페이스는 동일합니다.
+
+자체 호스팅을 원한다면 HuggingFace에서 모델 웨이트를 직접 다운로드할 수 있습니다. MoE 아키텍처 특성상 dense 1T 모델보다 GPU 메모리 요구사항이 낮습니다.
+
+---
+
+## 장점과 한계: 솔직하게 양면을 보자
+
+### 장점
+
+**비용 효율성**: 위 계산에서 봤듯, 에이전틱 워크플로우 기준 Claude Opus 대비 5~7배 저렴합니다. 스케일이 커질수록 이 차이는 더 중요해집니다.
+
+**벤치마크 성능**: 오픈소스 모델이 클로즈드 소스 프론티어 모델을 앞선 건 단순한 수치 이상의 의미입니다. "AI 최전선은 서방 빅테크가 독점한다"는 통념이 실질적으로 깨지고 있습니다.
+
+**오픈 웨이트 자체 호스팅**: 의료, 금융, 공공기관처럼 데이터가 외부로 나가면 안 되는 환경에서 사용 가능합니다. Claude API나 OpenAI API를 쓰면 데이터가 해당 기업 서버로 전송됩니다.
+
+**1M 토큰 컨텍스트**: 긴 코드베이스 분석, 대형 문서 처리에 실용적입니다.
+
+### 한계
+
+**"중국 회사"라는 현실적 제약**: 엔터프라이즈 환경에서 중국 출처 AI 모델은 내부 규정상 사용 불가한 경우가 있습니다. 특히 미국이나 EU의 특정 공공·국방 프로젝트.
+
+**벤치마크와 실전의 괴리**: SWE-bench Pro 57.2%는 공식 수치지만, 실제 코드베이스의 도메인 복잡성과 다양성에서 어떻게 동작하는지는 직접 테스트해봐야 압니다. 저는 아직 대규모 프로덕션 환경에서 충분히 써보지 못했습니다 — 이 점은 솔직히 밝힙니다.
+
+**한국어 성능 불확실**: 아직 한국어 개발 문서나 주석이 섞인 코드베이스에서의 체계적인 성능 데이터가 없습니다. Xiaomi 공식 벤치마크는 대부분 영어 기반입니다.
+
+**생태계 얕음**: Claude/OpenAI에 비해 파인튜닝 레시피, 커뮤니티 팁, 디버깅 사례가 훨씬 적습니다.
+
+![MiMo-V2.5-Pro 성능 비교 — 오픈소스 vs 클로즈드 소스](https://i.ytimg.com/vi/popj1l3LA-I/maxresdefault.jpg)
+_출처: [YouTube — Xiaomi MiMo V2.5 Pro IS INSANE!](https://www.youtube.com/watch?v=popj1l3LA-I) | 오픈소스 LLM이 프론티어 모델을 어떻게 넘어섰는지 실전 분석_
+
+---
+
+## 더 큰 그림: 중국 오픈소스 LLM 웨이브
+
+MiMo-V2.5-Pro는 혼자 등장한 게 아닙니다. 2026년 4월 12일 이내에 중국 4개 랩이 비슷한 수준의 에이전틱 코딩 모델을 연달아 출시했습니다.
+
+| 모델 | 출처 | 특징 |
+|------|------|------|
+| GLM-5.1 | Z.ai | 1M+ 컨텍스트 오픈 모델 |
+| MiniMax M2.7 | MiniMax | 멀티모달 강화 |
+| Kimi K2.6 | Moonshot AI | 수학·추론 특화 |
+| **MiMo-V2.5-Pro** | **Xiaomi** | **에이전틱 코딩 효율성** |
+
+이 흐름의 의미는 단순합니다. AI 모델 개발 비용이 급격히 하락하고 있고, 그 혜택이 오픈소스를 통해 개발자 커뮤니티 전체로 내려오고 있습니다.
+
+[Mistral Medium 3.5가 오픈웨이트로 SWE-bench 77.6%를 달성했을 때](https://daily1bite.com/ko/blog/ai-tools/mistral-medium-35-vibe-agent-claude-code-2026)와 같은 흐름입니다. "성능 좋은 모델 = 비싸고 클로즈드 소스"라는 공식이 점점 맞지 않게 되고 있습니다.
+
+[더 많은 AI 도구 리뷰 보기 →](https://daily1bite.com/ko/category/ai-tools)
+
+---
+
+## 총평: 스코어카드
+
+| 평가 항목 | 점수 (10점 만점) | 비고 |
+|---------|:-----------:|------|
+| 성능 (SWE-bench Pro) | 8.5 | Claude Opus 4.6 초과, GPT-5.4에 근접 |
+| 비용 효율성 | 9.5 | 경쟁사 대비 5~7배 저렴 |
+| 토큰 효율성 | 9.0 | 태스크당 40~60% 절약 |
+| 오픈소스 접근성 | 9.0 | HuggingFace 오픈 웨이트 |
+| 생태계·커뮤니티 | 5.5 | 아직 성장 중 |
+| 한국어 지원 | 5.0 | 공식 데이터 미공개 |
+| 엔터프라이즈 신뢰성 | 6.0 | 중국 출처 관련 규정 이슈 가능 |
+| **종합** | **7.5** | — |
+
+**추천 대상:**
+- 에이전틱 코딩 파이프라인을 비용 효율적으로 운영하고 싶은 팀
+- 자체 호스팅이 필요한 환경 (의료, 금융, 보안)
+- Claude/GPT 대안을 A/B 테스트해보고 싶은 개발자
+
+**비추천 대상:**
+- 중국 출처 AI 도구에 규정상 제약이 있는 조직
+- 한국어 특화 성능이 중요한 프로젝트
+- 커뮤니티 지원과 파인튜닝 생태계가 중요한 팀
+
+솔직히 말하면 지금 당장 메인 개발 워크플로우를 바꿀 생각은 없습니다. 하지만 비용 최적화가 필요한 자동화 파이프라인에서는 조만간 진지하게 테스트해볼 예정입니다.
+
+![오픈소스 AI와 개발자](https://i.ytimg.com/vi/d4YXxTeUirE/maxresdefault.jpg)
+_출처: [YouTube — China's NEW Xiaomi MiMo-V2.5 is INSANE!](https://www.youtube.com/watch?v=d4YXxTeUirE) | 중국 오픈소스 LLM의 급격한 성장을 다룬 영상_
+
+---
+
+## 참고 자료
+
+- [Xiaomi Releases MiMo-V2.5-Pro and MiMo-V2.5: Matching Frontier Model Benchmarks at Significantly Lower Token Cost](https://www.marktechpost.com/2026/04/22/xiaomi-releases-mimo-v2-5-pro-and-mimo-v2-5-matching-frontier-model-benchmarks-at-significantly-lower-token-cost/) — MarkTechPost, 2026년 4월 22일
+- [Open source Xiaomi MiMo-V2.5 and V2.5-Pro are among the most efficient and affordable at agentic tasks](https://venturebeat.com/ai/open-source-xiaomi-mimo-v2-5-and-v2-5-pro-are-among-the-most-efficient-and-affordable-at-agentic-claw-tasks) — VentureBeat, 2026년 4월 22일
+- [MiMo-V2.5-Pro — API Pricing & Providers](https://openrouter.ai/xiaomi/mimo-v2.5-pro) — OpenRouter, 2026년 5월 기준
+- [XiaomiMiMo/MiMo-V2.5-Pro on HuggingFace](https://huggingface.co/XiaomiMiMo/MiMo-V2.5-Pro) — HuggingFace, 2026년 4월 공개
+
+**함께 읽으면 좋은 글:**
+
+- [DeepSeek V4 완전 정리: V4-Pro·V4-Flash — 1M 컨텍스트·오픈웨이트·GPT-5.5 대비 최대 107배 저렴](https://daily1bite.com/ko/blog/ai-tools/deepseek-v4-pro-flash-1m-context-open-weights-2026) - 또 다른 비용 혁신 오픈소스 LLM 분석
+- [Mistral Medium 3.5 완전 정리: 128B 오픈웨이트·Vibe 클라우드 에이전트 vs Claude Code](https://daily1bite.com/ko/blog/ai-tools/mistral-medium-35-vibe-agent-claude-code-2026) - 유럽발 오픈웨이트 경쟁자 비교 분석
