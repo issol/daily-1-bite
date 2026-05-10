@@ -1,0 +1,292 @@
+---
+title: "OpenAI Codex Chrome 확장: AI 에이전트가 브라우저에서 일하는 법 [2026-05]"
+date: "2026-05-10"
+description: "2026년 5월 7일 출시된 Codex Chrome 확장 완전 정리. 로그인 세션으로 Salesforce·Gmail 자동화, 보안 설정까지."
+category: "ai-tutorial"
+tags: ["OpenAI Codex", "Chrome 확장", "AI 에이전트", "브라우저 자동화", "Salesforce 자동화", "Gmail 자동화", "Codex Chrome"]
+thumbnail: "https://i.ytimg.com/vi/JoWD0xzYwRQ/maxresdefault.jpg"
+---
+
+## TL;DR
+
+- **2026년 5월 7일**, OpenAI가 Codex Chrome 확장 프로그램을 공식 출시
+- AI 에이전트 Codex가 Chrome 브라우저를 직접 조작 — **로그인된 세션 그대로** LinkedIn, Salesforce, Gmail, 사내 도구 접근 가능
+- 설치: Codex 앱 → Plugins → Chrome 플러그인 추가 → Chrome Web Store 확장 설치
+- `@Chrome` 명령어로 브라우저 작업 직접 지시
+- **보안**: 새 도메인 접근 시마다 사용자 확인 요청 (기본값), 허용/차단 목록 관리 가능
+- **지역 제한**: EU·영국은 현재 미지원 ("soon" 예정), **한국은 정상 사용 가능**
+- Codex 주간 활성 사용자: **400만 명** (2026년 1월 대비 8배 성장)
+
+---
+
+연초에 50만 명이었던 주간 사용자가 4개월 만에 400만 명이 됐습니다.
+
+8배. 단순한 인기 도구가 아닙니다. 저는 이 성장 곡선을 보면서 "Codex가 뭔가 다르게 자리를 잡고 있구나" 생각했습니다. 그리고 5월 7일 아침, 그 이유를 설명하는 발표가 하나 나왔습니다.
+
+Chrome 확장.
+
+Codex가 이제 제 브라우저에 들어왔습니다. 로그인된 Salesforce, Gmail, 사내 도구 — AI가 드디어 **인간이 실제로 일하는 공간**에 직접 발을 들여놓은 겁니다.
+
+설치부터 실전 활용, 보안 설정까지 직접 해보고 정리했습니다.
+
+---
+
+## Codex Chrome 확장, 왜 이게 다른가
+
+기존 웹 자동화 AI들이 공통으로 가진 약점이 있습니다. "로그인 상태 문제"입니다.
+
+Playwright나 Selenium 기반의 자동화 도구들은 로그인이 필요한 서비스에 접근하려면 별도 세션 쿠키 관리, OAuth 흐름 구현, 자격증명 설정 같은 사전 작업이 필요합니다. 결국 준비가 실제 결과보다 더 복잡한 상황이 반복됩니다.
+
+Codex Chrome 확장은 이 문제를 완전히 다른 방식으로 우회합니다. **제 Chrome에 이미 로그인돼 있는 모든 서비스**를 Codex가 그대로 사용할 수 있습니다. 별도 API 키 없이. Salesforce 로그인 페이지를 새로 뚫을 필요 없이.
+
+물론 이게 어떤 보안 함의를 갖는지는 뒤에서 따로 짚겠습니다.
+
+![OpenAI Codex Chrome 확장 - 브라우저 직접 제어 데모](https://i.ytimg.com/vi/JoWD0xzYwRQ/maxresdefault.jpg)
+_출처: [Codex can now control Chrome](https://www.youtube.com/watch?v=JoWD0xzYwRQ) | OpenAI 공식 데모 영상, 2026년 5월_
+
+### 400만 사용자가 된 배경
+
+[Neowin 보도](https://www.neowin.net/news/openais-codex-hits-4-million-weekly-active-users-adding-1-million-in-just-two-weeks/)에 따르면, Codex의 성장 궤적은 이렇습니다:
+
+- **2026년 1월 초**: 약 50만 주간 활성 사용자
+- **2026년 3월 초**: 약 160만 명 (3개월 만에 5배, Fortune 보도)
+- **2026년 4월 초**: 200만 명 이상
+- **2026년 4월 21일**: 400만 명 돌파 (단 2주 만에 100만 명 추가)
+
+이 속도에서 Chrome 확장 출시는 단순한 기능 추가가 아닙니다. "코딩 어시스턴트"에서 "업무 에이전트"로 포지셔닝을 바꾸는 신호입니다. 지금까지 Codex를 쓰지 않던 비개발자 팀원들도 브라우저 자동화는 쓸 수 있으니까요.
+
+---
+
+## 사전 준비 사항
+
+설치 전 확인할 것들:
+
+| 항목 | 요구사항 |
+|------|---------|
+| 운영체제 | macOS 또는 Windows |
+| 브라우저 | Google Chrome (필수) |
+| Codex 앱 | 데스크톱 앱 설치 필요 |
+| OpenAI 계정 | 유료 플랜 권장 (Pro / ChatGPT Plus) |
+| 지역 | **EU·영국 현재 불가** / 한국 정상 사용 가능 |
+
+Codex 앱은 ChatGPT와 별개의 전용 앱입니다. OpenAI 계정이 있으면 [openai.com/codex](https://openai.com/codex/)에서 다운로드할 수 있습니다.
+
+---
+
+## 단계별 설치 및 설정
+
+### Step 1: Codex 앱에서 Chrome 플러그인 추가
+
+Codex 앱을 열고 왼쪽 사이드바 하단의 **Plugins** 메뉴로 이동합니다.
+
+```
+Codex 앱 실행
+  → 왼쪽 사이드바 하단 "Plugins" 클릭
+  → [+ Add Plugin] 버튼
+  → "Chrome" 선택
+  → 설정 흐름 시작
+```
+
+Chrome 플러그인 항목을 클릭하면 자동으로 Chrome Web Store로 연결하는 링크가 나옵니다.
+
+### Step 2: Chrome Web Store에서 확장 설치
+
+Chrome Web Store에서 **Codex** 확장을 설치합니다. "Chrome에 추가"를 클릭하면 권한 확인 프롬프트가 뜹니다.
+
+**"모든 사이트의 데이터 읽기 및 변경"** 권한이 요청됩니다. 범위가 넓어 보이지만, OpenAI가 설명하는 실제 데이터 접근 범위는 사용자가 명시적으로 허용한 도메인에만 한정됩니다. 자세한 내용은 보안 섹션에서 다룹니다.
+
+```bash
+# Chrome Web Store 직접 링크
+# chromewebstore.google.com/detail/codex/hehggadaopoacecdllhhajmbjkdcmajg
+```
+
+### Step 3: Codex 앱에서 연결 확인
+
+Chrome Web Store에서 설치 완료 후, Codex 앱으로 돌아오면 Chrome 플러그인 옆에 초록색 활성화 표시가 뜹니다. 이걸 확인하면 설정 완료입니다.
+
+![OpenAI Codex macOS·Windows 브라우저 사용 데모](https://i.ytimg.com/vi/b6Mxcv1pyBU/maxresdefault.jpg)
+_출처: [Codex can now use Chrome directly on macOS and Windows](https://www.youtube.com/watch?v=b6Mxcv1pyBU) | 2026년 5월 9일_
+
+---
+
+## @Chrome 명령어 기본 사용법
+
+Codex 대화창에서 `@Chrome`을 명시하면 Chrome 관련 작업임을 직접 지정할 수 있습니다. 문맥상 브라우저가 필요한 작업은 자동 감지되기도 하지만, 명시적으로 쓰는 게 더 정확합니다.
+
+기본 패턴:
+
+```
+@Chrome [작업 대상 URL 또는 서비스명] [수행할 작업]
+```
+
+예시:
+
+```
+@Chrome open Salesforce and find the account "Acme Corp" 
+then summarize the last 3 activity notes
+```
+
+```
+@Chrome 내 Gmail 받은편지함에서 오늘 온 이메일 중 
+"결정 필요" 또는 "답변 요청"이 포함된 것을 찾아서 
+마감일과 함께 우선순위 목록으로 정리해줘
+```
+
+```
+@Chrome go to our internal Jira board at [URL], 
+find all tickets assigned to me that are blocking this sprint, 
+and create a markdown summary
+```
+
+Codex는 Chrome에서 **탭 그룹**을 만들어 작업합니다. 여러 탭이 필요한 경우 하나의 탭 그룹 안에서 처리되므로, 내 기존 작업 탭들이 뒤섞이는 상황은 없습니다.
+
+---
+
+## 실전 시나리오 4가지
+
+### 시나리오 1: Salesforce CRM 노트 자동 업데이트
+
+영업팀에서 가장 반응이 좋은 케이스입니다. 통화 후 CRM 업데이트는 반복적이고 귀찮은 작업인데, Codex에게 맡길 수 있습니다.
+
+```
+@Chrome Salesforce에서 "TechCorp" 계정 열고, 
+오늘 통화 내용을 아래 메모 기반으로 Activity에 추가해줘:
+- Q3 계약 논의 중
+- 예산 확정 6월 예정
+- 다음 미팅 2주 후 요청
+```
+
+Codex는 Salesforce를 직접 열고, 계정을 검색하고, Activity 입력 폼을 채웁니다. 로그인 세션이 유지된 상태이므로 별도 인증 없이 바로 실행됩니다. 통화 직후 Codex에게 메모를 던져두면 CRM 업데이트가 알아서 됩니다.
+
+### 시나리오 2: Gmail 이메일 액션 아이템 추출
+
+```
+@Chrome 내 Gmail 받은편지함에서 오늘 받은 이메일 중 
+"결정 필요" 또는 "답변 요청" 키워드가 있는 것들을 찾아서
+마감일과 함께 우선순위 목록으로 정리해줘
+```
+
+여기서 강점이 나옵니다. Codex가 지원하는 **Cross-tab summarization** — 여러 이메일 스레드의 내용을 탭 그룹 단위로 통합해서 하나의 정리된 뷰를 만들어줍니다. 여러 스레드에 걸쳐 흩어진 맥락을 묶어주는 게 사람이 직접 하기에는 꽤 번거로운 작업인데, Codex가 꽤 잘 해줍니다.
+
+### 시나리오 3: 웹 앱 버그 재현 + DevTools 로그 수집
+
+개발자들한테 특히 유용한 케이스입니다. Codex가 Chrome DevTools도 활용할 수 있습니다.
+
+```
+@Chrome staging.myapp.com에서 로그인 후 결제 플로우 Step 3까지 테스트해줘.
+에러가 발생하면 DevTools 콘솔 로그와 네트워크 탭의 실패한 요청을 
+함께 캡처해서 정리해줘
+```
+
+스테이징 환경에서 QA 담당자가 직접 재현해야 했던 작업을, Codex가 처리합니다. "버그 리포트 재현 → 에러 로그 캡처 → Jira 티켓에 첨부" 파이프라인에 Codex를 넣어두면 생각보다 쓸 만합니다.
+
+![OpenAI Codex 브라우저 직접 제어 - 실전 활용 예시](https://i.ytimg.com/vi/t7l2XkgkyxE/maxresdefault.jpg)
+_출처: [OpenAI Codex Can Now Use Your Computer!](https://www.youtube.com/watch?v=t7l2XkgkyxE) | 2026년 5월 9일_
+
+### 시나리오 4: 리서치 자료 정리 (여러 탭 통합)
+
+```
+@Chrome 다음 5개 URL을 열고, 각 페이지의 핵심 내용을 
+200자 이내로 요약한 뒤 비교 표로 만들어줘:
+[URL1], [URL2], [URL3], [URL4], [URL5]
+```
+
+경쟁사 분석, 기술 문서 비교, 채용 공고 리서치 같은 작업에 쓸 수 있습니다. 여러 탭을 직접 열어가며 내용을 복사-붙여넣기 하는 대신, Codex가 탭 그룹을 만들어 처리합니다.
+
+다만 솔직히 말하면 — LinkedIn 자동화는 조심해야 합니다. LinkedIn 서비스 약관이 자동화 접근을 명시적으로 금지하고 있어서, 대규모 스크래핑에 사용하면 계정 정지 위험이 있습니다. 가끔 쓰는 개인 리서치 용도는 몰라도, 자동화 스크래핑 파이프라인으로 쓰는 건 추천하지 않습니다.
+
+---
+
+## 보안 설정 완전 이해
+
+이 부분은 건너뛰면 안 됩니다.
+
+### 기본 모델: 확인 후 실행
+
+Codex는 기본적으로 **새 도메인에 접근할 때마다 사용자 확인**을 요청합니다. 팝업이 뜨면 세 가지 선택지가 나옵니다:
+
+| 선택 | 의미 |
+|------|------|
+| Allow for this chat | 현재 대화에서만 허용 (다음번엔 다시 물어봄) |
+| Always allow [도메인] | 해당 도메인은 이후 자동 허용 |
+| Decline | 해당 도메인 접근 거부 |
+
+처음에는 번거롭지만, 이 확인 과정 덕분에 Codex가 예상치 못한 사이트에 접근하는 상황을 차단할 수 있습니다.
+
+### 허용 목록과 차단 목록 관리
+
+Codex 앱의 **Computer Use Settings**에서 도메인별 허용/차단 목록을 직접 관리할 수 있습니다. 자주 쓰는 서비스는 allowlist에 추가해두면 편합니다.
+
+```yaml
+# 허용 목록 예시 (Computer Use Settings에서 설정)
+Always allow:
+  - app.salesforce.com
+  - mail.google.com
+  - linear.app
+  - "*.mycompany.com"  # 내부 도구 전체 허용
+
+# 차단 목록 예시
+Always block:
+  - banking.mybank.com     # 민감 금융 정보
+  - hr.mycompany.com       # 인사 시스템
+  - "*.payroll-system.com" # 급여 관련 서비스
+```
+
+### 데이터 저장 범위
+
+[MarkTechPost 보도](https://www.marktechpost.com/2026/05/08/openai-adds-chrome-extension-to-codex-letting-its-ai-agent-access-linkedin-salesforce-gmail-and-internal-tools-via-signed-in-sessions/)에 따르면, OpenAI는 Codex의 Chrome 활동을 **별도로 저장하지 않습니다.** 브라우저 활동이 Codex 대화 컨텍스트에 포함될 때만 저장됩니다.
+
+예를 들어, Codex에게 "이 페이지 내용 요약해줘"라고 하면 그 내용이 대화에 포함되지만, Codex가 백그라운드에서 탭을 열었다 닫는 동작 자체는 별도 로그로 쌓이지 않습니다.
+
+다만 OpenAI 일반 데이터 처리 정책이 적용됩니다. 기업 환경에서 쓸 경우 데이터 처리 계약(DPA) 여부 확인은 필수입니다.
+
+---
+
+## 한계 및 주의사항
+
+몇 가지 아쉬운 점도 있습니다. 과장 없이 말하겠습니다.
+
+**EU·영국 미지원.** 현재 유럽 연합과 영국 사용자는 사용할 수 없습니다. OpenAI가 "soon"이라고만 밝혔고 구체적인 일정은 없습니다. 한국은 현재 정상 사용 가능합니다.
+
+**처리 속도.** 브라우저 작업이 포함되면 순수 텍스트 응답보다 당연히 느립니다. 탭 열기 → 페이지 로딩 → DOM 파싱 단계가 있으니 작업에 따라 수 초에서 수십 초가 걸립니다. 급한 작업엔 맞지 않습니다.
+
+**서비스 약관 충돌.** LinkedIn, Twitter/X 등 일부 서비스는 자동화 접근을 명시적으로 금지합니다. OpenAI는 이 부분에서 사용자에게 책임을 넘기고 있습니다. 업무용으로 쓸 때는 해당 서비스의 약관을 먼저 확인하세요.
+
+**브라우저 히스토리 접근.** 기본적으로 Codex는 브라우저 히스토리에 접근하지 않습니다. 맥락이 필요하면 명시적으로 허용해야 합니다.
+
+이 기능을 다른 AI 코딩 도구와 비교해보면, [Claude Code 5월 업데이트 총정리](https://daily1bite.com/ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix)에서 다룬 Claude Code의 MCP 기반 도구 통합 방향과는 다른 노선입니다. Claude Code는 코드베이스·터미널 중심, Codex Chrome 확장은 로그인된 웹 서비스 접근 중심. 용도가 갈립니다.
+
+![Codex 브라우저 자동화 확장 활용 워크플로우](https://i.ytimg.com/vi/flvZ6jEj3VU/maxresdefault.jpg)
+_출처: [Bring your work into Codex in a few clicks](https://www.youtube.com/watch?v=flvZ6jEj3VU) | OpenAI 영상_
+
+---
+
+## 정리: 지금 당장 써볼 수 있는 것들
+
+OpenAI Codex Chrome 확장은 AI 에이전트의 가장 큰 마찰을 제거했습니다. 로그인 상태 문제.
+
+내일부터 바로 적용할 수 있는 워크플로우:
+
+1. **아침 이메일 정리** — Gmail에서 오늘 할 일 5분 안에 추출
+2. **통화 후 CRM 업데이트** — 메모를 Salesforce에 자동 입력
+3. **스테이징 버그 재현** — 테스트 플로우 실행 + DevTools 로그 수집
+4. **리서치 통합 요약** — 여러 탭을 한 번에 처리
+
+한 가지 조언을 드리자면, 처음에는 민감하지 않은 업무부터 시작하세요. 도메인 허용 목록도 꼭 필요한 서비스만 포함하고, 팀 환경에서 쓸 경우 IT 보안 정책 확인을 먼저 하는 게 맞습니다.
+
+이전에 CLI 버전을 소개했던 [OpenAI Codex CLI 2026 최신 업데이트 가이드](https://daily1bite.com/ko/blog/ai-tools/openai-codex-cli-april-2026-update)와 함께 쓰면 시너지가 납니다. CLI는 코드베이스·터미널 작업, Chrome 확장은 웹 서비스 접근 — 두 방향을 함께 쓰면 Codex의 활용 범위가 크게 넓어집니다.
+
+다른 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 글들도 같이 보시면 도움이 됩니다.
+
+---
+
+## 참고 자료
+
+- [OpenAI Codex hits 4 million weekly active users, adding 1 million in just two weeks](https://www.neowin.net/news/openais-codex-hits-4-million-weekly-active-users-adding-1-million-in-just-two-weeks/) — Neowin, 2026년 4월 21일
+- [OpenAI Adds Chrome Extension to Codex, Letting Its AI Agent Access LinkedIn, Salesforce, Gmail, and Internal Tools via Signed-In Sessions](https://www.marktechpost.com/2026/05/08/openai-adds-chrome-extension-to-codex-letting-its-ai-agent-access-linkedin-salesforce-gmail-and-internal-tools-via-signed-in-sessions/) — MarkTechPost, 2026년 5월 8일
+- [OpenAI's Codex Now Works in Chrome With New Extension](https://www.macrumors.com/2026/05/07/openai-codex-chrome-extension/) — MacRumors, 2026년 5월 7일
+
+**함께 읽으면 좋은 글:**
+
+- [OpenAI Codex CLI 2026 최신 업데이트: Windows 샌드박스, GPT-5.3-Codex-Spark 1000+ TPS](https://daily1bite.com/ko/blog/ai-tools/openai-codex-cli-april-2026-update) - CLI 버전과 함께 쓰는 Codex 완전 활용법
+- [Claude Code 5월 업데이트 총정리: 플러그인 URL 설치·세션 ID·MCP 메모리 누수 수정](https://daily1bite.com/ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix) - 비교해볼 AI 코딩 도구의 최신 동향
