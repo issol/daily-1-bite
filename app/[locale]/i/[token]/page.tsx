@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { setRequestLocale } from 'next-intl/server';
 
 export const dynamic = 'force-dynamic';
@@ -5,6 +6,30 @@ export const dynamicParams = true;
 
 interface Props {
   params: Promise<{ locale: string; token: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const isKo = locale === 'ko';
+  const title = isKo ? 'dayseed — 함께 쓰는 캘린더 초대' : 'dayseed — A shared calendar invite';
+  const description = isKo
+    ? '연인·가족·친구와 일정을 같이 보세요. dayseed를 설치하면 자동으로 이어집니다.'
+    : 'Share calendars with the one closest to you. Install dayseed to continue.';
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      siteName: 'dayseed',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+  };
 }
 
 /**
