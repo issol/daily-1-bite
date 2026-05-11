@@ -15,13 +15,13 @@ export function WebSiteJsonLd() {
     publisher: {
       '@type': 'Person',
       name: 'A꿀벌I',
-      url: `${BASE_URL}/about`,
+      url: `${BASE_URL}/ko/about`,
     },
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `${BASE_URL}/blog?q={search_term_string}`,
+        urlTemplate: `${BASE_URL}/ko/blog?q={search_term_string}`,
       },
       'query-input': 'required name=search_term_string',
     },
@@ -40,13 +40,13 @@ export function BlogJsonLd() {
     '@context': 'https://schema.org',
     '@type': 'Blog',
     name: '매일 한입',
-    url: `${BASE_URL}/blog`,
+    url: `${BASE_URL}/ko/blog`,
     description: '매일 쏟아지는 AI 뉴스를 보기 쉽게 요약합니다. AI 트렌드, 도구 리뷰, 개발 인사이트를 다룹니다.',
     inLanguage: 'ko-KR',
     author: {
       '@type': 'Person',
       name: 'A꿀벌I',
-      url: `${BASE_URL}/about`,
+      url: `${BASE_URL}/ko/about`,
       knowsAbout: ['인공지능', 'AI 도구', 'LLM', 'ChatGPT', '생성형 AI'],
     },
     publisher: {
@@ -106,7 +106,7 @@ export function ArticleJsonLd({
     author: {
       '@type': 'Person',
       name: 'A꿀벌I',
-      url: `${BASE_URL}/about`,
+      url: `${BASE_URL}/${locale || 'ko'}/about`,
       knowsAbout: ['인공지능', 'AI 도구', 'LLM', 'ChatGPT', '생성형 AI', 'SEO'],
     },
     publisher: {
