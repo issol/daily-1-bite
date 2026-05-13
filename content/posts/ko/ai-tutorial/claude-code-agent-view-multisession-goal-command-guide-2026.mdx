@@ -1,0 +1,329 @@
+---
+title: "Claude Code Agent View: 여러 AI 세션 한 화면 관리 + /goal 실전 가이드 [2026-05]"
+date: "2026-05-13"
+description: "Claude Code v2.1.139 Agent View로 여러 AI 세션을 한 화면에서 관리하는 법을 정리했습니다. /goal 명령어와 실전 워크플로우 포함."
+category: "ai-tutorial"
+tags: ["Claude Code", "Agent View", "AI 에이전트", "멀티 에이전트", "AI 코딩"]
+thumbnail: "https://mintcdn.com/claude-code/1B48Qz2Z9hac4SLG/images/agent-view-light.png?fit=max&auto=format&n=1B48Qz2Z9hac4SLG&q=85"
+---
+
+## TL;DR
+
+- Claude Code **v2.1.139** (2026년 5월 11일 출시)에 **Agent View** 기능이 추가됐습니다
+- `claude agents` 명령 하나로 모든 백그라운드 세션을 한 화면에서 확인·관리
+- 세션 상태: Working(작업 중) / Needs input(입력 대기) / Completed(완료) 3단계로 구분
+- `/goal` 명령어로 완료 조건을 설정하면 Claude가 멀티턴으로 알아서 달성
+- Pro, Max, Team, Enterprise, Claude API 플랜 모두 사용 가능 (Research Preview)
+
+---
+
+## 터미널 탭이 4개가 된 날
+
+저는 Claude Code를 여러 세션으로 돌리는 편입니다. 이번 달에는 레거시 코드 리팩토링 작업이 있었는데, 독립적인 모듈 3개를 동시에 정리해야 했거든요.
+
+그날도 터미널 탭 4개를 열어 놓고 — 하나는 모델 레이어, 하나는 API 라우터, 하나는 유틸 함수, 마지막 하나는 작업용 메인 세션 — 이리저리 오가며 작업하고 있었습니다. 세션이 끝났는지 확인하려면 탭마다 클릭해서 로그를 훑어봐야 했는데, 솔직히 번거로웠습니다. "이 세션 아직 실행 중인가? 저 세션 에러 났나?" 하나하나 확인하는 게 생각보다 시간을 잡아먹더라고요.
+
+5월 11일, Claude Code v2.1.139 업데이트 노트에서 **Agent View**라는 항목을 발견했습니다. 설명을 읽어보니 "백그라운드 세션 전체를 하나의 리스트로 보여주는 화면"이라고 나와 있었습니다. 바로 업데이트하고 `claude agents`를 실행해 봤습니다.
+
+처음 봤을 때 반응은... "이게 진작에 있었어야 했다"였습니다.
+
+---
+
+## Agent View가 뭔가요?
+
+Agent View는 Claude Code의 모든 백그라운드 세션을 **하나의 대시보드**로 보여주는 인터페이스입니다. 터미널을 가득 채우는 전체 화면으로 열리며, 세션마다 현재 상태, 마지막 활동 내용, 경과 시간이 함께 표시됩니다.
+
+공식 문서에서 가져온 세션 목록 예시입니다:
+
+```text
+Pinned
+  ✽ clawd walk cycle          Write assets/sprites/clawd-walk.png           3m
+
+Ready for review
+  ∙ jump physics              github.com/example/game/pull/2048          ●  2h
+
+Needs input
+  ✻ power-up design           needs input: double jump or wall climb?       1m
+
+Working
+  ✽ collision detection       Edit src/physics/CollisionSystem.ts           2m
+  ✢ playtest level 3          run 12 · all checkpoints cleared           in 4m
+
+Completed
+  ✻ title screen              result: menu, options, and credits done       9m
+  ∙ sound effects             result: 14 SFX exported to assets/audio       4h
+  … 6 more
+```
+
+각 행의 아이콘이 세션 상태를 알려줍니다:
+
+| 아이콘 상태 | 의미 |
+|:---------|:-----|
+| 애니메이션 (`✽`) | 현재 실행 중 |
+| 노란색 (`✻`) | 입력 대기 중 — 당신의 응답 필요 |
+| 회색 (`∙`) | 프로세스 종료 (재시작 가능) |
+| `✢` | `/loop` 세션이 반복 대기 중 |
+| 녹색 | 완료 |
+| 빨간색 | 오류로 종료 |
+
+이 하나의 화면에서 세션을 생성하고, 상태를 확인하고, 필요할 때만 개입할 수 있습니다. 다른 AI Tutorial 가이드는 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 카테고리에서 볼 수 있습니다.
+
+![Agent View 라이트 모드 — 모든 세션을 상태별로 한 화면에서 확인](https://mintcdn.com/claude-code/1B48Qz2Z9hac4SLG/images/agent-view-light.png?fit=max&auto=format&n=1B48Qz2Z9hac4SLG&q=85)
+_출처: [Claude Code 공식 문서](https://code.claude.com/docs/en/agent-view) | Agent View 라이트 모드_
+
+---
+
+## 사전 준비
+
+Agent View는 **Claude Code v2.1.139 이상**이 필요합니다.
+
+```bash
+# 버전 확인
+claude --version
+
+# 업데이트
+claude update
+```
+
+v2.1.139는 2026년 5월 11일 18:43 UTC에 출시됐습니다. 버전이 낮다면 `claude update`로 업데이트하고 재실행하세요.
+
+사용 가능 플랜: Pro, Max, Team, Enterprise, Claude API. Research Preview 단계라 인터페이스가 변경될 수 있습니다.
+
+---
+
+## 단계별 실전 가이드
+
+### 1단계: Agent View 열기
+
+```bash
+claude agents
+```
+
+이 명령 하나면 됩니다. 처음 실행하면 빈 화면이 나오는데 당황하지 마세요 — 아직 백그라운드 세션이 없어서 그렇습니다. 화면 하단 입력창에서 작업 내용을 입력하고 `Enter`를 누르면 새 세션이 시작됩니다.
+
+기존 인터랙티브 세션에서 `←` 키를 누르면 현재 세션을 백그라운드로 보내고 Agent View가 열립니다.
+
+### 2단계: 백그라운드 세션 시작하기
+
+세 가지 방법이 있습니다. 상황에 맞게 골라 쓰세요.
+
+**방법 A: Agent View 입력창에서 직접**
+
+Agent View 하단 입력창에 작업 내용을 입력하고 `Enter`. 세션이 자동으로 시작됩니다.
+
+**방법 B: 현재 세션을 백그라운드로**
+
+```bash
+# 현재 인터랙티브 세션 내에서 실행
+/bg
+
+# 마지막 지시도 추가할 수 있습니다
+/bg 이 작업 끝나면 테스트도 실행해줘
+```
+
+**방법 C: 셸에서 직접 시작**
+
+```bash
+# 백그라운드로 바로 시작
+claude --bg "결제 모듈 리팩토링 — PaymentService 클래스 메서드 분리"
+
+# 특정 서브에이전트 지정
+claude --agent code-reviewer --bg "PR #1234 리뷰 코멘트 반영해줘"
+```
+
+`claude --bg`를 실행하면 이런 출력이 나옵니다:
+
+```text
+backgrounded · 7c5dcf5d
+  claude agents             list sessions
+  claude attach 7c5dcf5d    open in this terminal
+  claude logs 7c5dcf5d      show recent output
+  claude stop 7c5dcf5d      stop this session
+```
+
+세션 ID(`7c5dcf5d`)를 기억해두면 나중에 직접 조작할 수 있습니다.
+
+![Agent View 다크 모드 — 세션이 상태별로 그룹화된 모습](https://mintcdn.com/claude-code/1B48Qz2Z9hac4SLG/images/agent-view-dark.png?fit=max&auto=format&n=1B48Qz2Z9hac4SLG&q=85)
+_출처: [Claude Code 공식 문서](https://code.claude.com/docs/en/agent-view) | 다크 모드 — Needs input, Working, Completed 그룹_
+
+### 3단계: 세션 모니터링 및 개입
+
+Agent View의 핵심 단축키입니다:
+
+| 단축키 | 동작 |
+|:------|:-----|
+| `↑` / `↓` | 세션 행 이동 |
+| `Space` | Peek 패널 열기/닫기 |
+| `Enter` 또는 `→` | 해당 세션에 전체 접속 (인터랙티브 모드) |
+| `←` | 현재 세션 백그라운드로 보내고 Agent View 복귀 |
+| `Ctrl+T` | 세션 고정(Pin) |
+| `Ctrl+R` | 세션 이름 변경 |
+| `Ctrl+X` → 2초 내 재입력 | 세션 중지 + 삭제 |
+| `?` | 전체 단축키 보기 |
+
+**Peek 패널**을 활용하면 세션에 완전히 접속하지 않아도 마지막 응답과 현재 상태를 바로 확인할 수 있습니다. 세션이 `Needs input` 상태라면 Peek 패널에서 직접 답변을 입력해 보내면 됩니다.
+
+PR 상태 도트도 유용합니다. 세션이 Pull Request를 열었다면 행 오른쪽에 도트가 생깁니다: 노란 점(대기/CI 실패), 초록 점(통과), 보라 점(병합 완료), 회색 점(드래프트).
+
+이 기능은 [Claude Code Routines 완전 정리](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-routines-cloud-automation-2026)에서 다룬 자동화 워크플로우와 결합하면 특히 효과적입니다 — 크론 없이 스케줄·웹훅 자동화를 세팅해두고, Agent View로 실행 상태를 모니터링하는 조합이죠.
+
+### 4단계: /goal 명령어로 장기 작업 설정
+
+`/goal`은 완료 조건을 설정하면 Claude가 멀티턴으로 작업을 이어가는 기능입니다.
+
+```bash
+# 인터랙티브 세션 내에서 실행
+/goal 유닛 테스트 커버리지 70% 이상 달성
+```
+
+설정하면 Claude가 스스로:
+
+1. 현재 커버리지를 분석
+2. 누락된 테스트 케이스를 작성
+3. 커버리지를 재측정
+4. 목표치가 될 때까지 반복
+
+화면 상단에 진행 오버레이가 표시됩니다:
+
+```text
+Goal: 유닛 테스트 커버리지 70% 이상 달성
+Elapsed: 4m 32s  |  Turns: 7  |  Tokens: 12,450
+```
+
+인터랙티브 모드, `-p` 모드, Remote Control 모드 모두에서 작동합니다. 저는 "이 에러 없어질 때까지 수정해줘"처럼 명확한 완료 조건이 있는 작업에 주로 씁니다.
+
+---
+
+## 실전 워크플로우: 3개 작업 동시 진행
+
+제가 실제로 쓰고 있는 방식입니다. 리팩토링 작업을 3개의 독립 모듈로 나눠서 동시에 진행합니다.
+
+```bash
+# 터미널 1개만 열고 Agent View 시작
+claude agents
+```
+
+Agent View 입력창에서 순서대로 입력:
+
+```
+결제 모듈 리팩토링 — PaymentService 클래스 메서드 분리
+```
+→ `Enter` (첫 번째 세션 시작)
+
+```
+유저 인증 모듈 — JWT 토큰 갱신 로직 현대화
+```
+→ `Enter` (두 번째 세션 시작)
+
+```
+로깅 유틸 — Winston에서 Pino로 마이그레이션
+```
+→ `Enter` (세 번째 세션 시작)
+
+이제 Agent View에는 Working 세션 3개가 동시에 돌고 있습니다. 저는 다른 작업을 하거나 커피를 마십니다. `Needs input` 알림이 뜨면 `Space`로 Peek해서 답변하고 다시 작업으로 돌아옵니다.
+
+중요한 것: **각 세션은 격리된 git worktree에서 실행됩니다.** 파일이 겹치더라도 세션끼리 충돌하지 않습니다. 세션이 `.claude/worktrees/` 아래에 각자의 worktree를 만들어서 작업하고, 완료 후 merge하는 방식입니다. git 저장소가 아닌 디렉토리에서는 격리 없이 직접 쓰기 — 이럴 때는 같은 파일을 편집하는 세션을 병렬로 실행하지 말아야 합니다.
+
+Claude Code의 멀티 에이전트 개념을 더 깊이 이해하고 싶다면 [Claude Managed Agents 완전 정리](https://daily1bite.com/ko/blog/ai-tools/claude-managed-agents-dreaming-outcomes-2026)도 함께 읽어보세요. Dreaming·Outcomes 같은 에이전트 상태 모델을 이해하면 Agent View를 더 효과적으로 활용할 수 있습니다.
+
+---
+
+## 유용한 셸 명령어 모음
+
+Agent View를 열지 않고도 셸에서 세션을 직접 조작할 수 있습니다. 아래는 Claude Code 공식 GitHub에서 확인할 수 있는 실제 데모 장면입니다:
+
+![Claude Code 데모 — 터미널 기반 AI 코딩 에이전트 실제 동작 모습](https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/demo.gif)
+_출처: [Anthropic/claude-code GitHub 공식 저장소](https://github.com/anthropics/claude-code) | Claude Code 공식 데모_
+
+```bash
+# 전체 세션 보기
+claude agents
+
+# 특정 세션에 직접 접속
+claude attach 7c5dcf5d
+
+# 최근 출력 확인
+claude logs 7c5dcf5d
+
+# 세션 중지
+claude stop 7c5dcf5d
+
+# 세션 재시작 (대화 내용 유지)
+claude respawn 7c5dcf5d
+
+# 멈춘 세션 전체 재시작
+claude respawn --all
+
+# 세션 삭제 (worktree도 정리)
+claude rm 7c5dcf5d
+```
+
+---
+
+## 자주 겪는 문제와 해결법
+
+**문제 1: `claude agents`를 실행했는데 서브에이전트 목록만 나오고 Agent View가 열리지 않습니다**
+
+버전이 낮습니다. `claude update`로 v2.1.139 이상으로 업데이트하세요.
+
+**문제 2: 컴퓨터 재시작 후 백그라운드 세션들이 Failed 상태입니다**
+
+정상입니다. 백그라운드 세션은 슬립이나 종료에서 살아남지 못합니다. 세션을 선택하고 접속하면 마지막 상태에서 재시작됩니다. 한꺼번에:
+
+```bash
+claude respawn --all
+```
+
+**문제 3: `←` 키를 눌렀는데 "Cannot open agents — N background task(s) running" 에러가 납니다**
+
+현재 세션에 실행 중인 서브에이전트나 백그라운드 작업이 있는 경우입니다. `/tasks`로 상태를 확인하고, 포기하려면 `/bg`를 입력하세요.
+
+**문제 4: `.claude/worktrees/` 폴더가 너무 커졌습니다**
+
+세션 삭제 없이 그냥 닫으면 worktree가 남아있습니다.
+
+```bash
+# 남은 worktree 확인
+git worktree list
+
+# 특정 worktree 제거
+git worktree remove .claude/worktrees/{session-id}
+```
+
+Agent View에서 `Ctrl+X` → 2초 이내 다시 `Ctrl+X`로 세션을 삭제하면 worktree도 같이 정리됩니다.
+
+---
+
+## 주의사항 및 한계
+
+**요금 사용량은 세션마다 독립 계산됩니다.** 세션 3개를 동시에 돌리면 쿼터도 3배 속도로 소진됩니다. 병렬 세션을 많이 실행하기 전에 플랜 한도를 확인하세요.
+
+행 요약 문장은 **Haiku-class 모델**이 15초 간격으로 생성합니다. 이것도 토큰 사용량에 포함됩니다.
+
+**Bedrock, Vertex AI, Foundry** 연결 환경에서는 Agent View가 지원되지 않을 수 있습니다. 비활성화하려면 `disableAgentView: true` 설정을 쓰거나 `CLAUDE_CODE_DISABLE_AGENT_VIEW` 환경 변수를 설정하면 됩니다.
+
+---
+
+## 결론
+
+Agent View가 생기기 전엔 "Claude Code에서 병렬 작업을 어떻게 하나요?"라는 질문에 "터미널 탭 여러 개 열어서 각각 관리하세요"라고 답할 수밖에 없었습니다.
+
+이제는 달라졌습니다. `claude agents` 하나로 모든 세션을 한 화면에서 관리하고, `/goal`로 목표를 설정해두면 Claude가 달성할 때까지 알아서 작업합니다. 제가 개입할 때는 `Needs input` 알림이 뜰 때뿐입니다.
+
+특히 **독립적인 작업 여러 개를 동시에 올려놓고 결과를 기다리는 워크플로우**에서 효과를 많이 느꼈습니다. 터미널 탭 전환 없이 상태를 한눈에 확인할 수 있다는 게 생각보다 큰 차이를 만들더라고요. Research Preview 단계라 아직 개선될 여지가 있지만, 지금도 충분히 쓸 만합니다.
+
+다른 Claude Code 관련 가이드는 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 카테고리에서 확인해 보세요.
+
+---
+
+## 참고 자료
+
+- [Manage multiple agents with agent view](https://code.claude.com/docs/en/agent-view) — Claude Code 공식 문서, 2026년 5월 11일
+- [Claude Code v2.1.139 Release Notes](https://github.com/anthropics/claude-code/releases/tag/v2.1.139) — Anthropic GitHub, 2026년 5월 11일
+- [Run agents in parallel](https://code.claude.com/docs/en/agents) — Claude Code 공식 문서, 2026년 5월 기준
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Code Routines 완전 정리: 크론 없이 스케줄·API·GitHub 웹훅 자동화](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-routines-cloud-automation-2026) - 자동화 워크플로우와 Agent View 결합
+- [Claude Managed Agents 완전 정리: Dreaming·Outcomes·멀티 에이전트](https://daily1bite.com/ko/blog/ai-tools/claude-managed-agents-dreaming-outcomes-2026) - 멀티 에이전트 개념 심화
+- [Claude Code 5월 업데이트 총정리](https://daily1bite.com/ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix) - 5월 다른 업데이트 내용
