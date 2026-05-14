@@ -1,0 +1,184 @@
+---
+title: "Isomorphic Labs $2.1B: AlphaFold 후속 IsoDDE 엔진·첫 임상 임박 [2026-05]"
+date: "2026-05-14"
+description: "Isomorphic Labs $2.1B 시리즈 B 확정. AlphaFold 후속 IsoDDE 엔진, 17개 신약·2026년 임상 임박. DeepMind 스핀오프 분석."
+category: "ai"
+tags: ["Isomorphic Labs", "AlphaFold", "IsoDDE", "AI 신약개발", "DeepMind", "Thrive Capital", "AI 투자"]
+thumbnail: "https://cdn.prod.website-files.com/6846c7b5a78f3e9225c64f10/6a02fe4a453fe60fef71201f_Web1.jpg"
+---
+
+> **TL;DR**: 2026년 5월 12일, AlphaFold 계보의 신약 설계 회사 Isomorphic Labs가 $2.1B 시리즈 B를 확정했습니다. 리드 투자자는 Thrive Capital. 기존 Alphabet·GV에 더해 MGX·Temasek·CapitalG·UK Sovereign AI Fund가 신규 합류했습니다. 총 누적 펀딩은 약 $2.6B. 핵심은 IsoDDE(Isomorphic Drug Design Engine) — AlphaFold 3 대비 단백질-리간드 결합 예측 정확도를 2배 이상 끌어올린 통합 신약 설계 엔진입니다. 회사는 17개 활성 파이프라인을 보유 중이고, 첫 AI 설계 항암 후보물질이 2026년 말 임상 1상 진입을 목표로 합니다.
+
+---
+
+> "AI 설계 약물이 곧 환자에게 도달할 것이다. 임상 1상이 임박했다."
+> — Demis Hassabis, Isomorphic Labs CEO 겸 DeepMind 창업자 (2026년 1월 다보스 포럼)
+
+이 발언이 나온 지 4개월. 그 약속을 뒷받침할 자금이 들어왔습니다. $2.1B. 한 라운드로는 2026년 들어 AI 바이오 분야에서 가장 큰 규모입니다.
+
+솔직히 처음 헤드라인을 봤을 때 좀 멈칫했습니다. 같은 주에 Sierra AI $950M(시리즈 E), Genesis AI $105M(시드) 펀딩 소식이 줄줄이 나오는 와중에 $2.1B 시리즈 B가 또 하나 박혔거든요. 엔터프라이즈 에이전트 한 번, 로보틱스 한 번, 그리고 신약 설계 한 번. AI가 이제는 코딩 어시스턴트 같은 "보이는 도구"를 넘어 산업 전반으로 흐른다는 신호를 — 한 주 안에 세 번 봤습니다.
+
+그래서 이 글은 단순히 "큰 펀딩 소식"이 아닙니다. 한국 개발자 입장에서 **AI가 신약 개발에 어떻게 들어오고 있는지**, 그리고 **이 흐름이 우리한테 어떤 의미인지**를 정리하고 싶었습니다.
+
+이전에 비슷한 흐름으로 [Sierra AI $950M](https://daily1bite.com/ko/blog/ai/sierra-ai-950m-enterprise-agent-bret-taylor-2026)을 다뤘는데, Sierra가 "엔터프라이즈 고객 서비스를 AI가 직접 처리한다"는 그림이었다면, Isomorphic은 "신약 분자를 AI가 직접 설계한다"는 그림입니다. 둘 다 같은 큰 흐름 — AI가 보조에서 주체로 — 의 다른 단면입니다.
+
+## 신약 개발은 왜 이렇게 비싸고 느린가
+
+본격적으로 들어가기 전에 신약 개발의 비용 구조를 잠깐 정리하고 가야 합니다. 이걸 모르면 $2.1B가 왜 이렇게 큰 의미인지 감이 안 잡힙니다.
+
+업계 평균치를 보면:
+
+| 단계 | 평균 소요 | 평균 비용 | 실패율 |
+|------|----------|----------|--------|
+| Target 발굴 + 리드 화합물 설계 | 3–6년 | $200–400M | 70%+ |
+| 전임상 (동물 실험·독성) | 1–2년 | $100–200M | 50% |
+| 임상 1상 (안전성) | 1–2년 | $300–500M | 40% |
+| 임상 2상 (효능) | 2–3년 | $500–800M | 60% |
+| 임상 3상 + 승인 | 3–5년 | $1B+ | 30% |
+| **누적** | **10–15년** | **$2.6B 안팎** | **약 90%** |
+
+출처: Tufts CSDD 및 PhRMA 추정치(2023–2025년 업계 평균).
+
+한 줄로 정리하면 "신약 하나가 시장에 나오려면 평균 $2.6B 쓰고 10년 걸리고, 그마저도 90%는 실패한다"입니다. 제가 가끔 SaaS 스타트업의 "ARR $10M까지 18개월"이라는 말에 익숙해진 입장에서 보면 — 이건 거의 다른 세계 같습니다.
+
+여기서 AlphaFold가 의미를 갖습니다. 2020년 AlphaFold 2가 단백질 구조 예측에서 사실상 "풀린 문제" 수준의 정확도를 달성했고, 2024년 AlphaFold 3는 단백질뿐 아니라 DNA·RNA·리간드까지 함께 예측할 수 있게 됐습니다. Demis Hassabis는 이 공로로 2024년 노벨 화학상을 수상했습니다.
+
+문제는 — AlphaFold 자체로는 "약을 만드는" 것까지는 못 한다는 거였습니다. 구조 예측은 첫 단추일 뿐이고, 그 뒤에 결합 친화도(binding affinity) 예측, 신규 결합 포켓 탐색, 약동학 시뮬레이션 같은 단계가 줄줄이 남아 있거든요.
+
+Isomorphic Labs가 이 빈 칸을 메우려는 회사입니다.
+
+![DNA 분자 구조 시각화](https://images.unsplash.com/photo-1643780668909-580822430155?w=1080&q=80)
+_Photo by [Sangharsh Lohakare](https://unsplash.com/@sangharsh_l?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | DNA 이중나선 — AI 신약 설계의 기본 단위_
+
+## Isomorphic Labs는 누구인가
+
+회사를 한 줄로 요약하면: **AlphaFold를 만든 DeepMind에서 2021년 분사한, AI 우선 신약 설계 회사**입니다. 본사는 런던에 있고, CEO는 DeepMind 창업자이기도 한 Demis Hassabis가 겸직하고 있습니다.
+
+분사 시점이 2021년 11월. 당시 보도된 미션 한 문장이 인상 깊었습니다 — "AI를 활용해 약물 발견 과정 자체를 재상상한다(reimagine drug discovery)". 부분 자동화나 보조 도구가 아니라, 처음부터 끝까지 AI 중심으로 다시 짠다는 거였습니다.
+
+처음에는 회의적인 시선도 많았습니다. "DeepMind식 헛된 야망 아니냐", "결국 빅파마(Big Pharma)와 손잡을 텐데 왜 굳이 회사를 차리나" 같은 평이 따라붙었습니다. 그런데 2024년부터 분위기가 바뀌었습니다.
+
+- **2024년 1월**: Novartis와 $1.2B 규모 다중 표적 약물 발견 협약
+- **2024년 1월**: Eli Lilly와 $1.7B 규모 협약
+- **2025년 중반**: Johnson & Johnson과 추가 협업 확장
+- **2026년 2월**: IsoDDE 기술 백서 공개 — AlphaFold 3 정확도 2배 이상
+
+Novartis·Eli Lilly·J&J — 글로벌 톱티어 빅파마 세 곳이 동시에 협업한다는 것 자체가 업계 검증의 의미가 큽니다. "약발이 보인다"는 신호인 거죠.
+
+## IsoDDE — AlphaFold 다음 단계의 엔진
+
+이번 펀딩 발표문에서 가장 강조된 단어가 IsoDDE(Isomorphic Drug Design Engine)입니다. 회사 측이 공식 발표한 백서(2026년 2월) 기준으로 정리하면:
+
+1. **AlphaFold 3 대비 단백질-리간드 결합 예측 정확도 2배 이상**
+   — 신약 후보 분자가 단백질에 "얼마나 잘 붙느냐"를 예측하는 가장 어려운 일반화 벤치마크 기준입니다.
+
+2. **소분자 결합 친화도(binding affinity) 예측이 물리 기반 방법(FEP+ 등) 수준을 상회**
+   — 기존에는 슈퍼컴퓨터로 며칠씩 돌리던 자유에너지 계산을 더 빠르게 더 정확하게 합니다.
+
+3. **신규 결합 포켓 자동 탐색**
+   — 아미노산 서열만 입력하면, 알려지지 않은 잠재 약물 결합 부위를 예측합니다. 이건 사실상 "새 약을 어디에 붙일 수 있는지"를 AI가 제안해주는 단계입니다.
+
+4. **항체 구조까지 예측**
+   — 소분자 약물뿐 아니라 항체 의약품 설계에도 활용 가능합니다.
+
+제가 의약화학 전공자가 아니라 직접 코드를 돌려본 건 아니라, 여기까지는 공식 발표 기준의 정리입니다. 다만 한 가지는 솔직하게 짚어야 합니다 — **IsoDDE는 공개 API도, 오픈 가중치도 아닙니다.** AlphaFold 2가 오픈소스로 풀려서 학계 전체가 활용한 것과는 정반대 노선입니다.
+
+이건 Isomorphic의 의도된 전략으로 보입니다. AlphaFold가 "공공재"였다면, IsoDDE는 "사내 자산". 약물 후보를 직접 설계해 빅파마에 라이선싱하거나 자체 임상으로 들고 가는 비즈니스 모델이라, 가중치 공개의 인센티브가 없습니다. 학계 입장에서는 아쉬운 부분입니다.
+
+이 흐름을 더 큰 그림에서 보고 싶다면 [Anthropic IPO 2026 완전 정리](https://daily1bite.com/ko/blog/ai/anthropic-ipo-2026-google-40b-investment)에서 다룬 AI 회사들의 폐쇄 가중치 전략과도 묘하게 닮아 있습니다.
+
+![단백질 결합 구조 시뮬레이션](https://images.unsplash.com/photo-1641903202531-bfa6bf0c6419?w=1080&q=80)
+_Photo by [Sangharsh Lohakare](https://unsplash.com/@sangharsh_l?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | IsoDDE가 예측하는 단백질-리간드 결합 구조 (예시)_
+
+## $2.1B 펀딩 상세: 누가 베팅했나
+
+투자 구조를 한눈에 정리하면:
+
+| 항목 | 내용 |
+|------|------|
+| 라운드 | 시리즈 B |
+| 발표 일자 | 2026년 5월 12일 |
+| 총 조달 규모 | $2.1B |
+| 누적 펀딩 | 약 $2.6B |
+| 리드 | Thrive Capital |
+| 기존 투자자 | Alphabet, GV |
+| 신규 투자자 | MGX, Temasek, CapitalG, UK Sovereign AI Fund |
+
+출처: [Isomorphic Labs 공식 발표](https://www.isomorphiclabs.com/articles/isomorphic-labs-announces-series-b-investment-round), [Bloomberg](https://www.bloomberg.com/news/articles/2026-05-12/deepmind-spinout-isomorphic-labs-raises-2-1-billion-to-design-drugs-with-ai), [Fierce Biotech](https://www.fiercebiotech.com/biotech/alphabets-ai-biotech-isomorphic-labs-bags-21b-series-b-fuel-next-gen-drug-design-model).
+
+투자자 라인업이 흥미롭습니다. 몇 가지 포인트:
+
+**1. Thrive Capital이 리드.** Joshua Kushner가 이끄는 Thrive는 OpenAI 후속 라운드의 단골 투자자입니다. AI 인프라·애플리케이션 전반에 베팅해온 펀드가 신약 설계까지 들어왔다는 건 — "AI는 단일 카테고리가 아니라 횡단 인프라"라는 시각을 강화합니다.
+
+**2. UK Sovereign AI Fund 합류.** 이게 제 눈에 가장 흥미로웠습니다. 영국 정부가 운용하는 국부펀드 성격의 AI 전용 자금이 영국 본사 AI 기업에 직접 들어왔습니다. 최근 [Mistral Medium 3.5](https://daily1bite.com/ko/blog/ai-tools/mistral-medium-35-vibe-agent-claude-code-2026) 관련 글에서도 짧게 언급한 적이 있는데 — 유럽이 "미국 의존을 줄이는 sovereign AI" 전략을 구체적으로 자금화하고 있다는 신호입니다.
+
+**3. MGX(UAE) + Temasek(싱가포르).** 둘 다 국부펀드입니다. 즉 미국·영국·UAE·싱가포르 4개국의 국부 자금이 한 회사에 동시에 들어왔습니다. 이 정도면 단순 VC 라운드가 아니라 "지정학적 베팅"에 가깝습니다.
+
+## 17개 파이프라인과 2026년 임상
+
+펀딩 발표문에서 "임상 1상 임박"이라는 표현이 여러 번 등장했지만, 여기서는 정확히 짚어야 합니다.
+
+- **활성 파이프라인 수**: 17개 (종양학·면역학·심혈관)
+- **첫 AI 설계 항암 후보물질의 임상 1상 진입 목표**: 2026년 말
+- **현재 상태**: 전임상(pre-clinical) 단계 — 즉 아직 사람에게 투여된 분자는 없습니다
+
+이 부분은 미디어가 약간 흐릿하게 다뤘던 대목입니다. Demis Hassabis가 2025년 초 인터뷰에서 "AI 설계 신약 임상이 2025년 말 시작"이라고 말했고, 그 이후 일정이 한 차례 밀리면서 2026년 말로 옮겨졌습니다. 그가 나중에 "당시 발언은 전임상을 가리킨 것"이라고 정정한 기록이 있습니다.
+
+요약하면 — **흥분되는 진전이지만, 첫 임상 데이터가 나오려면 아직 6–9개월은 더 걸린다**는 게 솔직한 그림입니다. 그리고 임상 1상이 시작된다고 해서 약물이 시장에 나오는 게 아니라는 점은 위 비용 구조 표를 다시 보면 명확합니다.
+
+![연구실의 과학자 — 신약 개발 현장](https://images.unsplash.com/photo-1616996691748-3f5f78093ab0?w=1080&q=80)
+_Photo by [RephiLe water](https://unsplash.com/@revolution_in_filtration?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 신약 개발은 여전히 인간 임상이 진실의 순간_
+
+## 한국 개발자 입장에서 의미하는 것
+
+여기까지 읽으셨다면 "그래서 이게 나한테 무슨 의미인데?" 싶으실 수 있습니다. 솔직히 우리 대부분은 신약 설계 엔진을 직접 쓸 일이 없죠. 그래도 몇 가지는 짚어둘 만합니다.
+
+**1. AI 수직화(vertical AI)의 본격화.** 2023–2024년이 "범용 LLM 경쟁" 단계였다면, 2026년은 "산업별 수직 AI" 단계로 진입하고 있습니다. Isomorphic(신약), Sierra(고객 서비스), Genesis(로보틱스) — 같은 주에 발표된 세 회사가 모두 특정 산업에 깊이 들어간 모델 회사입니다. 한국 개발자 입장에서도 "어느 도메인에 AI를 깊이 박을 것인가"가 향후 5년 커리어 질문이 될 가능성이 높습니다.
+
+**2. Sovereign AI Fund 흐름.** UK 사례를 보면 정부 자금이 직접 AI 회사 시리즈 B에 들어옵니다. 한국도 비슷한 움직임이 시작되면 — 어떤 분야가 우선순위에 들지는 향후 정책 키워드 중 하나입니다. 바이오·국방·반도체·금융 정도가 후보일 것 같습니다.
+
+**3. AlphaFold → IsoDDE 패턴 학습.** "오픈소스로 출발해 학계 표준을 만들고, 후속 버전은 폐쇄형 사내 자산으로 가져가 비즈니스 모델로 굴린다" — 이 패턴은 다른 AI 영역에서도 반복될 가능성이 큽니다. Meta의 Llama 시리즈에서도 비슷한 긴장이 감지되고 있죠.
+
+**4. 검증 가능한 결과의 가치.** AI 코딩 도구는 "체감"으로 평가되지만, 신약 설계는 결국 임상이 진실의 순간입니다. 이건 [PocketOS DB 삭제 사건](https://daily1bite.com/ko/blog/ai/cursor-claude-pocketos-db-deleted-2026)에서 본 "검증 없이 자율 실행하는 AI"의 위험과 반대편에 있는 흐름입니다. AI가 자율적으로 일할수록, 검증 인프라의 가치가 커집니다.
+
+다른 [AI News 카테고리](https://daily1bite.com/ko/category/ai) 글들과 함께 읽으면 흐름이 더 잘 잡힙니다.
+
+## 단점·한계·솔직한 평가
+
+전체적으로 흥분되는 발표지만, 균형을 위해 짚어야 할 부분들:
+
+- **첫 임상 데이터까지 아직 6–9개월 이상.** "임상 임박"이라는 표현은 마케팅 측면에서는 강력하지만, 실제로 약물이 환자에게 효과를 보이려면 임상 2상·3상까지 가야 합니다.
+- **IsoDDE는 공개되지 않습니다.** 학계 또는 외부 검증 그룹이 독립적으로 결과를 재현하기 어렵습니다. 정확도 수치는 회사 백서에 의존합니다.
+- **빅파마 협약이 진짜 약을 만들었는지는 아직 미공개.** Novartis·Lilly·J&J 협약이 2024년 시작되었지만, 그 협약에서 나온 약물이 어느 단계까지 갔는지 구체적 수치는 공개되지 않고 있습니다.
+- **AI 신약의 실패 사례도 존재.** 영국 Exscientia, 미국 Recursion 등 AI 신약 1세대 회사들 중 일부는 임상 2상에서 효능 미달로 후보를 철회한 사례가 있습니다. AI 설계라고 해서 90% 실패율을 피해가는 건 아닙니다.
+
+다시 말해 — $2.1B는 거대한 자금이지만, **"AI가 신약을 만들었다"라고 말하려면 환자 데이터가 필요**합니다. 그 데이터는 빨라야 2027년 말~2028년에 나옵니다.
+
+## 결론: 6개월 후 다시 봐야 할 회사
+
+정리하면:
+
+- **5/12 발표**: Isomorphic Labs $2.1B 시리즈 B 확정. Thrive Capital 리드.
+- **핵심 기술**: IsoDDE 엔진이 AlphaFold 3 대비 2배 이상 정확도. 단 비공개.
+- **다음 마일스톤**: 2026년 말 첫 AI 설계 항암 후보의 임상 1상 진입.
+- **지켜볼 포인트**: 임상 1상 IND 신청 시점, UK Sovereign AI Fund 후속 액션, 빅파마 협약에서 나온 약물의 임상 단계.
+
+저는 6개월 뒤에 이 회사를 한 번 더 다룰 가치가 있다고 봅니다. 그때쯤이면 임상 1상 등록 정보가 ClinicalTrials.gov에 떴을 수 있고, 그게 진짜 신호일 겁니다.
+
+여러분은 어떻게 보시나요? AI 신약이 5년 안에 환자에게 도달할 수 있을까요, 아니면 또 한 번의 "AI 바이오 거품" 사이클을 보고 있는 걸까요? 의견이 있으시면 댓글로 남겨주세요.
+
+---
+
+## 참고 자료
+
+- [Isomorphic Labs Announces Series B Investment Round](https://www.isomorphiclabs.com/articles/isomorphic-labs-announces-series-b-investment-round) — Isomorphic Labs 공식 발표, 2026년 5월 12일
+- [DeepMind Spinout Isomorphic Labs Raises $2.1 Billion to Design Drugs With AI](https://www.bloomberg.com/news/articles/2026-05-12/deepmind-spinout-isomorphic-labs-raises-2-1-billion-to-design-drugs-with-ai) — Bloomberg, 2026년 5월 12일
+- [Alphabet's AI biotech Isomorphic Labs bags $2.1B series B](https://www.fiercebiotech.com/biotech/alphabets-ai-biotech-isomorphic-labs-bags-21b-series-b-fuel-next-gen-drug-design-model) — Fierce Biotech, 2026년 5월 12일
+- [The Isomorphic Labs Drug Design Engine unlocks a new frontier beyond AlphaFold](https://www.isomorphiclabs.com/articles/the-isomorphic-labs-drug-design-engine-unlocks-a-new-frontier) — Isomorphic Labs 기술 백서, 2026년 2월
+- [Alphabet-backed Isomorphic Labs raises $2.1B to accelerate AI-designed drug discovery as clinical trials near](https://techstartups.com/2026/05/12/alphabet-backed-isomorphic-labs-raises-2-1b-to-accelerate-ai-designed-drug-discovery-as-clinical-trials-near/) — Tech Startups, 2026년 5월 12일
+
+**함께 읽으면 좋은 글:**
+
+- [Sierra AI $950M: 엔터프라이즈 AI 에이전트 붐](https://daily1bite.com/ko/blog/ai/sierra-ai-950m-enterprise-agent-bret-taylor-2026) - 같은 주 또 다른 메가펀딩, AI 에이전트 시장 분석
+- [Anthropic IPO 2026 완전 정리](https://daily1bite.com/ko/blog/ai/anthropic-ipo-2026-google-40b-investment) - 폐쇄형 AI 비즈니스 모델 전략 비교
+- [9초 만에 프로덕션 DB가 사라졌다](https://daily1bite.com/ko/blog/ai/cursor-claude-pocketos-db-deleted-2026) - 자율 AI의 검증 인프라 필요성
