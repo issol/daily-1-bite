@@ -1,0 +1,148 @@
+---
+title: "Freshworks 500명 해고 — '코드 절반을 AI가 짠다': 주니어 개발자에게 의미하는 것 [2026-05]"
+date: "2026-05-15"
+description: "Freshworks·Coinbase 1,200명 해고. CEO는 'AI가 절반 코드 짠다'. 2026 누적 93K — 한국 주니어 개발자 생존 전략."
+category: "dev-life"
+tags: ["AI 채용", "Freshworks", "주니어 개발자", "AI 시대 커리어", "테크 해고", "AI 코드 자동화", "개발자 커리어"]
+thumbnail: "https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=1080&q=80"
+---
+
+> **TL;DR**: 2026년 5월 5일 Freshworks가 전체의 11%(500명)를 해고했습니다. CEO Dennis Woodside의 발언이 결정적입니다 — "우리 코드의 절반 이상이 이미 AI가 짠다(over half of our code is written by AI)". 같은 주 Coinbase는 14%(700명) 해고를 발표했고, 두 발표 모두 AI를 주된 사유로 명시했습니다. 2026년 누적 테크 해고는 93,294명. Q1만 52,050명이 잘렸고, 5월 14일까지의 한 주에만 24,332명이 추가로 정리됐습니다. 그런데 정작 더 무서운 건 — 이번 해고가 적자 기업의 군축이 아니라, **Q1 매출이 16% 늘어난 흑자 기업의 결정**이라는 점입니다. "AI로 더 잘되니까 사람을 줄인다"라는 사이클이 본격적으로 들어왔습니다. 이 글은 한국 주니어/미드레벨 개발자가 이 흐름에서 무엇을 해야 하는지에 대한 제 입장입니다.
+
+---
+
+> "Freshworks는 Q1 매출이 전년 대비 16% 증가했다. 그리고 같은 분기, 500명을 해고했다."
+
+이 두 줄이 같이 적혀 있는 발표문을 봤을 때, 솔직히 좀 화가 났습니다.
+
+숫자부터 정리하겠습니다.
+
+- **2026년 누적 테크 해고**: 93,294명 (Layoffs.fyi 집계)
+- **2026 Q1 단독**: 52,050명 — 2023년 이후 분기 최대치
+- **5월 14일까지 한 주**: 추가 24,332명 정리 발표
+- **5월 5일 Freshworks**: 500명 (전체 11%)
+- **5월 5일 Coinbase**: 약 700명 (전체 14%)
+- **AI를 해고 사유로 명시한 누적 인원** (4월까지): 49,135명
+
+그리고 두 가지 발언:
+
+> "Over half of our code is written by AI." — Dennis Woodside (Freshworks CEO), 2026년 5월 5일
+> "AI is making roles redundant faster than we can retrain them." — Coinbase 내부 메모
+
+여기서 일종의 일관된 패턴이 보입니다. **흑자 기업이, 매출이 늘어나는데, AI를 이유로 사람을 줄인다.** 적자라서 군축하는 게 아닙니다.
+
+## 제 입장: "AI가 일자리를 빼앗는다"는 잘못된 프레임입니다
+
+먼저 한 줄로 결론을 박겠습니다. 이번 해고 사이클은 "AI가 개발자를 대체했기 때문"이 아닙니다. 더 정확하게 말하면 — **AI가 "특정 종류의 개발 업무"의 마진을 0에 가깝게 만들었기 때문**입니다.
+
+이 둘은 비슷해 보여도 결과적으로 전혀 다른 처방을 부릅니다. 전자의 처방은 "AI에 저항하라"이고, 후자의 처방은 "어떤 업무가 마진 0이 됐는지 정확히 파악하고 거기서 벗어나라"입니다.
+
+이전 글 [Fields Medal 수상자 테런스 타오: '직업 설명이 바뀐다'](https://daily1bite.com/ko/blog/dev-life/terence-tao-ai-mathematician-job-description-2026)에서 비슷한 결을 다뤘는데, 그때 타오의 표현이 정확합니다 — "직업 자체가 사라지는 게 아니라 직업 설명(job description)이 바뀐다". 지금 일어나는 일이 그 명제의 잔인한 버전입니다.
+
+## 근거 1: 마진이 0이 된 업무는 무엇인가
+
+여러 보도(IEEE Spectrum, Crunchbase Tech Layoffs, HR Executive 등)의 공통적인 분석을 정리하면 가장 빠르게 잘려나간 직군은 이렇습니다:
+
+| 직군 | 자동화 정도 | 해고 우선순위 |
+|------|------------|--------------|
+| 반복 기능 추가·버그 수정 담당 주니어 백엔드 | **매우 높음** | 1순위 |
+| 수동 테스트 QA 엔지니어 | **매우 높음** | 1순위 |
+| 1차 고객 지원 + 티켓 처리 | **매우 높음** | 2순위 |
+| 정형화된 React/Spring CRUD 개발 | 높음 | 2순위 |
+| 인프라 운영 자동화 가능 영역 | 중간 | 3순위 |
+| 시스템 설계 + 아키텍처 | 낮음 | 비대상 |
+| 도메인 전문성 + 비즈니스 컨텍스트 | 매우 낮음 | 비대상 |
+| 보안·컴플라이언스 검증 | 낮음 | 비대상 |
+
+출처: [HR Executive](https://hrexecutive.com/the-ai-layoff-trap-why-half-will-be-quietly-rehired/), [Layoff Hedge](https://layoffhedge.com/company/freshworks), [IEEE Spectrum](https://spectrum.ieee.org/ai-effect-entry-level-jobs) 종합.
+
+여기서 한 가지 충격적인 통계 — **3년 미만 경력 개발자가 가장 큰 타격을 받았습니다.** 이건 단순한 "비용 절감"이 아니라 "AI가 잘하는 일과 정확히 겹치는 업무 범위"에 들어가 있던 인원이 잘렸다는 의미입니다.
+
+![해고 통보 — 빈 책상의 풍경](https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=1080&q=80)
+_Photo by [Israel Andrade](https://unsplash.com/@israelandrxde?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | "흑자인데 해고한다" — 2026년 테크 산업의 새로운 풍경_
+
+## 근거 2: 한국 시장도 같은 흐름을 따라간다
+
+미국 얘기라고 생각할 수 있는데, 한국 시장 데이터를 따로 봐도 같은 방향입니다.
+
+Glassdoor·Indeed Korea 데이터를 기반으로 본 채용 시장:
+
+- **AI 엔지니어 공고**: 6개월 사이 약 70% 증가 (Naver, Samsung Research, Kakao 중심)
+- **주니어 백엔드/프론트 공고**: 같은 기간 약 30% 감소
+- **신입 개발자 연봉 격차**: Samsung Research 입사자 ₩1.3억 vs 일반 미드급 SI 신입 ₩4-5천만 — 약 3배
+
+70% 한국 기업이 AI 인재를 찾는다고 하면서, 동시에 "준비된 후보자 부족"을 호소합니다. 이건 두 가지를 의미합니다:
+
+1. **AI를 도구로만 쓰는 주니어**는 채용 우선순위에서 빠른 속도로 밀려납니다
+2. **AI 시스템을 설계·평가·통합하는 주니어**는 오히려 프리미엄 가격이 붙습니다
+
+이 양극화는 [PwC AI Gap 보고서: 상위 20% 기업이 가져가는 가치 격차](https://daily1bite.com/ko/blog/dev-life/pwc-ai-gap-top-20-percent-2026)에서 다룬 흐름의 인력 시장 버전입니다.
+
+![학습 중인 주니어 개발자](https://images.unsplash.com/photo-1610484826967-09c5720778c7?w=1080&q=80)
+_Photo by [Compare Fibre](https://unsplash.com/@comparefibre?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 학습의 방향이 결정한다 — 도구 사용자가 될 것인가, 시스템 설계자가 될 것인가_
+
+## 반론: "AI가 핑계 아닐까", "결국 개발자 수요는 늘 것이다"
+
+여기까지 읽으면 반론이 떠오를 수 있습니다. 두 가지를 짚어보겠습니다.
+
+**반론 1: "팬데믹 때 과잉 채용한 걸 AI 핑계로 정리하는 것 아니냐."**
+
+이건 절반은 맞습니다. 실제로 Crunchbase 분석은 "AI는 좋은 PR 메시지일 뿐, 실제 원인은 2021-2022 과잉 채용의 정상화"라고 지적합니다. 다만 — **그것만으로는 매출이 늘어나는 흑자 기업의 해고를 설명하기 어렵습니다.** Freshworks Q1 매출 $228.6M, 전년 대비 16% 성장. 군축할 이유가 단독으로는 부족합니다.
+
+제 결론: 팬데믹 정상화가 트리거(trigger)고, AI 생산성 향상이 정당화(justification)입니다. 두 가지가 동시에 작용합니다.
+
+**반론 2: "역사적으로 자동화 후에는 개발자 수요가 더 늘었다. ATM 후에 은행원이 더 늘었듯이."**
+
+이것도 부분적으로 맞습니다. BLS는 2024-2034년 소프트웨어 개발자 고용이 15% 증가할 것으로 예측합니다. 그 안에는 AI가 명시적 수요 드라이버로 적혀 있습니다.
+
+하지만 — **"평균 증가"와 "내가 살아남느냐"는 다른 문제**입니다. 코호트 분석을 해보면 명확합니다. 늘어나는 자리는 "AI 시스템을 만들고 운영하고 통합하는 자리"이고, 줄어드는 자리는 "AI가 직접 해버리는 자리"입니다. 같은 직종 안에 두 흐름이 동시에 있습니다. 평균만 보면 안 보이는 분기점입니다.
+
+## 그래서 — 한국 주니어 개발자는 무엇을 해야 하나
+
+여기서부터는 솔직한 제 의견입니다. 추상적인 권고 대신 실행 가능한 4가지를 제안합니다.
+
+**1. "내가 하는 일의 50%를 AI에게 맡겨봐라" 실험을 다음 1개월 안에 한다.**
+Freshworks CEO 발언의 "50%"는 측정 가능한 수치입니다. 본인 업무 중 AI로 위임 가능한 비율이 얼마인지 솔직하게 측정하면, 시장이 당신을 어떻게 평가할지 미리 알 수 있습니다. 50% 이상이면 — 빠르게 다음 단계로 옮겨야 합니다.
+
+**2. AI 도구 "사용자"에서 AI 시스템 "설계자"로 한 단계 올라간다.**
+Cursor·Claude Code·GitHub Copilot을 그냥 쓰는 사람과, 같은 도구를 평가·튜닝·통합하는 사람은 시장에서 다른 가격이 매겨집니다. 평가의 영역은 — 프롬프트 설계, 평가 데이터셋 구축, 도구 통합, 비용 최적화입니다. 이건 [Cursor 72조 원짜리 기업의 미래](https://daily1bite.com/ko/blog/dev-life/cursor-50b-valuation-2b-arr-2026)에서 다룬 흐름의 반대편 — 도구를 쓰는 게 아니라 만드는 쪽 — 으로의 이동입니다.
+
+**3. 도메인 전문성을 누적한다.**
+"백엔드 일반"보다 "헬스케어 백엔드", "핀테크 컴플라이언스", "B2B 워크플로우" 같은 수직 도메인이 AI 자동화에서 가장 멀리 떨어져 있습니다. 위에서 본 [Isomorphic Labs $2.1B 펀딩](https://daily1bite.com/ko/blog/ai/isomorphic-labs-2-1b-series-b-isodde-drug-discovery) 같은 수직 AI 회사들이 채용 시장을 끌어가고 있습니다.
+
+**4. 영어로 일하는 습관을 만든다.**
+한국 시장만 보면 채용이 줄지만, 영어로 일할 수 있으면 시장이 5-10배 커집니다. 원격 채용 시장(Anthropic, OpenAI 등 한국 근무 허용 포지션)은 늘고 있습니다. 영어로 PR 코멘트 쓰기, 영문 기술 블로그 작성, 영어 인터뷰 연습 — 1년 정도 누적되면 게임이 달라집니다.
+
+다른 [Dev Life & Opinion](https://daily1bite.com/ko/category/dev-life) 칼럼들도 비슷한 주제를 다양한 각도로 다루고 있으니 함께 읽어주시면 좋겠습니다.
+
+![AI를 도구로 쓰며 일하는 개발자](https://images.unsplash.com/photo-1580894908361-967195033215?w=1080&q=80)
+_Photo by [ThisisEngineering](https://unsplash.com/@thisisengineering?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | AI 도구를 평가·설계하는 쪽 — 줄어들지 않는 자리_
+
+## 결론: "버티는 게임"이 아니라 "이동하는 게임"
+
+오늘 글의 핵심을 한 줄로 다시 정리하면:
+
+> **이건 AI vs 개발자의 싸움이 아닙니다. AI에게 마진을 빼앗긴 업무를 하는 개발자 vs AI를 도구로 쓰는 개발자의 싸움입니다.**
+
+Freshworks·Coinbase 해고가 무서운 이유는 — 그게 적자 회사의 군축이 아니라 흑자 회사의 효율화이기 때문입니다. 즉 "경기가 좋아지면 다시 채용한다"는 사이클이 작동하지 않을 가능성이 크다는 의미입니다. 잘려나간 자리는 다시 채워지지 않을 수 있습니다.
+
+다만 — 줄어든 자리만 보면 안 됩니다. 같은 시장에서 늘어나는 자리는 분명히 있고, 그 자리는 위에서 본 4가지 행동을 누적한 사람에게 갑니다.
+
+여러분은 어떻게 보시나요? 본인 업무 중 AI에 위임 가능한 비율이 얼마나 된다고 생각하시나요? 댓글로 솔직한 진단을 남겨주시면 다음 글에서 흥미로운 케이스는 따로 다뤄보겠습니다.
+
+---
+
+## 참고 자료
+
+- [Freshworks Layoffs 2026: "Over half of our code is written by AI," says CEO as firm cuts 500 jobs](https://www.storyboard18.com/brand-marketing/freshworks-layoffs-over-half-of-our-code-is-written-by-ai-says-ceo-as-firm-cuts-500-jobs-97275.htm) — Storyboard18, 2026년 5월 5일
+- [Freshworks and Coinbase announce more than 1 in 10 jobs to go as companies replace workforce with AI](https://www.techradar.com/pro/freshworks-and-coinbase-announce-more-than-1-in-10-jobs-to-go-as-companies-replace-workforce-with-ai-technologies-tech-company-layoffs-near-100k-in-2026-alone) — TechRadar, 2026년 5월
+- [Tech Layoffs 2026: 52,050 Q1 Cuts + Where Talent Lands](https://www.kore1.com/tech-layoffs-2026/) — Kore1, 2026년 Q1 집계
+- [AI Shifts Expectations for Entry Level Jobs](https://spectrum.ieee.org/ai-effect-entry-level-jobs) — IEEE Spectrum, 2026년 5월
+- [The AI layoff trap: Why half will be quietly rehired](https://hrexecutive.com/the-ai-layoff-trap-why-half-will-be-quietly-rehired/) — HR Executive, 2026년 5월
+
+**함께 읽으면 좋은 글:**
+
+- [Fields Medal 수상자 테런스 타오: '직업 설명이 바뀐다'](https://daily1bite.com/ko/blog/dev-life/terence-tao-ai-mathematician-job-description-2026) - 같은 흐름을 수학자 관점에서 본 칼럼
+- [PwC AI Gap: 상위 20% 기업이 가져가는 가치 격차](https://daily1bite.com/ko/blog/dev-life/pwc-ai-gap-top-20-percent-2026) - 채용 양극화의 기업 버전
+- [Cursor가 72조 원짜리 기업이 된 이유](https://daily1bite.com/ko/blog/dev-life/cursor-50b-valuation-2b-arr-2026) - AI 도구를 "만드는 쪽" 시장의 크기
+- [Isomorphic Labs $2.1B 펀딩](https://daily1bite.com/ko/blog/ai/isomorphic-labs-2-1b-series-b-isodde-drug-discovery) - 수직 AI 채용을 끌어가는 회사들
