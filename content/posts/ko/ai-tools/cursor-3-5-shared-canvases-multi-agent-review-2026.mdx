@@ -1,0 +1,200 @@
+---
+title: "Cursor 3.5 Shared Canvases 완전 정리: 에이전트 대시보드로 협업·PR 리뷰 [2026-05]"
+date: "2026-05-27"
+description: "Cursor 3.5가 5월 20일 Shared Canvases를 공개했습니다. 대시보드를 링크 하나로 팀과 공유하고, PR 리뷰·멀티 에이전트 관리까지 실사용으로 정리했습니다."
+category: "ai-tools"
+tags: ["Cursor 3.5", "Shared Canvases", "AI 코딩 에디터", "멀티 에이전트", "PR 리뷰", "Cursor Automations", "코드 리뷰"]
+thumbnail: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+---
+
+> **TL;DR**: 2026년 5월 20일 Cursor 3.5가 공개되면서 **Shared Canvases**가 들어왔습니다. 에이전트가 만든 캔버스(리포트·대시보드·커스텀 인터페이스)를 채팅 스레드 통째가 아니라 **링크 하나**로 팀에 공유하고, 동료는 브라우저에서 Cursor Dashboard를 통해 읽기 전용 스냅샷을 봅니다(Pro·Teams·Enterprise). 같은 릴리스에 Automations가 Agents Window 안으로 들어오고 멀티 repo·no-repo 자동화 템플릿 5종이 추가됐습니다. 캔버스 자체는 3.1부터 있던 기능이지만, 3.5의 "공유"가 붙으면서 비로소 팀 도구가 됐습니다. 이번 글은 Shared Canvases를 PR 리뷰·멀티 에이전트 관리 관점에서 실사용으로 정리합니다.
+
+---
+
+숫자 하나로 시작하겠습니다. **17번.** 지난 2주 동안 제가 동료에게 "AI 에이전트가 대체 뭘 했는지" 설명하려고 채팅 스레드를 통째로 캡처해 Slack에 붙여넣은 횟수입니다.
+
+세어보고 좀 허탈했습니다. 에이전트는 일을 잘했는데, 그 결과를 사람에게 전달하는 비용이 만만치 않았던 거죠. 스크린샷은 맥락이 잘리고, 채팅 링크는 받는 사람이 열어도 "어디부터 봐야 하지?" 상태가 됩니다. 200줄짜리 에이전트 대화를 읽고 싶어 하는 동료는 없습니다.
+
+그래서 Cursor 3.5의 **Shared Canvases** 릴리스 노트를 봤을 때, 솔직히 "이거 내 문제잖아" 싶었습니다.
+
+![에이전트가 만든 분석 대시보드 화면](https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Luke Chesser](https://unsplash.com/@lukechesser?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Shared Canvases는 에이전트의 작업 결과를 채팅이 아니라 대시보드로 보여주고, 그 링크를 팀에 공유한다_
+
+---
+
+## 문제: 에이전트의 결과물을 사람에게 전달하는 비용
+
+AI 코딩 도구가 "한 명의 보조"에서 "여러 에이전트 오케스트레이션"으로 넘어오면서, 새로운 병목이 생겼습니다. **에이전트가 만든 것을 사람이 검토하고 공유하는 단계**입니다.
+
+한 달 전 [Cursor 3.3 완전 정리](https://daily1bite.com/ko/blog/ai-tools/cursor-3-3-multitask-bugbot-vulnerability-scanner)에서 `/multitask`로 서브에이전트를 비동기 병렬로 띄우는 법을 다뤘는데요. 막상 돌려보니 진짜 어려운 건 "동시에 돌리기"가 아니라 **"동시에 돌린 결과 5개를 어떻게 한눈에 보고, 어떻게 팀과 나누느냐"**였습니다.
+
+기존 방식의 한계는 명확했습니다.
+
+- 채팅 스레드는 길고, 선형이고, 다른 사람이 따라 읽기 어렵습니다.
+- 마크다운 리포트는 정적입니다. 정렬·필터·드릴다운이 안 됩니다.
+- 결과를 공유하려면 전체 대화 컨텍스트를 같이 넘겨야 하는데, 거기엔 노이즈가 너무 많습니다.
+
+여러 세션을 한 화면에서 관리하는 흐름은 [Claude Code Agent View](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-agent-view-multisession-goal-command-guide-2026)에서도 본 적이 있습니다. 다만 그건 "내가 보는" 관리였고, Shared Canvases가 풀려는 건 "**팀이 같이 보는**" 관리에 가깝습니다.
+
+---
+
+## 해결책을 찾은 과정 — 캔버스가 뭔지부터
+
+먼저 용어 정리. 공식 문서 기준으로 캔버스(Canvas)는 *"에이전트가 만든 인터랙티브 아티팩트 — 리포트, 대시보드, 커스텀 인터페이스"*입니다. 채팅이나 마크다운의 "텍스트 벽"을 읽는 대신, 직접 탐색하고 조작할 수 있는 UI를 에이전트가 그려준다는 개념이죠.
+
+기술적으로는 **React 기반 UI 라이브러리**로 만들어집니다. 테이블, 박스, 다이어그램, 차트 같은 1st-party 컴포넌트를 쓰고, Cursor가 이미 갖고 있는 diff·to-do list 컴포넌트에도 접근합니다. 그래서 캔버스 안에서 코드 diff를 그대로 렌더링하거나, 작업 목록을 체크리스트로 보여주는 게 가능합니다.
+
+![에이전트가 그린 인터랙티브 대시보드 인터페이스](https://images.unsplash.com/photo-1666875753105-c63a6f3bdc86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Deng Xiang](https://unsplash.com/@dengxiangs?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 캔버스는 테이블·다이어그램·차트를 조합한 인터랙티브 UI로, 채팅의 "텍스트 벽"을 대체한다_
+
+캔버스 자체는 사실 새 기능이 아닙니다. **Cursor 3.1(4월 15일)부터** 들어와 있었고, Agents Window 안에서 터미널·브라우저·소스 컨트롤과 나란히 사는 "durable artifact(영속 아티팩트)"로 존재했습니다. 세션을 닫아도 사라지지 않는다는 뜻이죠.
+
+공식 블로그가 소개한 캔버스 활용처는 이렇습니다.
+
+- **PR 리뷰**: 변경을 논리적으로 그룹핑하고, 중요한 부분부터 우선순위를 매겨 보여줌
+- **새 라이브러리 학습**: 구조와 사용법을 시각화
+- **다른 에이전트 관리**: 캔버스로 여러 에이전트의 상태를 한눈에
+- **아키텍처 다이어그램**: Docs Canvas 스킬로 인터랙티브 다이어그램 생성
+- **복잡한 알고리즘**: 까다로운 로직을 의사코드(pseudocode)로 표현
+
+Cursor가 자기네 내부에서 쓰는 사례도 공개했는데, 이게 좀 흥미로웠습니다. 장애 대응 때 Datadog·Databricks·Sentry MCP에서 데이터를 끌어와 **하나의 통합 차트**로 만들고, eval 분석 때는 실패 모드를 클러스터링해서 본다고 하더라고요. "에이전트가 데이터 모아서 대시보드 그려준다"가 마케팅이 아니라 자기들이 실제로 쓰는 워크플로우였던 셈입니다.
+
+---
+
+## 3.5가 더한 것 — "공유"라는 마지막 조각
+
+여기까지가 3.1의 캔버스였고, **3.5(5월 20일)가 더한 게 Shared Canvases**입니다. 핵심은 단순합니다.
+
+> 캔버스 링크를 팀원에게 공유하면, 동료는 브라우저에서 **Cursor Dashboard를 통해 읽기 전용 라이브 스냅샷**을 본다. (Pro·Teams·Enterprise)
+
+전체 채팅 스레드를 넘기는 대신, 캔버스 스냅샷 **링크 하나**만 주면 됩니다. 받는 사람은 Cursor를 안 켜도, 에이전트 대화를 안 읽어도, 정제된 결과만 브라우저에서 봅니다.
+
+![팀이 화상으로 모여 공유된 대시보드를 함께 보는 모습](https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Chris Montgomery](https://unsplash.com/@cwmonty?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 채팅 스레드 대신 캔버스 스냅샷 링크 하나로 팀이 같은 화면을 본다_
+
+실제로 제가 PR 리뷰에 써본 흐름은 이렇습니다. 에이전트에게 이렇게 시킵니다.
+
+```text
+/canvas 이번 PR의 변경 파일 23개를 모듈별로 그룹핑하고,
+위험도 높은 변경(인증·DB 마이그레이션)부터 정렬해서
+파일·변경 라인 수·위험 사유를 표로 정리한 대시보드를 만들어줘
+```
+
+그러면 에이전트가 diff를 분석해서, 파일 트리가 아니라 **"리뷰어가 봐야 할 순서"**로 재정렬된 테이블을 캔버스에 그립니다. 인증 관련 변경 3개가 맨 위로 올라오고, 단순 포맷팅 변경은 접혀서 맨 아래로 갑니다.
+
+그 캔버스의 공유 링크를 시니어 리뷰어에게 Slack으로 던졌더니, 처음으로 "어디부터 보면 돼?"라는 질문이 안 나왔습니다. 사소해 보이지만, 저한테는 그 17번의 캡처-붙여넣기를 없애준 변화였습니다.
+
+### Before / After — 같은 PR을 공유하는 방식
+
+| 단계 | Before (3.3 이하) | After (Shared Canvases) |
+|---|---|---|
+| 결과 정리 | 에이전트 채팅 스레드 스크롤 | 캔버스 대시보드 자동 생성 |
+| 우선순위 | 리뷰어가 직접 판단 | 위험도순 자동 정렬 |
+| 공유 방식 | 스크린샷 / 전체 스레드 링크 | 스냅샷 링크 1개 |
+| 받는 사람 | Cursor + 컨텍스트 필요 | 브라우저만 있으면 됨(읽기 전용) |
+| 노이즈 | 대화 전체 노출 | 정제된 결과만 노출 |
+
+---
+
+## 같이 들어온 변화: Automations가 Agents Window로
+
+3.5는 Shared Canvases만 있는 릴리스가 아닙니다. **Cursor Automations**가 별도 페이지(cursor.com/automations)에서 **Agents Window 안으로** 통합됐습니다. 이제 자동화 설정·실행·캔버스 결과 확인을 한 워크스페이스에서 합니다.
+
+![멀티 repo 자동화를 다루는 코드 화면](https://images.unsplash.com/photo-1607799279861-4dd421887fb3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Mohammad Rahmani](https://unsplash.com/@afgprogrammer?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Automations는 여러 repo를 가로질러 작업하고, 코드가 아닌 워크플로우도 자동화한다_
+
+달라진 점을 정리하면:
+
+1. **멀티 repo 자동화**: 에이전트가 *"필요한 모든 컨텍스트를 가로질러 추론하고, 여러 repo에서 작업·테스트·검증"*합니다. 단일 저장소에 묶이지 않습니다.
+2. **no-repo 자동화**: 코드와 무관한 워크플로우용 마켓플레이스 템플릿 5종이 추가됐습니다 — Slack 다이제스트, 제품 분석, FAQ, 재무, 고객 헬스 에이전트.
+3. **프로모션**: 새로 만든 자동화는 7일간 에이전트 실행 비용 **50% 할인**.
+
+여기서 캔버스가 다시 등장합니다. 자동화 에이전트가 매일 아침 "어제 머지된 PR + 발생한 이슈"를 캔버스 대시보드로 그려두면, 팀은 그 링크만 북마크해두고 보면 됩니다. 자동화 + 캔버스 + 공유가 한 묶음으로 작동하는 그림이죠.
+
+참고로 그 직전 **3.4(5월 13일)**에서는 Full-screen tabs(파일·캔버스·터미널·PR·브라우저를 전체화면으로)와 Compact chat responses(Compact·Balanced·Detailed 밀도 조절)가 들어왔습니다. 캔버스를 전체화면으로 띄울 수 있게 된 게 3.4였고, 그걸 공유 가능하게 만든 게 3.5라고 보면 흐름이 자연스럽습니다.
+
+---
+
+## 다른 대안과 비교 — 왜 굳이 Cursor 캔버스인가
+
+"대시보드로 공유"는 사실 새로운 발상이 아닙니다. 비교 대상을 솔직하게 늘어놓으면:
+
+| 도구 | 공유 방식 | 차이점 |
+|---|---|---|
+| **Cursor Shared Canvases** | 에이전트가 그린 캔버스 링크 | 코드 컨텍스트(diff·repo)와 직접 연결됨 |
+| Notion / Confluence | 사람이 수동 작성 | 자동 생성 안 됨, 코드와 분리 |
+| GitHub PR 페이지 | PR 단위 리뷰 | 정적, 위험도 자동 정렬 없음 |
+| ChatGPT/Claude 공유 링크 | 대화 스냅샷 공유 | 결과가 아니라 "대화"를 공유 |
+
+![코드 변경과 직접 연결된 리뷰 인터페이스](https://images.unsplash.com/photo-1515879218367-8466d910aaa4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Chris Ried](https://unsplash.com/@cdr6934?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 캔버스는 diff·repo 같은 코드 컨텍스트와 직접 연결돼 자동으로 채워진다_
+
+핵심 차별점은 **캔버스가 코드베이스 컨텍스트와 직접 연결**된다는 점입니다. Notion 문서는 누가 손으로 업데이트해야 하지만, 캔버스는 에이전트가 diff·MCP 데이터를 읽어 자동으로 채웁니다. "대화를 공유"하는 ChatGPT 공유 링크와 달리, Shared Canvases는 "**정제된 결과물을 공유**"합니다.
+
+물론 이게 Notion을 대체한다는 뜻은 아닙니다. 영속적인 팀 위키는 여전히 Notion/Confluence가 맞고, 캔버스는 "에이전트 작업의 휘발성 결과를 잠깐 공유"하는 쪽에 가깝습니다. 둘은 경쟁이 아니라 역할이 다릅니다.
+
+IDE 안에서 코드 리뷰를 푸는 다른 접근이 궁금하다면 [Windsurf Devin Review: IDE 코드리뷰 완전 정리](https://daily1bite.com/ko/blog/ai-tools/windsurf-devin-review-quick-review-ai-code-review-ide-2026)도 같이 보면 비교가 됩니다. Windsurf는 "리뷰 코멘트"에, Cursor 캔버스는 "리뷰 인터페이스"에 무게를 둔다는 차이가 보일 겁니다.
+
+---
+
+## 실전 팁 4가지
+
+1. **캔버스를 PR 리뷰 진입점으로 쓰세요.** "파일 트리"가 아니라 "위험도순 정렬 대시보드"를 만들게 시키면, 큰 PR에서 리뷰 시간이 확 줄어듭니다. 프롬프트에 정렬 기준(인증·DB·외부 API 호출 우선)을 명시하는 게 핵심입니다.
+2. **공유 전 권한을 확인하세요.** 읽기 전용 스냅샷이라도 코드 일부가 노출됩니다. 외부 협력사에 던지기 전에 캔버스에 민감 정보(키·내부 URL)가 박혀 있지 않은지 한 번 보는 습관이 필요합니다.
+3. **자동화 + 캔버스를 데일리 리포트로 묶으세요.** no-repo 템플릿(제품 분석·고객 헬스)으로 매일 아침 대시보드를 갱신하면, 스탠드업 때 화면 공유할 자료가 자동으로 준비됩니다.
+4. **개인 플랜이면 기대치를 조절하세요.** 공유는 Pro 이상이고, 진짜 가치는 "팀과 나눌 때" 나옵니다. 혼자 쓰는 경우 캔버스는 "예쁜 리포트 뷰" 이상은 아닙니다.
+
+---
+
+## 아쉬운 점 — 솔직하게
+
+장점만 늘어놓으면 거짓말이죠. 1~2주 써보며 걸린 부분들입니다.
+
+- **읽기 전용뿐입니다.** 동료가 캔버스에서 코멘트를 달거나 직접 조작해 의견을 남기는 건 (현재 기준) 안 됩니다. 진짜 "협업"이라기보다 "정제된 공유"에 가깝습니다.
+- **캔버스 품질이 프롬프트에 크게 의존합니다.** "대시보드 만들어줘"라고만 하면 밋밋한 테이블이 나옵니다. 정렬·그룹핑 기준을 구체적으로 줘야 쓸 만한 게 나와요.
+- **공유가 Pro·Teams·Enterprise 한정**입니다. 무료/취미 사용자에게는 그림의 떡입니다.
+- **에이전트가 데이터를 잘못 집계할 수 있습니다.** 차트는 그럴듯한데 숫자가 틀린 경우가 한 번 있었습니다. 캔버스는 "검토 보조"지 "검증된 리포트"가 아니라는 점은 분명히 해둬야 합니다. 중요한 의사결정 전에는 원본을 다시 확인하세요.
+
+---
+
+## 누구에게 추천하나
+
+| 독자 유형 | 추천 | 이유 |
+|---|---|---|
+| **PR 리뷰가 많은 팀** | ✅ 강추 | 위험도순 대시보드 + 링크 공유가 가장 큰 레버 |
+| **여러 에이전트를 동시에 굴리는 개발자** | ✅ 강추 | 결과를 한 캔버스로 모아 관리 |
+| **장애 대응/온콜 팀** | ✅ 조건부 | MCP 데이터 통합 대시보드가 유용(Cursor 내부 사례) |
+| **개인 사이드 프로젝트** | △ 보류 | 공유 기능을 못 쓰면 가치 절반 이하 |
+| **Notion 기반 문서 문화가 강한 팀** | △ 보류 | 영속 문서는 여전히 Notion, 캔버스는 휘발성 공유용 |
+
+---
+
+## 총평 — 스코어카드
+
+| 항목 | 점수 | 코멘트 |
+|---|---|---|
+| 문제 해결력 | ★★★★☆ | "에이전트 결과 공유" 병목을 정확히 겨냥 |
+| 사용 편의성 | ★★★★☆ | 링크 하나로 끝. 받는 쪽 진입장벽 낮음 |
+| 협업 깊이 | ★★★☆☆ | 읽기 전용 한계가 명확 |
+| 가격 접근성 | ★★★☆☆ | Pro 이상 전용 |
+| 차별성 | ★★★★☆ | 코드 컨텍스트 연결이 진짜 강점 |
+
+Cursor 3.0이 IDE를 *에이전트 실행 런타임*으로 다시 정의했고, [Cursor 3.3](https://daily1bite.com/ko/blog/ai-tools/cursor-3-3-multitask-bugbot-vulnerability-scanner)이 *여러 에이전트를 동시에 안전하게 돌리는 법*을 풀었다면, 3.5의 Shared Canvases는 **그 결과를 사람과 팀에게 전달하는 법**을 푸는 챕터입니다.
+
+저는 이게 의외로 큰 변화라고 봅니다. AI 코딩 도구의 다음 경쟁은 "모델이 얼마나 똑똑한가"만이 아니라 "에이전트의 작업을 사람이 얼마나 빨리 검토하고 신뢰할 수 있는가"에서 갈릴 가능성이 큽니다. 같은 흐름이 다른 [AI Tools & Review](https://daily1bite.com/ko/category/ai-tools) 글에서도 반복되는 게 보입니다.
+
+개인 개발자라면 당장 갈아탈 이유는 약합니다. 하지만 PR이 매일 쌓이는 팀이라면, 그 17번의 캡처-붙여넣기를 없애는 것만으로도 한 번 켜볼 가치는 충분합니다.
+
+---
+
+## 참고 자료
+
+- [What's New in Cursor — Latest Updates & Release Notes](https://cursor.com/changelog) — Cursor 공식 changelog, 2026년 5월 20일 (v3.5)
+- [Interact with agent-created visualizations in canvases](https://cursor.com/blog/canvas) — Cursor 공식 블로그, 2026년
+- [Cursor Release Notes - May 2026 Latest Updates](https://releasebot.io/updates/cursor) — Releasebot, 2026년 5월 기준
+- [Meet the new Cursor](https://cursor.com/blog/cursor-3) — Cursor 공식 블로그, 2026년 4월 2일
+
+**함께 읽으면 좋은 글:**
+
+- [Cursor 3.3 완전 정리: /multitask 서브에이전트·Bugbot 자가학습·취약점 스캐너 [2026-05]](https://daily1bite.com/ko/blog/ai-tools/cursor-3-3-multitask-bugbot-vulnerability-scanner) - Shared Canvases의 바탕이 된 멀티 에이전트·병렬 실행을 다룬 직전 버전 정리
+- [Claude Code Agent View: 여러 AI 세션 한 화면 관리 + /goal 실전 가이드 [2026-05]](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-agent-view-multisession-goal-command-guide-2026) - "여러 에이전트를 한 화면에서 본다"는 같은 문제를 CLI 진영에서 푼 글
