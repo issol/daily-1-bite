@@ -1,0 +1,133 @@
+---
+title: "엔터프라이즈 AI 배포 전쟁: KPMG 27.6만 명·OpenAI $4B DeployCo [2026-05]"
+date: "2026-05-29"
+description: "Big Four 중 셋이 Claude를 택했고, OpenAI는 $4B DeployCo를 출범했습니다. AI 경쟁이 벤치마크에서 기업 배포로 옮겨간 이유를 정리했습니다."
+category: "ai"
+tags: ["엔터프라이즈 AI", "KPMG Claude", "OpenAI DeployCo", "Big Four AI", "Anthropic", "AI 배포", "Forward Deployed Engineer"]
+thumbnail: "https://images.unsplash.com/photo-1557804506-669a67965ba0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+---
+
+> **TL;DR**: 2026년 5월 둘째~셋째 주, AI 산업의 무게중심이 "어느 모델이 벤치마크 1등이냐"에서 "누가 기업 안에 배포를 장악하느냐"로 확 기울었습니다. Big Four 중 **PwC·KPMG·Deloitte 셋이 Claude를, EY만 Microsoft를** 택했고(KPMG 27.6만·Deloitte 47만·PwC 36.4만 규모), 같은 시기 OpenAI는 **$4B 규모 컨설팅 자회사 'DeployCo'**를 출범시켜 엔지니어를 고객사에 직접 심기 시작했습니다. 모델 성능 경쟁은 끝나지 않았지만, 진짜 매출이 갈리는 전장은 이제 *배포(deployment)*입니다. 이 글은 이번 주의 사건을 한국 개발자·기업 관점에서 정리합니다.
+
+---
+
+AI 경쟁은 결국 "어느 모델이 더 똑똑하냐"로 갈린다고들 했습니다. SWE-bench 몇 %, MMLU 몇 점, 컨텍스트 몇 토큰 — 우리는 그 숫자로 승자를 점쳐왔죠.
+
+그런데 지난 2주를 보고 생각이 좀 바뀌었습니다.
+
+이번 주에 가장 큰 돈과 인력이 움직인 곳은 새 모델 출시가 아니었습니다. **회계·컨설팅 빅4(Big Four)가 어느 AI를 회사 전체에 깔지 정한 사건**, 그리고 **OpenAI가 "모델 파는 회사"에서 "배포해주는 회사"로 발을 넓힌 사건**이었습니다. 벤치마크 0.5%p 차이보다, 47만 명 컨설턴트의 PC에 무엇이 깔리느냐가 훨씬 큰 뉴스였던 겁니다.
+
+![기업 전사 AI 도입을 논의하는 회의 장면](https://images.unsplash.com/photo-1557804506-669a67965ba0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Austin Distel](https://unsplash.com/@austindistel?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 2026년 5월, AI 경쟁의 무대가 벤치마크에서 "기업 전사 배포"로 옮겨갔다_
+
+---
+
+## 이번 주에 벌어진 일: Big Four가 모델 공급자를 골랐다
+
+핵심부터. 글로벌 회계·컨설팅 빅4가 거의 동시에 "우리는 이 AI로 간다"를 공식화했습니다. 그리고 그 선택은 한 번 깔리면 쉽게 못 바꾸는, 사실상 **영구적인 인프라 결정**입니다.
+
+| 회사 | 인원 규모 | 선택 | 핵심 내용 | 발표 |
+|---|---|---|---|---|
+| **PwC** | 3만 명 인증(→36.4만 글로벌) | **Claude** | Claude Code·Cowork 확대, Claude 기반 'Office of the CFO' 재무 조직 신설 | 5/14 |
+| **KPMG** | 약 27.6만 명 | **Claude** | Digital Gateway·KPMG Blaze에 내장, Azure 위에서 9월까지 완료, Tax & Legal부터 | 5/19 |
+| **Deloitte** | 약 47만 명 | **Claude** | 전사 규모 롤아웃 | 5월 |
+| **EY** | 40만+ 명 | **Microsoft** | M365 Copilot 확대, $1B+ 규모 | 5/21 |
+
+빅4 중 셋이 Anthropic의 Claude로, EY만 Microsoft Copilot으로 갈라졌습니다. [Fortune](https://fortune.com/2026/05/26/kpmg-anthropic-claude-partnership-big-four-ai/)의 표현을 빌리면, **5월 14~21일은 빅4가 "AI 실험"을 멈추고 "특정 모델 공급자에 자기 업무 인프라를 영구히 정렬"시킨 순간**입니다.
+
+여기서 중요한 디테일 하나. KPMG의 Claude는 직원이 따로 챗봇 창을 여는 방식이 아닙니다. 회사가 클라이언트 업무를 처리하는 핵심 플랫폼(Digital Gateway) 안에 박혀 들어가, **업무 흐름 그 자체**가 됩니다. Bill Thomas KPMG 인터내셔널 회장은 이걸 "보안·신뢰·거버넌스" 관점에서 설명했는데요. 핵심은 "직원이 AI를 쓴다"가 아니라 "회사의 일하는 방식이 AI로 바뀐다"입니다.
+
+이 흐름은 갑자기 튀어나온 게 아닙니다. [Sierra AI $950M: 엔터프라이즈 AI 에이전트 붐](https://daily1bite.com/ko/blog/ai/sierra-ai-950m-enterprise-agent-bret-taylor-2026)에서 봤던 "기업용 에이전트 시장으로 돈이 몰린다"는 신호가, 이번에 빅4 줄세우기로 현실화된 셈입니다.
+
+![대규모 컨설팅 조직의 협업 풍경](https://images.unsplash.com/photo-1739298061740-5ed03045b280?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Ninthgrid](https://unsplash.com/@ninthgrid_?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | KPMG 27.6만, Deloitte 47만, PwC 36.4만 — 한 번 정해지면 되돌리기 어려운 규모의 결정이다_
+
+---
+
+## OpenAI DeployCo: "도구 회사"에서 "배포 회사"로
+
+빅4가 "무엇을 깔까"를 정하는 동안, OpenAI는 다른 쪽 문제를 풀고 있었습니다. **"누가 깔아줄 거냐"**입니다.
+
+5월 11일, OpenAI는 **The Deployment Company(내부명 DeployCo)**를 델라웨어 LLC로 출범시켰습니다. 단순한 컨설팅 부서가 아니라, 엔지니어를 고용하고 회사를 인수하고 고객에게 직접 청구서를 끊는 **독립 사업체**입니다.
+
+| 항목 | 내용 |
+|---|---|
+| 출범 | 2026년 5월 11일 (델라웨어 LLC) |
+| 초기 자본 | **$4B+** (프리머니 밸류 $10B) |
+| 투자자 | 19곳 — TPG 앵커 + Brookfield·Advent·Bain Capital·Goldman Sachs·SoftBank·Warburg Pincus·B Capital 등 |
+| 컨설팅/SI 파트너 | Bain & Company, Capgemini, McKinsey & Company |
+| OpenAI 출자 | 최대 $1.5B ($500M 선납 + $1B 옵션), **과반 + 슈퍼보팅** 유지 |
+| PE 수익 보장 | 연 **17.5%**, 5년 |
+| 인력 모델 | **Forward Deployed Engineer(FDE)** — 고객사 안에 직접 상주 |
+| 첫 인수 | Tomoro (AI 컨설팅, FDE 약 150명 합류) |
+
+여기서 제가 가장 흥미롭게 본 단어가 **Forward Deployed Engineer(FDE)**입니다. 전략 슬라이드 만드는 컨설턴트가 아니라, 고객 회사 안에 들어가 실제로 돌아가는 프로덕션 AI 시스템을 짜는 엔지니어죠. Palantir가 오래전부터 써온 모델인데, OpenAI가 이걸 $4B 규모로 제도화한 겁니다.
+
+솔직히 처음 봤을 때는 "AI 회사가 왜 컨설팅을?" 싶었습니다. 그런데 곱씹어보니 합리적입니다. 모델은 이미 충분히 똑똑한데, 기업들이 "쿨한 데모"에서 "실제 운영"으로 못 넘어가고 있거든요. 그 마지막 1마일을 OpenAI가 직접 메우겠다는 거죠. PE 투자자들에게 **연 17.5% 수익을 보장**했다는 건, OpenAI가 이 배포 매출을 그만큼 확신한다는 신호이기도 합니다.
+
+![고객사에 상주하며 시스템을 구축하는 엔지니어](https://images.unsplash.com/photo-1630487656049-6db93a53a7e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Andreea Avramescu](https://unsplash.com/@minakko?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | DeployCo의 핵심은 'Forward Deployed Engineer' — 고객사 안에 직접 들어가는 엔지니어다_
+
+---
+
+## 왜 벤치마크가 아니라 배포인가
+
+자, 그래서 이게 왜 중요하냐. 세 가지로 정리해봤습니다.
+
+**1) 전환 비용이 모델 성능 차이를 압도합니다.** 47만 명 조직에 Claude를 깔고 거버넌스·보안·워크플로우까지 다 맞춰놓으면, 6개월 뒤 경쟁 모델이 벤치마크에서 3%p 앞선다고 갈아탈까요? 안 갈아탑니다. 한 번 박힌 인프라는 끈끈합니다. 이게 모델 회사들이 "성능"보다 "락인(lock-in)"에 목매는 이유입니다.
+
+**2) 매출의 모양이 다릅니다.** API 토큰 과금은 변동성이 큽니다. 반면 빅4 전사 라이선스 + FDE 상주 계약은 길고 예측 가능한 매출입니다. Anthropic이 빅4를 잡고, OpenAI가 DeployCo로 배포 매출을 직접 먹겠다는 건, 둘 다 "토큰 장사"에서 "기업 인프라 장사"로 체급을 키우는 움직임입니다. [Anthropic IPO 2026](https://daily1bite.com/ko/blog/ai/anthropic-ipo-2026-google-40b-investment)에서 본 연매출 급증의 상당 부분이 이런 엔터프라이즈 계약에서 나옵니다.
+
+**3) 데이터와 워크플로우가 해자(moat)가 됩니다.** Claude가 KPMG의 실제 세무·법률 업무 흐름 안에 박히면, 그 도메인 워크플로우 자체가 Anthropic의 자산이 됩니다. 모델은 복제 가능해도, "27만 명이 매일 쓰는 업무 통합"은 복제하기 어렵습니다.
+
+요약하면 — 모델 성능은 입장권이고, 진짜 게임은 그 다음부터라는 겁니다.
+
+![AI가 기업 인프라의 일부가 되는 구조 변화](https://images.unsplash.com/photo-1674027444485-cec3da58eef4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Growtika](https://unsplash.com/@growtika?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 모델은 복제 가능하지만, 기업 워크플로우에 박힌 배포는 복제하기 어렵다_
+
+---
+
+## 한국 개발자·기업에 의미하는 것
+
+여기까지는 미국 빅테크·빅4 얘기지만, 남 일이 아닙니다. 제가 체감하는 시사점 세 가지를 적어보면요.
+
+- **국내 대기업·금융권의 AI 도입도 "모델 선택"이 아니라 "공급자 정렬" 단계로 넘어갈 겁니다.** 삼성·SK·금융지주들이 어느 모델을 전사 표준으로 잡느냐가, 앞으로 1~2년 협력사 생태계를 좌우합니다. SI·컨설팅 업계라면 "FDE 모델"이 곧 한국에도 들어온다고 보는 게 맞습니다.
+- **개발자에게는 "AI를 기업 워크플로우에 안전하게 박는 능력"이 새 무기가 됩니다.** 단순히 API를 호출하는 게 아니라, 거버넌스·감사·보안을 갖춘 배포를 설계하는 사람. KPMG가 "보안·신뢰·거버넌스"를 전면에 내세운 게 우연이 아닙니다. 이 부분은 [Claude for Microsoft 365](https://daily1bite.com/ko/blog/ai-tutorial/claude-microsoft-365-excel-word-ppt-outlook-2026) 같은 글에서 다룬 "업무 도구 안의 AI"가 엔터프라이즈 규모로 커진 버전이라고 보면 됩니다.
+- **벤더 종속(lock-in) 리스크를 처음부터 설계에 반영해야 합니다.** 한 모델에 워크플로우를 다 맞추면 편하지만, 나중에 가격 협상력이 사라집니다. 추상화 레이어(모델 라우팅)를 하나 두는 게 보험입니다.
+
+다른 [AI News](https://daily1bite.com/ko/category/ai) 글에서도 반복해서 보이는 패턴인데, 2026년의 AI 뉴스는 점점 "모델 스펙"에서 "누가 누구와 계약했나"로 무게가 옮겨가고 있습니다.
+
+---
+
+## 아쉬운 점 / 짚고 넘어갈 것
+
+장밋빛으로만 보긴 어렵습니다.
+
+- **OpenAI의 컨설팅 진출은 이해상충 소지가 있습니다.** 자기 모델을 팔면서 동시에 "어떤 AI를 쓸지" 조언하는 컨설팅을 하면, 중립적 자문이 가능할까요? Bain·McKinsey가 파트너로 들어왔지만, 이 구조에 대한 비판은 분명 나올 겁니다.
+- **연 17.5% 수익 보장은 양날의 검입니다.** 배포 매출이 기대만큼 안 나오면 그 보장이 OpenAI 재무에 부담이 됩니다. 공격적인 베팅이라는 건 분명합니다.
+- **DeployCo의 정확한 지분 구조·OpenAI 지분율은 일부 비공개**입니다. "과반 + 슈퍼보팅"이라는 표현만 공개됐고, 세부는 추정이 섞여 있습니다(밸류에이션도 매체에 따라 $10B~$14B로 엇갈립니다). 숫자는 공식 발표 기준으로만 받아들이는 게 안전합니다.
+- **빅4의 Claude 전면 도입이 곧 "성공"은 아닙니다.** 도입(adoption)과 실제 생산성 향상은 다른 문제고, 전사 롤아웃의 ROI는 최소 1년은 지켜봐야 검증됩니다.
+
+---
+
+## 마무리: 모델이 아니라 "어디에 박히느냐"의 싸움
+
+2026년 상반기 내내 우리는 새 모델 출시에 환호했습니다. Opus 4.7, Gemini 3.5 Flash, GPT-5.5… 다 중요한 발전이었죠. 하지만 이번 주의 진짜 뉴스는 모델이 아니라 **"그 모델들이 어느 회사의 어느 업무에 영구히 박히느냐"**였습니다.
+
+빅4가 공급자를 정하고, OpenAI가 배포 자체를 사업화한 이 일주일은 — 제가 보기엔 — AI 산업이 "기술 경쟁"에서 "유통·인프라 경쟁"으로 넘어가는 변곡점입니다. 벤치마크는 여전히 중요합니다. 다만 그건 이제 시합의 *끝*이 아니라 *입장권*에 가깝습니다.
+
+한국의 개발자와 기업이라면, "어떤 모델이 제일 똑똑한가"만큼이나 "우리 워크플로우를 누구에게, 어떻게, 얼마나 종속되게 맡길 것인가"를 같이 고민할 때가 됐습니다.
+
+---
+
+## 참고 자료
+
+- [PwC is deploying Claude to build technology and execute work](https://www.anthropic.com/news/pwc-expanded-partnership) — Anthropic 공식, 2026년 5월 14일
+- [KPMG Inks Global Alliance with Anthropic, Deploying Claude to 276,000 Employees](https://www.roic.ai/news/kpmg-inks-global-alliance-with-anthropic-deploying-claude-to-276000-employees-05-19-2026) — Roic News, 2026년 5월 19일
+- [OpenAI closes The Deployment Company, a $10bn enterprise AI bet on private equity](https://thenextweb.com/news/openai-deployco-finalized-10-billion-joint-venture) — The Next Web, 2026년 5월
+- [Big Four consulting has 2 AI nightmares. KPMG's answer to both is the same](https://fortune.com/2026/05/26/kpmg-anthropic-claude-partnership-big-four-ai/) — Fortune, 2026년 5월 26일
+
+**함께 읽으면 좋은 글:**
+
+- [Sierra AI $950M: 엔터프라이즈 AI 에이전트 붐 — Bret Taylor의 $15.8B 승부수 [2026-05]](https://daily1bite.com/ko/blog/ai/sierra-ai-950m-enterprise-agent-bret-taylor-2026) - 이번 빅4 줄세우기의 배경이 된 "기업용 AI 에이전트 시장"으로의 자본 이동
+- [Anthropic IPO 2026 완전 정리: Google $40B 투자·연매출 $30B·기업가치 $1T](https://daily1bite.com/ko/blog/ai/anthropic-ipo-2026-google-40b-investment) - 엔터프라이즈 계약이 Anthropic 매출에 어떻게 반영되는지 보여주는 글
