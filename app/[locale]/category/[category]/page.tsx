@@ -20,13 +20,40 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
 
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
   const isKo = locale === 'ko';
+
+  // Pull recent posts + tags so the meta description carries actual category signal
+  // instead of one boilerplate line — addresses GSC "thin content" indexing skips.
+  const posts = getPostsByCategory(category, locale as Locale);
+  const recent = posts.slice(0, 3);
+  const tagPool = Array.from(new Set(posts.flatMap((p) => p.tags))).slice(0, 8);
+
+  const description = isKo
+    ? `${label} 카테고리 — 매일 한입이 정리한 ${posts.length}개의 글. ${
+        recent.length > 0 ? `최신: ${recent.map((p) => p.title).join(' / ').slice(0, 90)}. ` : ''
+      }${tagPool.length > 0 ? `핵심 키워드: ${tagPool.join(', ')}.` : ''}`.trim().slice(0, 300)
+    : `${label} on Daily 1 Bite — ${posts.length} curated posts. ${
+        recent.length > 0 ? `Latest: ${recent.map((p) => p.title).join(' / ').slice(0, 90)}. ` : ''
+      }${tagPool.length > 0 ? `Topics: ${tagPool.join(', ')}.` : ''}`.trim().slice(0, 300);
+
+  // Canonical → KO only (EN category routes are redirect targets, not canonical destinations).
+  const canonicalUrl = `${BASE_URL}/ko/category/${category}`;
+
   return {
-    title: label,
-    description: isKo
-      ? `${label} 카테고리의 모든 글을 확인하세요.`
-      : `Browse all posts in the ${label} category.`,
+    title: `${label} (${posts.length}개 글)`,
+    description,
+    keywords: [label, ...tagPool, 'AI', isKo ? '매일 한입' : 'Daily 1 Bite'],
     alternates: {
-      canonical: `${BASE_URL}/${locale}/category/${category}`,
+      canonical: canonicalUrl,
+      languages: {
+        'x-default': canonicalUrl,
+        ko: canonicalUrl,
+      },
+    },
+    openGraph: {
+      type: 'website',
+      url: `${BASE_URL}/${locale}/category/${category}`,
+      title: `${label} | ${isKo ? '매일 한입' : 'Daily 1 Bite'}`,
+      description,
     },
   };
 }

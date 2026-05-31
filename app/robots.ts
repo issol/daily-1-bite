@@ -5,11 +5,12 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      // 일반 검색엔진 — 모두 허용
+      // 일반 검색엔진 — EN 블로그는 차단 (KO가 canonical, EN은 301 redirect 대상이라 색인 낭비 방지)
+      // GEO/AI 크롤러는 아래 블록에서 EN도 허용 (콘텐츠 흡수 가치 있음)
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/_next/'],
+        disallow: ['/api/', '/_next/', '/en/blog/', '/en/category/'],
       },
       // GEO: Perplexity AI 크롤러 명시 허용
       {

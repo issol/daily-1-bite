@@ -23,12 +23,12 @@ interface Props {
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
+  // KO only. EN blog posts are redirected to KO at request time (see PostPage below)
+  // so we don't pre-render EN routes — keeps Google's crawl budget on the canonical KO URLs.
   const params: {locale: string; slug: string[]}[] = [];
-  for (const locale of routing.locales) {
-    const slugs = getAllSlugs(locale as Locale);
-    for (const slug of slugs) {
-      params.push({locale, slug: slug.split('/')});
-    }
+  const slugs = getAllSlugs('ko');
+  for (const slug of slugs) {
+    params.push({locale: 'ko', slug: slug.split('/')});
   }
   return params;
 }
@@ -100,8 +100,15 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
 
 export default async function PostPage({params}: Props) {
   const {locale, slug} = await params;
-  setRequestLocale(locale);
   const fullSlug = slug.join('/');
+
+  // EN blog posts permanently redirect to KO when a KO version exists.
+  // Keeps Google's crawl + indexing concentrated on the canonical KO URL.
+  if (locale === 'en' && hasTranslation(fullSlug, 'ko')) {
+    permanentRedirect(`/ko/blog/${fullSlug}`);
+  }
+
+  setRequestLocale(locale);
   const post = getPostBySlug(fullSlug, locale as Locale);
   const t = await getTranslations();
 
