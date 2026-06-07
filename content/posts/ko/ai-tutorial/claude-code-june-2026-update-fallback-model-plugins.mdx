@@ -1,0 +1,147 @@
+---
+title: "Claude Code 6월 업데이트 완전정리: fallbackModel·플러그인 자동로드·Devin Desktop"
+date: "2026-06-07"
+description: "Claude Code 6월 업데이트 정리. 과부하 시 최대 3개 자동 전환 fallbackModel과 .claude/skills 플러그인 자동 로드를 예제로 짚었습니다."
+category: "ai-tutorial"
+tags: ["Claude Code", "Claude Code 업데이트", "fallbackModel", "AI 코딩 도구", "Anthropic", "플러그인"]
+thumbnail: "https://images.unsplash.com/photo-1518773553398-650c184e0bb3?w=1080&q=80&fm=jpg"
+---
+
+혹시 이번 주에 `claude update` 한 번이라도 돌리셨나요? 안 돌리셨다면 지금 바로 돌려보시길 권합니다. 5월 31일부터 6월 6일까지 딱 일주일 동안 마이너 버전이 2.1.157에서 2.1.166까지 무려 아홉 번 올라갔거든요. 저는 매일 아침 터미널 켜자마자 업데이트부터 확인하는 편인데, 이번 주는 솔직히 따라잡기가 좀 벅찼습니다.
+
+그래서 정리했습니다. 회사 모노레포에서 사흘 동안 직접 굴려보면서 "이건 진짜 쓸모 있다" 싶었던 변화 위주로요. 단순 체인지로그 받아쓰기는 아니고, 제가 실제로 설정 바꾼 부분이랑 삽질한 지점까지 같이 적었습니다.
+
+![프로그래밍 언어가 표시된 모니터](https://images.unsplash.com/photo-1518773553398-650c184e0bb3?w=1080&q=80&fm=jpg)
+_Photo by [Pankaj Patel](https://unsplash.com/@pankajpatel?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 6월 한 주 동안만 마이너 버전이 아홉 번 올라갔다_
+
+## TL;DR — 6월 첫째 주 핵심만
+
+- **fallbackModel (2.1.166)**: 기본 모델이 과부하/사용 불가일 때 최대 3개 모델로 순서대로 자동 전환. 가장 체감 큰 변화.
+- **.claude/skills 플러그인 자동 로드 (2.1.157)**: 마켓플레이스 없이도 로컬 스킬 폴더를 자동 인식. `claude plugin init`으로 스캐폴딩, `/reload-skills`로 재시작 없이 갱신.
+- **deny 규칙 glob (2.1.166)**: `"*"` 하나로 모든 도구 차단. 권한 설정이 훨씬 단순해짐.
+- **Windsurf → Devin Desktop 리네임 (2.1.162)**: 에디터 리브랜딩 반영. `/ide` 메뉴에서 이름이 바뀜.
+- **버전 가드레일 (2.1.163)**: `requiredMinimumVersion` 관리형 설정으로 팀 전체 버전 하한 강제 가능.
+
+## 한눈에 보는 6월 첫째 주 릴리스
+
+| 버전 | 날짜 | 핵심 변화 |
+|------|------|----------|
+| 2.1.157 | 5/31 | `.claude/skills` 자동 로드, `claude plugin init`, `/reload-skills` |
+| 2.1.158 | 5/31 | Bedrock·Vertex·Foundry에서 Opus 4.7/4.8 Auto Mode |
+| 2.1.160 | 6/3 | 셸 시작 파일 쓰기 전 안전 프롬프트, 워크플로 트리거 `ultracode`로 변경 |
+| 2.1.161 | 6/4 | 병렬 도구 호출 개별 실패 격리, `/mcp` 미사용 커넥터 접기 |
+| 2.1.162 | 6/4 | Windsurf → Devin Desktop 리네임, WebFetch 권한 규칙 수정 |
+| 2.1.163 | 6/5 | `requiredMinimumVersion`, `/plugin list --enabled/--disabled` |
+| 2.1.166 | 6/6 | **fallbackModel**, deny 규칙 `"*"` glob, 세션 간 메시징 보안 강화 |
+
+자, 이제 하나씩 뜯어보겠습니다.
+
+## 1. fallbackModel — 모델 터지면 알아서 갈아탄다
+
+이번 주 변화 중에 제가 제일 반긴 건 단연 `fallbackModel`입니다. 2.1.166에 들어왔는데요, 기본 모델이 과부하(overloaded)거나 일시적으로 응답이 안 될 때 미리 지정해둔 다른 모델로 자동 전환해줍니다. 최대 세 개까지 순서대로 시도하고요.
+
+저는 오후 3~4시쯤 Opus가 자주 느려지는 걸 매번 겪었거든요. "Overloaded" 떠서 멍하니 기다리거나, 수동으로 `/model` 쳐서 Sonnet으로 바꾸고… 이 자잘한 흐름 끊김이 은근 스트레스였습니다. 이제 settings.json에 이렇게 넣어뒀습니다.
+
+```json
+{
+  "model": "claude-opus-4-8",
+  "fallbackModel": [
+    "claude-sonnet-4-6",
+    "claude-haiku-4-5"
+  ]
+}
+```
+
+Opus가 막히면 Sonnet, 그것도 안 되면 Haiku로 내려가는 식이죠. 긴 에이전트 작업 돌려놓고 자리 비웠다가 와도 중간에 멈춰있지 않으니 마음이 편합니다.
+
+다만 솔직히 짚자면, 모델이 바뀌면 출력 품질도 같이 바뀝니다. 리팩토링 같은 작업을 Opus로 시작했다가 중간에 Haiku로 떨어지면 결과물 일관성이 흔들릴 수 있어요. 그래서 저는 fallback에 Haiku는 넣되, "정밀함이 중요한 작업은 fallback 떴을 때 한 번 결과를 다시 검토한다"를 습관으로 들였습니다. 자동 전환이 만능은 아니라는 거죠.
+
+## 2. .claude/skills 플러그인 자동 로드
+
+![코드가 가득한 컴퓨터 화면 클로즈업](https://images.unsplash.com/photo-1517512006864-7edc3b933137?w=1080&q=80&fm=jpg)
+_Photo by [Karthik Swarnkar](https://unsplash.com/@karthikswarnkar?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 마켓플레이스 등록 없이 로컬 스킬 폴더가 자동으로 잡힌다_
+
+2.1.157부터 프로젝트의 `.claude/skills` 디렉터리에 있는 플러그인이 자동으로 로드됩니다. 예전엔 마켓플레이스에 등록하거나 URL로 설치하는 과정이 필요했는데(이건 [Claude Code 5월 업데이트 총정리](https://daily1bite.com/ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix)에서 다뤘던 부분이죠), 이제 그냥 폴더에 넣어두면 끝입니다.
+
+새 플러그인을 만들 땐 스캐폴딩 명령이 생겼습니다.
+
+```bash
+# .claude/skills 아래에 새 플러그인 골격 생성
+claude plugin init my-team-helpers
+
+# 스킬 파일 고친 뒤 재시작 없이 다시 스캔
+/reload-skills
+
+# 현재 활성/비활성 플러그인 확인
+/plugin list --enabled
+```
+
+`/reload-skills`가 은근 핵심입니다. 예전엔 스킬 하나 고칠 때마다 세션을 껐다 켜야 했는데, 이제 그 자리에서 다시 스캔돼요. 팀에서 공용 스킬을 자주 손보는 입장에선 이 작은 변화가 반복 작업을 꽤 줄여줍니다. 사내 컨벤션 체크 스킬을 만들어두고 굴리는 식의 자동화는 [Claude Code Routines](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-routines-cloud-automation-2026) 쪽이랑 엮으면 더 강력해지고요.
+
+## 3. deny 규칙 glob — 권한 설정이 단순해졌다
+
+보안 관련해서 두 가지가 같이 들어왔습니다. 먼저 2.1.166에서 deny 규칙에 glob 패턴이 확장돼서, `"*"` 하나로 모든 도구를 차단할 수 있게 됐어요.
+
+```json
+{
+  "permissions": {
+    "deny": ["*"],
+    "allow": ["Read", "Grep", "Glob"]
+  }
+}
+```
+
+읽기 전용으로 코드만 분석시키고 싶을 때, 예전엔 막을 도구를 일일이 나열했는데 이제 "전부 막고 필요한 것만 연다"는 패턴이 가능해졌습니다. allow 규칙은 MCP가 아닌 glob을 거부하니까, 화이트리스트는 여전히 명시적으로 적어야 한다는 점만 기억하면 됩니다.
+
+여기에 2.1.163의 `requiredMinimumVersion`이 더해지면 팀 운영이 편해집니다. 관리형 설정(managed settings)으로 최소 버전을 강제하면, 구버전에서 생기는 "나는 되는데 너는 안 되는" 문제를 줄일 수 있거든요. 보안 패치가 자주 나오는 요즘 같은 시기엔 특히 유용합니다.
+
+```json
+{
+  "requiredMinimumVersion": "2.1.166"
+}
+```
+
+## 4. Windsurf → Devin Desktop, 그리고 자잘한 정리
+
+2.1.162에서 눈에 띈 건 리네임입니다. `/ide` 메뉴, `/terminal-setup`, `/scroll-speed`에서 "Windsurf"가 "Devin Desktop"으로 바뀌었어요. 에디터 자체가 리브랜딩한 걸 따라간 거죠. Windsurf를 IDE로 쓰시던 분들은 메뉴에서 이름이 안 보인다고 당황하지 마시고 Devin Desktop을 찾으시면 됩니다. (Windsurf의 코드리뷰 기능 자체는 예전에 [Windsurf Devin Review](https://daily1bite.com/ko/blog/ai-tools/windsurf-devin-review-quick-review-ai-code-review-ide-2026)에서 정리해둔 게 있습니다.)
+
+이 외에 실무에서 체감되는 소소한 개선들:
+
+- **슬래시 커맨드 클릭 동작 변경**: 자동완성 메뉴에서 슬래시 커맨드를 클릭하면 바로 실행되지 않고 프롬프트에 채워집니다. Enter를 눌러야 실행돼요. 실수로 명령이 튀어나가던 걸 막아줍니다.
+- **병렬 도구 호출 격리 (2.1.161)**: 여러 도구를 동시에 부를 때 하나가 실패해도 나머지는 독립적으로 진행됩니다.
+- **`agent` 필드 반영 (2.1.157)**: settings.json의 `agent` 필드가 디스패치된 세션에서도 적용됩니다. `--agent <이름>`으로 덮어쓸 수 있고요.
+- **`ultracode` 트리거 (2.1.160)**: 동적 워크플로 트리거 키워드가 `workflow`에서 `ultracode`로 바뀌었습니다.
+
+## 5. 읽기 전용 설정 디렉터리 멈춤 버그, 드디어 잡혔다
+
+![맥북에 표시된 프로그래밍 코드](https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1080&q=80&fm=jpg)
+_Photo by [Arnold Francisca](https://unsplash.com/@clark_fransa?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 빈 화면만 뜨던 시작 행 문제가 수정됐다_
+
+이건 칭찬하고 싶은 수정입니다. 그동안 설정 디렉터리가 읽기 전용이거나 쓰기 불가일 때 Claude Code가 조용히 멈추면서 빈 화면만 띄우는 문제가 있었거든요. 원인을 모르면 진짜 답답한 종류의 버그였죠.
+
+2.1.154~158 구간에서 이걸 잡았는데, 이제는 메모리 내 설정(in-memory config)으로라도 일단 시작하고 시작 단계 에러를 화면에 보여줍니다. 공식 노트 표현을 그대로 옮기면 "Claude Code now starts with in-memory config and surfaces startup errors" 입니다. CI 컨테이너나 권한이 빡빡한 사내 환경에서 돌리는 분들이 특히 반길 변화예요.
+
+## 그래서, 지금 뭘 하면 되나
+
+세 가지만 권합니다.
+
+1. **`claude update`로 2.1.166 이상으로 올리기** — 보안 강화와 fallbackModel이 들어간 버전입니다.
+2. **settings.json에 `fallbackModel` 추가** — 오후 피크 타임 과부하를 가장 쉽게 회피하는 방법입니다.
+3. **자주 쓰는 스킬을 `.claude/skills`로 이전** — 마켓플레이스 의존을 줄이고 `/reload-skills`로 빠르게 반복하세요.
+
+솔직한 총평을 덧붙이자면, 이번 주 릴리스 속도는 좀 과하다 싶을 정도였습니다. 일주일에 마이너 아홉 개면 따라가는 것 자체가 일이거든요. 그만큼 버그 픽스도 많았다는 뜻이라, 자동 업데이트를 꺼두고 주말마다 한 번에 올리는 분이라면 이번 주는 예외로 두고 지금 바로 올리시는 게 낫습니다. 같은 AI 코딩 도구라도 [Cursor의 6월 업데이트](https://daily1bite.com/ko/blog/ai-tutorial/cursor-june-2026-auto-review-bugbot-usage-premium-seat)는 과금 구조 개편이 핵심이었는데, Claude Code는 안정성과 거버넌스 쪽에 무게가 실린 한 주였다는 점이 대조적이네요.
+
+다른 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 글도 함께 보시면 워크플로 잡는 데 도움이 될 겁니다.
+
+---
+
+## 참고 자료
+
+- [Claude Code changelog](https://code.claude.com/docs/en/changelog) — Anthropic 공식 문서, 2026년 6월 기준
+- [Claude Code Updates — Releasebot](https://releasebot.io/updates/anthropic/claude-code) — Releasebot, 2026년 6월 6일 기준
+- [Releases · anthropics/claude-code](https://github.com/anthropics/claude-code/releases) — GitHub, 2026년 6월 기준
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Code 5월 업데이트 총정리: 플러그인 URL 설치·세션 ID·MCP 메모리 누수 수정](https://daily1bite.com/ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix) - 한 달 전 플러그인·세션 변화와 비교해서 보기
+- [Claude Code Routines 완전 정리: 크론 없이 스케줄·API·GitHub 웹훅 자동화](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-routines-cloud-automation-2026) - 자동 로드된 스킬을 스케줄·웹훅과 엮는 법
