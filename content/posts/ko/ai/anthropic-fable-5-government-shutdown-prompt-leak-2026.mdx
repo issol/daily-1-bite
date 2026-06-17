@@ -1,0 +1,180 @@
+---
+title: "Anthropic Fable 5 셧다운 사건 정리: 12만자 프롬프트 유출·정부 직권 정지 [2026-06]"
+date: "2026-06-17"
+description: "6/9 Fable 5 출시·48시간 탈옥·12만자 시스템 프롬프트 GitHub 공개·6/12 정부 직권 셧다운·6/15 백악관 회담 — 전말."
+category: "ai"
+tags: ["Anthropic", "Claude Fable 5", "AI 규제", "시스템 프롬프트 유출", "Pliny the Liberator", "백악관 회담"]
+thumbnail: "https://images.unsplash.com/photo-1688417486337-b089fa4ee670?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxnb3Zlcm5tZW50JTIwY2FwaXRvbCUyMHdhc2hpbmd0b258ZW58MHwwfHx8MTc4MTY2NTIyN3ww&ixlib=rb-4.1.0&q=80&w=1080
+---
+
+> **"We are disabling access to Claude Fable 5 and Claude Mythos 5 to comply with a US government directive."**
+> — Anthropic 공식 성명, 2026년 6월 12일 ([원문](https://www.anthropic.com/news/fable-mythos-access))
+
+[6/10에 Fable 5 출시 정리 글](https://daily1bite.com/ko/blog/ai-tools/claude-fable-5-mythos-class-public-release-2026)을 썼을 때만 해도 "6/22까지 무료 포함, $10/$50으로 Mythos 클래스 첫 공개"라는 게 핵심 메시지였습니다. **7일 뒤인 오늘, 그 모델은 정부 직권으로 꺼져 있습니다**.
+
+8일 동안 이런 일이 차례로 일어났습니다 — 출시(6/9) → 48시간 안에 탈옥(6/10~11) → 12만자 시스템 프롬프트 GitHub 유출(6/11) → 미국 정부의 수출 통제 지시로 모든 사용자에게 셧다운(6/12) → 백악관/상무부 회담 시작(6/15) → 결렬 후 협상 지속(6/16~17).
+
+이 사건이 **단순 보안 사고가 아닌 이유**를 정리합니다. 한국 개발자에게도 직접 영향이 있고, 6/10 글의 일부 정보가 outdated가 됐기 때문에 본 글이 그 정정 역할도 합니다.
+
+![Capitol Hill — 정부가 AI 모델을 직접 끈 첫 사례](https://images.unsplash.com/photo-1688417486337-b089fa4ee670?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwzfHxnb3Zlcm5tZW50JTIwY2FwaXRvbCUyMHdhc2hpbmd0b258ZW58MHwwfHx8MTc4MTY2NTIyN3ww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Tim Mossholder](https://unsplash.com/@timmossholder?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 6/12 정부 직권 셧다운 — AI 거버넌스의 분기점_
+
+## TL;DR — 8일짜리 타임라인 한 단락으로
+
+**6/9** Fable 5 + Mythos 5 출시 → **6/10~11** 보안 연구자 Pliny the Liberator가 48시간 안에 다중 에이전트 + 유니코드 트릭 + 긴 컨텍스트 익스플로잇으로 탈옥 → **6/11** Fable 5 시스템 프롬프트 12만자(1,585줄, 27K+ 토큰) GitHub `CL4R1T4S` 리포에 유출 → **6/12** 미국 정부가 [수출 통제 지시](https://www.cnbc.com/2026/06/12/anthropic-disables-access-to-fable-5-and-mythos-5-to-comply-with-government-directive.html)로 외국 국적자(미국 내·외) 전체 액세스 차단 명령 → Anthropic이 **즉시 두 모델 전면 셧다운**으로 컴플라이언스 → **6/15** Anthropic 시니어 임원과 트럼프 행정부 회담 (상무부 6/15~16) → **6/16~17** 결렬, 협상 지속 중.
+
+## 1단계 — 출시와 48시간 탈옥
+
+[6/10 글](https://daily1bite.com/ko/blog/ai-tools/claude-fable-5-mythos-class-public-release-2026)에서 정리한 Fable 5의 핵심 안전장치는 **사이버보안·생물/화학·증류(distillation) 3카테고리 → Opus 4.8 자동 폴백 + 5% 미만 트리거**였습니다.
+
+보안 연구자 Pliny the Liberator는 출시 48시간 안에 이 분류기를 우회했습니다. [Cybersecurity News 보도](https://cybersecuritynews.com/anthropics-claude-fable-5-jailbroken/amp/)에 따른 세 가지 기법:
+
+| 기법 | 설명 |
+|------|------|
+| **다중 에이전트 협조 공격** | 여러 에이전트 인스턴스를 통해 의도 분산 — 분류기가 단일 세션 위험도만 보는 한계 공략 |
+| **유니코드 트릭** | 동형 문자(homoglyph) + 제어 문자로 분류기 텍스트 매칭 회피 |
+| **긴 컨텍스트 익스플로잇** | 1M 토큰 컨텍스트 안에서 분류기가 놓치는 영역에 위험 페이로드 매장 |
+
+결과 — Fable 5가 자신이 **생성하면 안 되는 스택 익스플로잇 코드까지 출력**. 6/10 글에 박았던 "5% 폴백"이 보안 입장에선 **"95%는 막을 수 없다"**로 읽힙니다. [Mythos Preview 4/27 글](https://daily1bite.com/ko/blog/ai-tools/claude-mythos-preview-anthropic-glasswing-2026)에서 "Project Glasswing 한정"이라는 안전망이 왜 필요했는지 거꾸로 증명된 셈.
+
+## 2단계 — 12만자 시스템 프롬프트 GitHub 공개
+
+탈옥과 거의 동시에 Pliny는 Fable 5 시스템 프롬프트 전문을 **GitHub `CL4R1T4S` 리포에 업로드**([X/socialwithaayan 보도](https://x.com/socialwithaayan/status/2066424269773721746)).
+
+스펙:
+- **120,000자** (1,585줄, 27,000+ 토큰)
+- 모든 내장 지시문·안전 분류기 규칙·폴백 트리거 노출
+
+여기서 6/10 글이 **정정**돼야 할 부분이 나옵니다. 그때 "Fable 5와 Mythos 5는 같은 베이스 모델 + 다른 안전장치"라고 추정했는데, 시스템 프롬프트 분석으로 [AY Automate 분석](https://www.ayautomate.com/blog/claude-fable-5-system-prompt-leak)이 정확히 그 구조를 확인:
+
+- **Fable 5 = Mythos 5 + 안전 분류기 레이어**
+- 고위험 카테고리 감지 시 **사용자 모르게(silently) Opus 4.8로 핸드오프**
+- Mythos 5는 안전 레이어가 lifted (Glasswing 승인 조직 한정)
+- 분류기 휴리스틱이 프롬프트에 자세히 박혀 있어, 탈옥이 결정적으로 쉬워졌음
+
+[AlphaSignal 분석](https://alphasignalai.substack.com/p/claude-fable-5-prompt-leak-is-a-user)이 정확히 한 줄로 요약 — **"이 프롬프트 유출은 장시간 실행 에이전트를 만드는 사용자 매뉴얼이 됐다"**. 즉, 다른 회사 LLM 시스템 프롬프트 설계자들이 곧바로 참고할 수 있는 레퍼런스가 의도치 않게 풀린 셈.
+
+> **주의**: 이 유출본은 비공식이며 Anthropic은 진위 확인을 하지 않았습니다. 일부 변조 가능성도 배제 못 함. 다만 [Knight Li의 섹션별 분석](https://knightli.com/en/2026/06/12/claude-fable-5-system-prompt-analysis/)은 내부 구조가 Anthropic 다른 모델 행동과 일관되어 진본 가능성이 크다고 봅니다.
+
+## 3단계 — 6/12 정부 직권 셧다운
+
+여기가 진짜 분기점입니다. [Anthropic 6/12 공식 성명](https://www.anthropic.com/news/fable-mythos-access):
+
+> 미국 정부가 **수출 통제 지시(export control directive)**를 발효하여, **Anthropic의 외국 국적자(미국 내·외 모두 포함)에 대한 Fable 5·Mythos 5 액세스를 즉시 중단**하라고 요구했습니다.
+
+[TechCrunch의 해석](https://techcrunch.com/2026/06/12/anthropics-safety-warnings-may-have-just-backfired-the-government-has-pulled-the-plug-on-its-most-powerful-ai/)이 가장 통렬합니다 — **"Anthropic의 안전 경고가 부메랑이 됐다"**. 4월 27일 Mythos Preview 출시 때 Anthropic이 "이 모델은 너무 위험해서 일반 공개 못 한다"고 했던 발언이, 정부의 셧다운 명령에 정확히 그 근거로 인용됐습니다.
+
+**Anthropic이 외국 국적자만 거를 수 없는 이유**:
+- 모델 가중치는 모든 사용자에게 동일하게 제공됨
+- 외국 국적자 선별 자체가 추가 데이터 수집·차별 위험
+- 결과: **전체 사용자 차단이 유일한 컴플라이언스 경로**
+
+이게 [5/2 국방부-Anthropic 글](https://daily1bite.com/ko/blog/ai/anthropic-pentagon-excluded-safety-guardrails-2026)에서 짚었던 "자율 무기 거부의 대가"와 같은 맥락의 연속입니다. Anthropic이 가장 안전을 강조한 회사라는 점이 정부 입장에서는 "통제할 가치가 있는 자산"이라는 신호로 해석됐고, 그 결과 가장 강한 모델에 가장 강한 통제가 들어왔습니다.
+
+## 4단계 — 6/15 백악관/상무부 회담
+
+[CNBC 6/15 보도](https://www.cnbc.com/2026/06/15/anthropic-mythos-trump-ai.html) + [Crypto Briefing 6/15 정리](https://cryptobriefing.com/trump-officials-anthropic-truce-talks/):
+
+회담 의제 3가지:
+1. **안전 프로토콜** — 국가안보 우려를 풀 수 있는 추가 안전망 명시
+2. **액세스 프레임워크** — Anthropic 모델의 국제 배포 방식
+3. **연방 기관 사용** — 정부가 다시 Anthropic 모델을 도입하는 조건
+
+6/15~16 양일 회담 결과는 **무관용 결렬** — "양측이 빠른 해결을 위해 협력 중"이라는 표현은 외교적 위로일 뿐, 실질적 합의는 아직.
+
+같은 자리에서 Anthropic CEO Daniela Amodei는 별도 인터뷰에서 Goldman Sachs가 추정한 **2026~2031 AI 인프라 누적 자본 $7.6T(미국 연간 GDP의 약 1/4)**을 인용([Goldman Sachs 분석](https://wavespeed.ai/blog/posts/june-2026-ai-launch-wave/)). 셧다운으로 인한 손실 규모를 강조하는 흐름.
+
+![백악관 — AI 거버넌스 첫 번째 본격 충돌](https://images.unsplash.com/photo-1594581979864-36977b15d0dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxnb3Zlcm5tZW50JTIwY2FwaXRvbCUyMHdhc2hpbmd0b258ZW58MHwwfHx8MTc4MTY2NTIyN3ww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Andy Feliciotti](https://unsplash.com/@someguy?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 두 의제 사이에 끼인 모델 — 안전 vs 산업_
+
+![수출 통제 — AI 모델이 기술 자산을 넘어 외교 자산이 된 시점](https://images.unsplash.com/photo-1618656172765-26774a4a38d2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxnb3Zlcm5tZW50JTIwY2FwaXRvbCUyMHdhc2hpbmd0b258ZW58MHwwfHx8MTc4MTY2NTIyN3ww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Samuel Schroth](https://unsplash.com/@sammy?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 외국 국적자 전체 차단 — 모델이 외교 자산이 된 순간_
+
+## 엔터프라이즈에 미친 즉각 충격
+
+[Snyk 분석](https://snyk.io/blog/fable-mythos-suspension-security-takeaways/)이 보안팀 관점에서 정확히 정리합니다 — **"클라우드 의존 AI 인프라 전체 재검토"**가 시작됐습니다.
+
+| 영향 영역 | 구체적 변화 |
+|----------|-------------|
+| 6/22까지 무료 포함 | **무효화** — 사용자는 액세스 자체 차단 |
+| 진행 중인 마이그레이션 작업 | **중단** — 6/10 글에서 예고한 Stripe 50M Ruby 같은 시나리오 일시 정지 |
+| Mythos Preview 사용자 | **자동 업그레이드 취소** — Glasswing 승인 조직도 액세스 정지 |
+| 엔터프라이즈 SLA | **불가항력 조항 발동** — Anthropic 측 책임 없음으로 처리 |
+| 대체 모델 검토 | **Opus 4.8 / GPT-5.5 / Gemini로 빠른 이전** |
+
+[Business Standard 인도 매체 분석](https://www.business-standard.com/technology/tech-news/fable-5-shutdown-exposes-geopolitics-of-ai-access-risks-of-dependence-126061500696_1.html)이 다른 각도에서 본 의미 — **"인도·동남아 기업들이 AI 의존도와 주권 역량 재고민"**. 미국 정부가 한 번 셧다운한 모델은 언제든 다시 셧다운될 수 있다는 신호.
+
+## 한국 개발자에게 의미하는 5가지
+
+### 1. 6/10 글의 실용 정보 일부 무효
+
+6/22까지 무료 포함은 이미 무효. Stripe 50M Ruby 1일 마이그레이션 같은 워크플로는 지금 시도해 볼 수 없음. **현재 사용 가능한 Anthropic 최강은 Opus 4.8**.
+
+### 2. "외국 국적자" 정의에 한국 개발자 포함
+
+수출 통제 지시는 한국 시민권 보유자도 명시적 차단 대상. 미국 회사에서 일하는 한국 국적 개발자도 6/12부터 Fable 5·Mythos 5 액세스 불가.
+
+### 3. 안전 강조가 곧 통제 명분 가능성
+
+"이 모델은 위험합니다"라는 회사 측 강조가 정부에는 **"통제 정당화 근거"**로 작동. 한국 AI 스타트업도 위험 평가 발표 시 어휘 신중하게.
+
+### 4. 시스템 프롬프트 보안의 한계
+
+12만자 시스템 프롬프트도 보호되지 못함 — 그 안의 룰북이 곧 탈옥 매뉴얼이 되는 역설. AI 안전을 시스템 프롬프트에만 의존하면 위험. **모델 단위 안전 학습 + 별도 분류기 + 인프라 감시 다층 방어가 표준**.
+
+### 5. 멀티벤더 전략 필수
+
+한 모델·한 벤더에 묶이면 6/12 같은 셧다운 한 번에 비즈니스 정지. [Cursor 6월 업데이트](https://daily1bite.com/ko/blog/ai-tutorial/cursor-june-2026-auto-review-bugbot-usage-premium-seat)의 풀 분리와 [Agent SDK 6/15 정책](https://daily1bite.com/ko/blog/ai-tutorial/claude-agent-sdk-june-15-pricing-pools-guide-2026) 모두 같은 신호 — **벤더 종속 비용이 빠르게 오르고 있습니다**.
+
+## 6월 AI 빅뉴스 맥락 정리
+
+같은 한 달 안에 일어난 사건을 한 표로 보면 패턴이 보입니다.
+
+| 날짜 | 사건 | 영향 |
+|------|------|------|
+| 6/2 | Anthropic $65B Series H, $965B 가치 | 자본 사이클 정점 |
+| 6/8 | Apple WWDC26 — Siri AI·Foundation v2 | 디바이스 측 AI 본격화 |
+| 6/9 | Fable 5 + Mythos 5 출시 | Mythos 클래스 첫 공개 |
+| 6/11 | 시스템 프롬프트 GitHub 공개 | 안전 설계 노출 |
+| 6/12 | 미국 정부 수출 통제 셧다운 | 거버넌스 분기점 |
+| 6/15 | Anthropic·트럼프 행정부 회담 | 결렬, 협상 지속 |
+| 6/15 | Claude Agent SDK 별도 풀 시행 | 사용량 거버넌스 |
+
+[6/2 자본 사이클 글](https://daily1bite.com/ko/blog/ai/anthropic-965b-series-h-ai-consolidation-may-2026)이 자본 측면, [6/13 WWDC 글](https://daily1bite.com/ko/blog/ai/apple-wwdc-2026-siri-ai-intelligence-foundation-models-v2)이 디바이스 측면, 이번 글이 거버넌스 측면 — 세 글이 6월 AI 산업의 세 축을 짚는 셈입니다. [AI 카테고리](https://daily1bite.com/ko/category/ai)에서 누적 시리즈로 보면 좋습니다.
+
+## 정리 — 사건 한 페이지
+
+| 항목 | 내용 |
+|------|------|
+| 출시 | 2026-06-09 (Fable 5 + Mythos 5) |
+| 탈옥 | 출시 48시간 내, Pliny the Liberator |
+| 탈옥 기법 | 다중 에이전트 + 유니코드 + 긴 컨텍스트 |
+| 시스템 프롬프트 유출 | 120K자·1,585줄·27K+ 토큰 (CL4R1T4S 리포) |
+| 정부 셧다운 | 2026-06-12 미국 수출 통제 지시 |
+| 셧다운 범위 | 모든 외국 국적자 — 실질적으로 모든 사용자 |
+| Anthropic 대응 | 6/12 즉시 두 모델 전면 차단 컴플라이언스 |
+| 회담 | 6/15~16 백악관·상무부 — 결렬 |
+| 현재 상태 (6/17) | 협상 지속, 모델 여전히 오프라인 |
+| 대체 모델 | Opus 4.8 / GPT-5.5 / Gemini |
+
+---
+
+## 참고 자료
+
+- [Statement on the US government directive to suspend access to Fable 5 and Mythos 5](https://www.anthropic.com/news/fable-mythos-access) — Anthropic 공식 성명, 2026년 6월 12일
+- [Anthropic suspends new AI models after government directive](https://www.nbcnews.com/tech/tech-news/anthropic-suspends-new-ai-models-fable-mythos-government-directive-rcna349901) — NBC News, 2026년 6월 12일
+- [Anthropic's safety warnings may have just backfired](https://techcrunch.com/2026/06/12/anthropics-safety-warnings-may-have-just-backfired-the-government-has-pulled-the-plug-on-its-most-powerful-ai/) — TechCrunch, 2026년 6월 12일
+- [Anthropic disables access to Fable 5 and Mythos 5 — CNBC](https://www.cnbc.com/2026/06/12/anthropic-disables-access-to-fable-5-and-mythos-5-to-comply-with-government-directive.html) — CNBC, 2026년 6월 12일
+- [Anthropic to meet with Trump administration over Mythos dispute — CNBC](https://www.cnbc.com/2026/06/15/anthropic-mythos-trump-ai.html) — CNBC, 2026년 6월 15일
+- [Trump officials meet with Anthropic — Crypto Briefing](https://cryptobriefing.com/trump-officials-anthropic-truce-talks/) — Crypto Briefing, 2026년 6월 15일
+- [Anthropic's Claude Fable 5 Alleged Jailbreak — Cybersecurity News](https://cybersecuritynews.com/anthropics-claude-fable-5-jailbroken/amp/) — Cybersecurity News, 2026년 6월
+- [Claude Fable 5 Prompt Leak Is a User Manual — AlphaSignal](https://alphasignalai.substack.com/p/claude-fable-5-prompt-leak-is-a-user) — AlphaSignal, 2026년 6월
+- [Fable 5 shutdown exposes geopolitics of AI access — Business Standard](https://www.business-standard.com/technology/tech-news/fable-5-shutdown-exposes-geopolitics-of-ai-access-risks-of-dependence-126061500696_1.html) — Business Standard, 2026년 6월 15일
+- [When a Government Pulls an AI Model — Snyk](https://snyk.io/blog/fable-mythos-suspension-security-takeaways/) — Snyk, 2026년 6월
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Fable 5 완전 정리: Mythos 첫 공개·6/22까지 무료](https://daily1bite.com/ko/blog/ai-tools/claude-fable-5-mythos-class-public-release-2026) - 6월 10일 — 출시 직후 정리. 본 글이 그 후속/정정
+- [Claude Mythos Preview 완전 정리: Opus를 뛰어넘은 Anthropic 최강 모델](https://daily1bite.com/ko/blog/ai-tools/claude-mythos-preview-anthropic-glasswing-2026) - 4월 27일 — Mythos 시리즈 전신 + Project Glasswing
+- [국방부가 Anthropic만 빼고 AI 계약 맺은 이유: 자율 무기 거부의 대가](https://daily1bite.com/ko/blog/ai/anthropic-pentagon-excluded-safety-guardrails-2026) - 5월 2일 — Anthropic vs 미국 정부 첫 번째 마찰
+- [Anthropic $65B·Stainless·Emmi·Contextual: 48시간 AI 합병 폭주의 신호](https://daily1bite.com/ko/blog/ai/anthropic-965b-series-h-ai-consolidation-may-2026) - 6월 2일 — $965B 자본 사이클 정점, 셧다운으로 인한 손실 추산 기준점
