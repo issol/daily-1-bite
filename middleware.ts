@@ -15,7 +15,8 @@ export default function middleware(request: NextRequest) {
   if (matchesOldRoute) {
     const url = request.nextUrl.clone();
     url.pathname = `/ko${pathname}`;
-    return NextResponse.redirect(url, 308);
+    // 301: GSC가 가장 보편적으로 "영구 이동"으로 인식하는 상태 코드.
+    return NextResponse.redirect(url, 301);
   }
 
   return intlMiddleware(request);
