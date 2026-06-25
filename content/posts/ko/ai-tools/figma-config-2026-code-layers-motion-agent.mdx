@@ -1,0 +1,115 @@
+---
+title: "Figma Config 2026 완전 정리: 코드 레이어·네이티브 모션·AI 에이전트 [2026-06]"
+date: "2026-06-25"
+description: "Figma가 Config 2026에서 코드를 디자인 캔버스에 올렸습니다. 코드 레이어·네이티브 모션·셰이더·Figma 에이전트까지 6월 24일 발표를 정리했습니다."
+category: "ai-tools"
+tags: ["Figma Config", "Figma", "코드 레이어", "AI 에이전트", "디자인 시스템"]
+thumbnail: "https://cdn.sanity.io/images/599r6htc/regionalized/1f82f266ce4e3611ca58858db629942d5aeaa6c9-3840x2160.png"
+---
+
+"디자인은 디자이너가, 구현은 개발자가." 우리가 10년 넘게 당연하게 여겨온 이 분업이, 6월 24일 Figma Config 2026을 기점으로 흔들리기 시작했습니다.
+
+이상하게 들리겠지만, 이번 발표의 핵심은 "Figma가 디자인 툴을 넘어 코드 실행 환경이 됐다"는 겁니다. 디자인 캔버스 위에서 진짜 코드가 돌아가고, 레포지토리를 통째로 복제해 올리고, 모션은 외부 툴 없이 바로 만듭니다. 디자인과 개발 사이의 '핸드오프'라는 단계 자체를 없애려는 시도예요.
+
+![Figma Config 2026 키노트](https://cdn.sanity.io/images/599r6htc/regionalized/1f82f266ce4e3611ca58858db629942d5aeaa6c9-3840x2160.png)
+_출처: [Figma Blog](https://www.figma.com/blog/config-2026-recap/) | Config 2026은 'AI 시대의 디자인 시스템'을 전면에 내세웠다_
+
+## TL;DR
+
+- **Figma Config 2026** (6월 24일, Dylan Field 키노트)에서 코드 레이어·네이티브 모션·셰이더·생성형 플러그인·Figma 에이전트 강화·Weave 도구가 한꺼번에 공개됐습니다.
+- **코드 레이어**: 디자인 레이어를 클릭/프롬프트 한 번으로 실행 가능한 코드(React 기반)로 전환. 레포 복제, npm 패키지(모션·3D) 지원. **7월 롤아웃 시작**, 대기자 명단 `figma.com/config-betas`.
+- **Figma Motion**: 타임라인·키프레임을 Figma Design에 내장. Dev Mode에서 CSS·JSON·React로 읽힘, MP4·WebM·Animated SVG·MCP 포맷 익스포트.
+- **Figma 에이전트**: Skills(워크플로우 재사용), Connectors(Notion·Slack·GitHub·Excel·Granola 연결). FigJam·Slides로 확대 예정.
+- **Weave 도구**: 노드 기반 생성 워크플로우. **6월 24일** Professional+ Full seat부터 점진 롤아웃.
+- 한계: 상당수가 **대기자 명단/점진 롤아웃**, 코드 레이어는 7월부터. 지금 당장 전부 쓸 수 있는 건 아닙니다.
+
+## 핵심은 '핸드오프의 소멸'
+
+결론부터 말하면, 이번 Config의 모든 발표는 **"디자인 → 코드 변환 비용 0으로"** 라는 한 방향을 가리킵니다.
+
+CPO Yuhki Yamashita는 이 변화가 "디자이너뿐 아니라 엔지니어와 PM에게도 다른 행동을 만들어낼 것"이라고 했습니다. Dylan Field는 "어떤 툴도 아이디어가 갈 수 있는 곳을 제한해선 안 된다"며 키노트를 마무리했고요.
+
+사실 이건 어제 정리한 [Claude Design 6월 업데이트](https://daily1bite.com/ko/blog/ai-tools/claude-design-june-2026-update-design-sync-claude-code)와 정확히 같은 전장입니다. Anthropic은 `/design-sync`로 코드베이스를 디자인에 끌어왔고, Figma는 거꾸로 코드를 디자인 캔버스에 올렸어요. 양쪽 모두 "디자인과 코드는 분리된 단계"라는 통념을 깨려는 거죠. 같은 주에, 정반대 방향에서요.
+
+![모션·3D 디자인](https://images.unsplash.com/photo-1627163439134-7a8c47e08208?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxtb3Rpb24lMjBhbmltYXRpb24lMjBkZXNpZ258ZW58MHwwfHx8MTc4MjM0NzY2NXww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Shubham Dhage](https://unsplash.com/@theshubhamdhage?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 모션·3D를 외부 툴 없이 캔버스 안에서_
+
+## 발표 핵심 기능
+
+### 1. 코드 레이어 (Code Layers)
+
+가장 큰 발표입니다. 디자인 레이어를 클릭 한 번 또는 프롬프트로 **실행 가능한 코드(custom React)** 로 바꿉니다. 레포지토리를 캔버스에 통째로 복제하고, 코드에서 플로우를 뽑아 디자인 레이어로 추출해 테스트할 수 있어요. npm 패키지를 지원해서 모션 라이브러리, 3D 프레임워크까지 캔버스를 벗어나지 않고 붙입니다. **7월부터 롤아웃**, 대기자 명단은 `figma.com/config-betas`입니다.
+
+### 2. Figma Motion
+
+타임라인·키프레임·프리셋이 Figma Design에 기본 탑재됐습니다. 예전엔 모션을 외부 툴로 만들고 코드로 변환해야 했는데, 이제 파일 안에서 바로 만들고 미리봅니다. 개발자 입장에서 중요한 건 **Dev Mode**예요. 타이밍·이징 곡선·키프레임이 CSS·JSON·React로 그대로 읽힙니다.
+
+```css
+/* Figma Motion의 Dev Mode가 내보내는 형태(개념 예시) */
+@keyframes slide-in {
+  0%   { transform: translateY(16px); opacity: 0; }
+  100% { transform: translateY(0);     opacity: 1; }
+}
+.card {
+  animation: slide-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+```
+
+익스포트는 MP4·WebM·Animated SVG·GIF, 그리고 **MCP 호환 포맷**까지 됩니다. AI 에이전트 파이프라인에 모션을 바로 물릴 수 있다는 뜻이라 개인적으로 이 부분이 제일 흥미로웠습니다.
+
+### 3. 셰이더 + 생성형 플러그인
+
+설명이나 이미지 레퍼런스를 주면 에이전트가 **셰이더 필/이펙트**를 생성하고, 캔버스에서 파라미터로 조절합니다. 또 플러그인 API를 몰라도 **자연어로 커스텀 플러그인**을 만들 수 있게 됐어요. 레이아웃 생성기, 벡터 패스 트레이서 같은 걸 "이런 거 만들어줘"로 뽑는 식입니다.
+
+### 4. Figma 에이전트 + Weave
+
+에이전트에 **Skills**(워크플로우를 재사용 가능한 지시로 패키징)와 **Connectors**(Notion·Slack·GitHub·Excel·Granola 등 외부 툴 연결)가 추가됐습니다. 여기에 노드 기반 생성 워크플로우 캔버스 **Weave**가 6월 24일부터 Professional 이상 Full seat에 점진 롤아웃됩니다.
+
+## 한눈에 보는 롤아웃 표
+
+| 기능 | 핵심 | 사용 가능 시점 |
+|------|------|--------------|
+| 코드 레이어 | 디자인 → React 코드 전환, 레포 복제 | 7월 롤아웃 (대기자) |
+| Figma Motion | 타임라인·키프레임 내장, Dev Mode 코드화 | Config 발표분 점진 |
+| 셰이더/이펙트 | 에이전트 생성, 파라미터 조절 | 점진 (인터랙티브는 추후) |
+| 생성형 플러그인 | 자연어로 커스텀 툴 생성 | 점진 |
+| Figma 에이전트 | Skills + 외부 Connectors | FigJam·Slides 확대 예정 |
+| Weave 도구 | 노드 기반 생성 워크플로우 | 6/24 Professional+ Full seat |
+
+## 솔직한 단점·주의사항
+
+- **"발표 = 지금 사용 가능"이 아닙니다.** 코드 레이어는 7월부터고, 상당수가 대기자 명단·점진 롤아웃입니다. 키노트 데모만 보고 "오늘부터 다 된다"고 기대하면 실망할 수 있어요.
+- **Full seat·상위 플랜 위주**입니다. Weave는 Professional 이상 Full seat부터예요. 무료/뷰어 시트는 대부분 해당 없음.
+- **코드 레이어가 React 기반**이라, Vue·Svelte 등 다른 스택 팀은 당장의 효용이 제한적입니다.
+- 그리고 솔직히, "디자이너가 코드를 만진다"는 방향이 모두에게 환영받는 건 아닙니다. 핸드오프가 사라지면 책임 경계도 흐려지거든요. 이건 툴이 아니라 팀 프로세스의 문제라 한동안 시끄러울 겁니다.
+
+![코드 에디터 화면](https://images.unsplash.com/photo-1516934406976-ac3b5ceca2a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxjb2RlJTIwZWRpdG9yJTIwc2NyZWVuJTIwY29sb3JmdWx8ZW58MHwwfHx8MTc4MjM0NzY2NXww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Chris Ried](https://unsplash.com/@cdr6934?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 코드 레이어는 custom React 기반으로 동작한다_
+
+## 누구에게 의미 있나
+
+- **React 기반 제품 팀**: 코드 레이어·Dev Mode 모션 코드화로 핸드오프 비용을 가장 크게 줄입니다.
+- **디자인 시스템이 정착된 조직**: 에이전트 Skills·Connectors로 반복 작업 자동화 효과가 큽니다.
+- **보류**: 무료 플랜, React 외 스택, 그리고 당장 프로덕션에 베타 기능을 올리기 부담스러운 팀. 7월 정식 롤아웃과 안정화를 보고 들어가도 늦지 않습니다.
+
+다른 [AI Tools & Review](https://daily1bite.com/ko/category/ai-tools) 글에서 디자인-코드 워크플로우 도구들을 더 비교해보실 수 있고, 핸드오프를 받는 코드 쪽 변화는 [Claude Code 6월 업데이트](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-june-2026-update-fallback-model-plugins)에서 정리해 뒀습니다.
+
+## 마무리
+
+Figma Config 2026의 진짜 헤드라인은 개별 기능이 아니라 방향이라고 봅니다. **디자인과 코드가 같은 캔버스에서 만난다.** 어제의 Claude Design이 코드를 디자인으로 끌어왔다면, 오늘의 Figma는 디자인을 코드로 밀어냈어요. 둘 다 같은 곳을 향하고 있고요.
+
+물론 대부분 아직 대기자 명단이라, 저는 코드 레이어 7월 롤아웃부터 실제로 React 핸드오프가 얼마나 매끄러운지 직접 확인해볼 생각입니다. 여러분은 디자이너가 코드를, 개발자가 디자인을 직접 만지는 이 흐름, 반갑게 보시나요 아니면 경계가 흐려져 불편하신가요?
+
+---
+
+## 참고 자료
+
+- [Config 2026: New Materials, New Tools and a More Expressive Canvas](https://www.figma.com/blog/config-2026-recap/) — Figma Blog, 2026년 6월 24일
+- [Figma adds code layers to the canvas and lets users build custom AI plugins at Config 2026](https://thenextweb.com/news/figma-config-code-layers-ai-skills-plugins-animations) — The Next Web, 2026년 6월 24일
+- [Figma Config 2026 Kicks Off Today: Virtual Attendance Still Free as In-Person Sells Out](https://www.techtimes.com/articles/318823/20260622/figma-config-2026-kicks-off-today-virtual-attendance-still-free-person-sells-out.htm) — TechTimes, 2026년 6월 22일
+- [Figma Launches Code Layers & Motion at Config 2026](https://www.cmswire.com/digital-experience/figma-launches-code-layers-motion-at-config-2026/) — CMSWire, 2026년 6월
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Design 6월 업데이트 완전 정리: /design-sync로 Claude Code 핸드오프](https://daily1bite.com/ko/blog/ai-tools/claude-design-june-2026-update-design-sync-claude-code) - 정반대 방향에서 같은 전장을 노리는 Anthropic의 디자인 툴
+- [Claude Code 6월 업데이트 완전정리: fallbackModel·플러그인 자동로드·Devin Desktop](https://daily1bite.com/ko/blog/ai-tutorial/claude-code-june-2026-update-fallback-model-plugins) - 디자인 핸드오프를 받는 코드 에이전트 쪽 변화
