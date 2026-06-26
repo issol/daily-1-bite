@@ -1,0 +1,88 @@
+---
+title: "Noam Shazeer, Google 떠나 OpenAI로: Transformer 창시자 이적이 말하는 것 [2026-06]"
+date: "2026-06-26"
+description: "Transformer 논문 공저자 Noam Shazeer가 6월 18일 Google을 떠나 OpenAI로 향합니다. 이적 배경과 AI 인재 전쟁의 의미를 정리했습니다."
+category: "ai"
+tags: ["Noam Shazeer", "OpenAI", "Google DeepMind", "Transformer", "AI 인재"]
+thumbnail: "https://images.unsplash.com/photo-1617791160536-598cf32026fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwYnJhaW58ZW58MHwwfHx8MTc4MjQzODIwNHww&ixlib=rb-4.1.0&q=80&w=1080"
+---
+
+AI 업계에서 한 사람의 이직이 회사 인수만큼 화제가 된 적이 있었나요? 이번 주가 딱 그랬습니다.
+
+2026년 6월 18일, Noam Shazeer가 X(트위터)에 Google을 떠나 OpenAI로 간다고 올렸습니다. 평범한 이직 같지만 전혀 안 평범합니다. 그는 2017년 "Attention Is All You Need" 논문의 공저자, 그러니까 지금 모든 LLM의 뼈대인 **Transformer 구조를 만든 사람 중 하나**거든요. 더 웃긴 건, Google이 불과 2년 전 그를 다시 데려오려고 거액을 썼다는 점입니다.
+
+![뇌를 형상화한 AI 이미지](https://images.unsplash.com/photo-1617791160536-598cf32026fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwYnJhaW58ZW58MHwwfHx8MTc4MjQzODIwNHww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Milad Fakurian](https://unsplash.com/@fakurian?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | Transformer를 만든 사람이 진영을 바꿨다_
+
+## TL;DR
+
+- **2026년 6월 18일**, Noam Shazeer가 Google을 떠나 **OpenAI 'Lead for Architecture Research'**(아키텍처 연구 총괄)로 합류한다고 X에 발표.
+- 그는 **"Attention Is All You Need"(2017)** 공저자이자 Google **Gemini의 공동 리더**, 엔지니어링 부사장이었습니다.
+- Google은 2024년 8월 **Character.AI 딜(약 27억 달러 규모로 알려짐)** 로 그를 DeepMind에 복귀시켰는데, **2년도 안 돼 다시 떠나는** 셈입니다.
+- 임무는 **차세대 아키텍처 탐색** — GPT 라인의 점진 개선이 아니라 "그다음"을 설계하는 자리.
+- 같은 흐름: 한 달 전(5/19) **Andrej Karpathy가 Anthropic**으로 갔습니다. Google·OpenAI·Anthropic의 **인재 전쟁**이 본격화된 신호.
+
+## 무슨 일이 일어난 건가
+
+핵심부터 말하면, Google이 자사 AI의 상징적 두뇌 한 명을 경쟁사에 내준 사건입니다.
+
+Shazeer는 단순한 연구자가 아닙니다. Gemini 모델을 공동으로 이끌던 부사장급이었고, 무엇보다 Transformer라는 현대 LLM의 근간을 만든 인물이에요. 그런 사람이 OpenAI에서 맡는 자리가 'Lead for Architecture Research'라는 게 의미심장합니다. CNBC와 TechTimes 보도를 종합하면, 그의 역할은 mixture-of-experts·어텐션 메커니즘 전문성을 살려 **현재 GPT 세대 이후의 근본 구조를 설계**하는 것입니다. OpenAI가 점진적 버전업이 아니라 아키텍처 자체의 다음 도약을 노린다는 뜻이죠.
+
+아이러니가 진합니다. Google은 2021년 그가 Character.AI를 차리러 떠났을 때, 2024년 8월 Character.AI와의 파트너십(여러 매체가 약 27억 달러 규모로 보도)을 통해 그와 Daniel De Freitas를 DeepMind로 다시 데려왔습니다. 그렇게 큰돈을 들여 복귀시킨 인물이 2년도 안 돼 라이벌로 넘어간 겁니다. 솔직히 이건 돈으로 인재를 묶어두는 시대가 끝나가고 있다는 신호처럼 보입니다.
+
+![데이터가 흐르는 추상 이미지](https://images.unsplash.com/photo-1674027444485-cec3da58eef4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwYnJhaW58ZW58MHwwfHx8MTc4MjQzODIwNHww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Growtika](https://unsplash.com/@growtika?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 핵심 연구자 한 명이 모델의 방향을 바꾼다_
+
+## 혼자만의 이적이 아니다 — AI 인재 전쟁
+
+이번 건이 더 무겁게 읽히는 이유는 패턴이기 때문입니다.
+
+불과 한 달 전인 5월 19일, OpenAI 공동창업자이자 전 Tesla AI 리드였던 **Andrej Karpathy가 Anthropic**의 프리트레이닝 팀에 합류했습니다. Karpathy는 거기서 "Claude로 프리트레이닝 연구를 가속하는" 새 팀을 꾸린다고 했죠. 즉 며칠~몇 주 단위로 빅3(Google·OpenAI·Anthropic) 사이에서 최상위 두뇌들이 자리를 옮기고 있는 겁니다.
+
+![빅테크 오피스](https://images.unsplash.com/photo-1718220216044-006f43e3a9b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHx0ZWNoJTIwb2ZmaWNlJTIwYnVpbGRpbmd8ZW58MHwwfHx8MTc4MjQzODIwNXww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Bernd Dittrich](https://unsplash.com/@hdbernd?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 빅3가 소수의 두뇌를 두고 벌이는 쟁탈전_
+
+이 구도를 보면, AI 경쟁의 병목이 더 이상 'GPU 몇 장'이 아니라 **'누가 다음 아키텍처를 그릴 머리를 갖느냐'** 로 옮겨가고 있음을 알 수 있습니다. 자본·컴퓨팅이 어느 정도 평준화되니, 차별화의 핵심이 소수의 천재 연구자에게 집중되는 거죠. 이런 자본·인재의 쏠림은 제가 앞서 정리한 [Anthropic $65B·48시간 AI 합병 폭주](https://daily1bite.com/ko/blog/ai/anthropic-965b-series-h-ai-consolidation-may-2026) 흐름과 같은 맥락에 있습니다.
+
+| 이동 | 인물 | From → To | 날짜 | 역할 |
+|------|------|-----------|------|------|
+| 1 | Noam Shazeer | Google DeepMind → OpenAI | 2026-06-18 | 아키텍처 연구 총괄 |
+| 2 | Andrej Karpathy | (전 OpenAI/Tesla) → Anthropic | 2026-05-19 | 프리트레이닝 팀 |
+
+## 왜 '아키텍처 연구 총괄'이 중요한가
+
+결론부터 말하면, 이 직함은 OpenAI의 다음 베팅이 어디인지를 드러냅니다.
+
+지금까지의 모델 경쟁은 대체로 '같은 Transformer 위에서 더 크게, 더 잘 튜닝하기'였습니다. 그런데 Transformer를 만든 당사자를 데려와 아키텍처 연구를 맡긴다는 건, OpenAI가 **Transformer 그다음 구조**를 진지하게 보고 있다는 뜻으로 읽힙니다. 어텐션의 한계(긴 컨텍스트 비용, 추론 효율)를 근본에서 다시 설계하려는 시도일 수 있어요.
+
+물론 여기서 선을 그어야 합니다. **이건 어디까지나 방향성 신호지, 당장 새 모델이 나온다는 약속이 아닙니다.** 연구 총괄 한 명이 합류했다고 다음 분기에 마법 같은 모델이 튀어나오진 않아요. 아키텍처 혁신은 길게 봐야 하는 영역입니다.
+
+## 솔직한 한계·주의사항
+
+- **계약 조건·연봉은 비공개**입니다. "$2.7B"는 2024년 Character.AI 복귀 딜 규모로 보도된 수치이지, 이번 OpenAI 이적의 금액이 아닙니다. 둘을 섞으면 안 됩니다.
+- **즉각적 제품 영향은 미지수**입니다. 아키텍처 연구는 성과까지 시간이 걸립니다.
+- **Google의 타격 정도도 아직 추정 영역**입니다. Gemini 팀은 두텁고, 한 명의 이탈이 곧 경쟁력 붕괴는 아닙니다. 다만 상징성은 분명히 큽니다.
+
+## 한국 개발자 관점에서
+
+여담이지만, 이 뉴스를 보면서 저는 '연봉 협상력'을 떠올렸습니다. 글로벌 빅테크가 소수 연구자를 두고 수십억 달러를 던지는 시대라는 건, AI 핵심 역량을 가진 개인의 가치가 그만큼 폭등했다는 뜻이거든요. 우리 같은 실무 개발자에게 직접 27억 달러가 떨어질 리는 없지만(아쉽게도요), 이 흐름은 'AI를 깊게 이해하는 사람'에게 시장이 어떻게 베팅하는지를 보여줍니다. 이 큰 그림이 채용·커리어에 어떻게 번지는지는 [AI가 주니어 개발자를 가장 먼저 친 메커니즘](https://daily1bite.com/ko/blog/dev-life/junior-developer-employment-20-percent-drop-meta-8000-2026)에서 정리해 뒀고, 다른 [AI News](https://daily1bite.com/ko/category/ai) 글도 함께 보시면 판이 어떻게 짜이는지 감이 잡힐 거예요.
+
+## 마무리
+
+Shazeer의 이적은 단순한 '스타 개발자 이직'이 아니라, **AI 경쟁의 무게중심이 자본·컴퓨팅에서 소수의 두뇌로 이동했다는 증거**입니다. Google이 큰돈을 들여 데려온 사람을 2년 만에 OpenAI에 내줬고, 비슷한 시기 Karpathy는 Anthropic으로 갔어요. 빅3가 사람을 두고 벌이는 이 전쟁이, 다음 모델 세대의 형태를 결정할 겁니다.
+
+저는 일단 OpenAI에서 'Transformer 다음'에 대한 힌트가 언제 나올지 지켜볼 생각입니다. 여러분은 이 이적, OpenAI에 결정적 한 수가 될 거라 보시나요?
+
+---
+
+## 참고 자료
+
+- [Google Gemini co-lead Noam Shazeer leaves for OpenAI](https://www.cnbc.com/2026/06/18/google-gemini-co-lead-noam-shazeer-leaves-for-openai.html) — CNBC, 2026년 6월 18일
+- [Transformer Architect Behind Gemini Jumps to OpenAI After Google Spent $2.7B](https://www.techtimes.com/articles/318613/20260618/transformer-architect-behind-gemini-jumps-openai-after-google-spent-27b.htm) — TechTimes, 2026년 6월 18일
+- [OpenAI co-founder Andrej Karpathy joins Anthropic's pre-training team](https://techcrunch.com/2026/05/19/openai-co-founder-andrej-karpathy-joins-anthropics-pre-training-team/) — TechCrunch, 2026년 5월 19일
+- [Google Loses Two Top AI Researchers To OpenAI & Anthropic](https://www.searchenginejournal.com/google-loses-two-top-ai-researchers-to-openai-anthropic/580201/) — Search Engine Journal, 2026년 6월
+
+**함께 읽으면 좋은 글:**
+
+- [Anthropic $65B·Stainless·Emmi·Contextual: 48시간 AI 합병 폭주의 신호](https://daily1bite.com/ko/blog/ai/anthropic-965b-series-h-ai-consolidation-may-2026) - 자본과 인재가 빅3로 쏠리는 큰 그림
+- [SpaceX, Cursor를 600억 달러에 인수: AI 코딩 도구 판도가 바뀐다](https://daily1bite.com/ko/blog/ai/spacex-cursor-60-billion-acquisition-2026) - 같은 시기 AI 산업 지각변동
