@@ -1,0 +1,146 @@
+---
+title: "오픈웨이트 LLM 셀프호스팅 실전 가이드: Ollama + RTX 3090으로 로컬 코딩 [2026]"
+date: "2026-07-01"
+description: "회사 데이터를 클라우드에 못 올리나요? Ollama와 중고 RTX 3090으로 GLM-5.2·Qwen을 로컬 구동하는 셀프호스팅 셋업을 단계별로 정리했습니다."
+category: "ai-tutorial"
+tags: ["셀프호스팅 LLM", "Ollama", "오픈웨이트", "RTX 3090", "로컬 LLM"]
+thumbnail: "https://images.unsplash.com/photo-1560732488-6b0df240254a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxncHUlMjBzZXJ2ZXIlMjBob21lJTIwY29tcHV0ZXJ8ZW58MHwwfHx8MTc4Mjg2OTM2N3ww&ixlib=rb-4.1.0&q=80&w=1080"
+---
+
+작년에 회사 프로젝트에서 좀 답답한 일이 있었습니다. 고객 데이터가 섞인 코드를 AI한테 리뷰시키고 싶은데, 보안 정책상 외부 API로 코드를 내보낼 수가 없더라고요. 결국 그 부분만 손으로 했습니다. 그때 처음으로 "로컬에서 도는 모델이 있으면 좋겠다"고 진지하게 생각했어요.
+
+2026년 현재, 이 고민의 답이 꽤 현실적이 됐습니다. GLM-5.2 같은 오픈웨이트 모델이 일부 프로프라이어터리 모델을 앞서고, Ollama 덕분에 셋업도 명령어 몇 줄로 끝나거든요. 이번 글에서는 중고 RTX 3090 한 장으로 코딩용 LLM을 로컬에 올리는 과정을 실전 기준으로 정리했습니다.
+
+![GPU 메인보드](https://images.unsplash.com/photo-1560732488-6b0df240254a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxncHUlMjBzZXJ2ZXIlMjBob21lJTIwY29tcHV0ZXJ8ZW58MHwwfHx8MTc4Mjg2OTM2N3ww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Florian Krumm](https://unsplash.com/@floriankrumm?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 중고 RTX 3090 한 장이면 32B급 코딩 모델을 로컬에서 돌린다_
+
+## TL;DR
+
+- **왜 셀프호스팅?** 데이터가 외부로 안 나감(프라이버시), 토큰 요금 0, 오프라인 동작. 조직의 44%가 프라이버시를 LLM 도입 최대 걸림돌로 꼽습니다.
+- **최소 사양**: 중고 **RTX 3090(24GB VRAM, $700~900)** + 64GB RAM + 2TB NVMe + Linux. 32B급 모델까지 소화.
+- **VRAM 공식**: Q4_K_M 기준 **파라미터 10억당 약 0.6GB** + 컨텍스트 여유분.
+- **도구**: 입문은 **Ollama**(명령 두 줄), 동시성·프로덕션은 **vLLM**.
+- **모델 추천(2026)**: 로컬은 **Qwen 3.6 27B**·Devstral Small 2로 시작, 최상위 에이전트 성능은 **GLM-5.2**(MIT 라이선스).
+- **주의**: 포트 11434는 인증이 없습니다. **절대 인터넷에 그대로 노출 금지.**
+
+## 사전 준비: 어떤 GPU가 필요한가
+
+결론부터 말하면, 쓰려는 모델 크기가 VRAM을 결정합니다. Q4_K_M 양자화 기준 표입니다.
+
+| 모델 크기 | VRAM(2K 컨텍스트) | 대표 GPU |
+|----------|-------------------|----------|
+| 7~8B | 5~6 GB | RTX 4060 (8GB) |
+| 13~14B | 9~10 GB | RTX 3060 (12GB) |
+| **32B** | **22~24 GB** | **RTX 3090 / 4090** |
+| 70B | 38~48 GB | RTX 6000 Ada (48GB) |
+
+가성비 스윗스팟은 **중고 RTX 3090(24GB)** 입니다. 32B 모델까지 무난하고, 64GB 시스템 램·2TB NVMe·1000W 파워와 함께 쓰면 됩니다. 풀시스템 소비전력은 약 550W, 전기료는 $0.12/kWh 기준 월 $48 정도예요. 전력이 부담이면 Mac Studio M4 Max(128GB 통합메모리)가 40~60W로 월 $3 수준이라 대안이 됩니다.
+
+> 참고: 32GB짜리 RTX 5090으로도 70B는 안 됩니다. 32B급이 상한이에요. 70B를 제대로 돌리려면 48GB급(RTX 6000 Ada)이 필요합니다.
+
+## 1단계: Ollama 설치·실행
+
+가장 빠른 길은 Ollama입니다. 리눅스 기준 설치와 실행이 이게 전부예요.
+
+```bash
+# 설치 (Linux)
+curl -fsSL https://ollama.com/install.sh | sh
+
+# 모델 내려받고 바로 실행 (Qwen 3.6 27B 예시)
+ollama run qwen3.6:27b
+
+# 백그라운드 서버로 띄우기
+ollama serve
+```
+
+Ollama가 모델 다운로드·양자화·GPU 메모리 관리를 알아서 해주고, **OpenAI 호환 REST API**를 `http://localhost:11434/v1`로 열어줍니다.
+
+## 2단계: 에이전트·IDE용 설정 (이거 안 하면 헛수고)
+
+기본값 그대로 쓰면 컨텍스트가 2048토큰이라 코딩 에이전트엔 턱없이 부족합니다. 환경변수 두 개는 꼭 잡으세요.
+
+```bash
+# 컨텍스트 길이 확대 (에이전트용 필수)
+export OLLAMA_CONTEXT_LENGTH=65536
+# 외부 IDE(Cursor 등)에서 접근 허용
+export OLLAMA_ORIGINS="*"
+```
+
+그리고 JSON 툴 호출을 지원하는 모델을 골라야 에이전트가 제대로 돕니다(Qwen3, Llama 3.3 70B, Mistral Nemo 등).
+
+## 3단계: 기존 코드 그대로 붙이기
+
+OpenAI 호환이라, 쓰던 OpenAI 클라이언트에서 **base_url만 바꾸면** 끝입니다. 코드 나머지는 손 안 대도 돼요.
+
+```python
+from openai import OpenAI
+
+# 클라우드 대신 로컬 Ollama를 가리키기만 하면 된다
+client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
+
+resp = client.chat.completions.create(
+    model="qwen3.6:27b",
+    messages=[{"role": "user", "content": "이 함수 리팩터링해줘: ..."}],
+)
+print(resp.choices[0].message.content)
+```
+
+`/v1/chat/completions`, `/v1/embeddings`, `/v1/models` 등 표준 엔드포인트를 그대로 제공합니다.
+
+![데스크톱 컴퓨터](https://images.unsplash.com/photo-1591238372338-22d30c883a86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxncHUlMjBzZXJ2ZXIlMjBob21lJTIwY29tcHV0ZXJ8ZW58MHwwfHx8MTc4Mjg2OTM2N3ww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Nathan Anderson](https://unsplash.com/@nathananderson?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | base_url만 바꾸면 기존 코드가 로컬 모델로 붙는다_
+
+## 4단계: 원격 접근은 안전하게
+
+집 서버를 밖에서 쓰고 싶을 때가 문제입니다. **포트 11434는 인증이 전혀 없습니다.** 그대로 열면 남이 내 GPU를 공짜로 씁니다.
+
+- **권장**: Tailscale(개인 플랜 무료)로 테일넷 안에서만 접근. Tailscale **Serve(비공개)** 사용, Funnel(공개)은 금지.
+- 굳이 공개해야 하면 Nginx + HTTP Basic Auth 같은 **인증 리버스 프록시**를 앞에 두세요.
+
+## Ollama vs vLLM: 언제 뭘 쓰나
+
+- **Ollama**: 한 번에 한 모델, 즉시 셋업, 개인·개발용에 최적.
+- **vLLM**: PagedAttention 기반 동시성, continuous batching, 멀티 GPU 텐서 병렬(`--tensor-parallel-size N`). 여러 사용자·프로덕션 서빙용.
+
+혼자 코딩 보조로 쓸 거면 Ollama, 팀에 API로 뿌릴 거면 vLLM이라고 생각하면 편합니다. 모델 자체가 궁금하면 [DeepSeek V4 완전 정리](https://daily1bite.com/ko/blog/ai-tools/deepseek-v4-pro-flash-1m-context-open-weights-2026)와 [Kimi K2.6 vs Qwen 3.6 Max-Preview](https://daily1bite.com/ko/blog/ai-tools/kimi-k26-vs-qwen-36-max-preview-open-vs-closed-2026)에서 오픈웨이트 진영을 정리해 뒀습니다.
+
+## 자주 겪는 문제
+
+- **컨텍스트가 짧게 잘린다** → `OLLAMA_CONTEXT_LENGTH` 안 잡은 것. 기본 2048이 범인.
+- **IDE에서 접속 안 됨** → `OLLAMA_ORIGINS="*"` 누락, 또는 방화벽/바인딩 문제.
+- **VRAM 부족(OOM)** → 모델 크기가 GPU 초과. 더 낮은 양자화(Q4)나 작은 모델로 내리기.
+- **툴 호출이 안 먹는다** → JSON 툴콜 지원 모델인지 확인(Qwen3 등).
+
+![서버 랙](https://images.unsplash.com/photo-1695668548342-c0c1ad479aee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwyfHxzZXJ2ZXIlMjByYWNrJTIwaGFyZHdhcmV8ZW58MHwwfHx8MTc4Mjg2OTM2OHww&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Kevin Ache](https://unsplash.com/@kevinache?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 팀 서빙은 vLLM으로 확장한다_
+
+## 솔직한 한계
+
+셀프호스팅이 만능은 아닙니다. 정직하게 짚을게요.
+
+- **최상위 성능은 아직 프런티어를 못 따라갑니다.** GLM-5.2가 인상적이지만, 초고난도 에이전트 작업에선 Claude·GPT 최상위 모델이 여전히 앞섭니다.
+- **초기 비용·유지보수 부담.** GPU $700~900 + 전기료 + 드라이버·모델 관리 시간이 듭니다. 가끔만 쓸 거면 클라우드 API가 더 쌉니다.
+- **소음·발열.** 24시간 켜두면 방이 은근히 덥고 시끄럽습니다. 이건 겪어봐야 압니다.
+- **32B가 사실상 상한**(3090 기준). 70B급을 원하면 하드웨어 투자가 확 커집니다.
+
+즉 **"민감 데이터 + 꾸준한 사용량"** 조합일 때 셀프호스팅이 빛납니다. 반대면 클라우드가 편해요.
+
+## 마무리
+
+핵심은 이겁니다. 2026년의 오픈웨이트 모델과 Ollama 조합이면, **데이터를 한 발짝도 내보내지 않고** 코딩 보조 LLM을 로컬에서 돌릴 수 있습니다. 작년의 저처럼 "보안 때문에 AI를 못 쓰는" 상황이라면 충분히 시도해볼 만해요.
+
+저는 중고 3090으로 Qwen 3.6 27B부터 붙여봤는데, 일상 리팩터링·코드 설명 수준은 체감상 충분했습니다. 다른 [AI Tutorial](https://daily1bite.com/ko/category/ai-tutorial) 글도 함께 보시면 워크플로우 구성에 도움이 될 거예요. 여러분은 클라우드 API파인가요, 아니면 로컬 셀프호스팅파인가요?
+
+---
+
+## 참고 자료
+
+- [Build a Home AI Server in 2026: Self-Hosted LLM Guide](https://www.digitalapplied.com/blog/home-ai-server-build-self-hosted-llm-2026-guide) — Digital Applied, 2026년
+- [Best Open Source Self-Hosted LLMs for Coding in 2026](https://pinggy.io/blog/best_open_source_self_hosted_llms_for_coding/) — Pinggy, 2026년
+- [Best Open-Source LLM Models in 2026](https://huggingface.co/blog/daya-shankar/open-source-llms) — Hugging Face, 2026년
+- [Best Open Source LLM 2026 Ranking + Ollama Guide](https://whatllm.org/best-open-source-llm) — WhatLLM, 2026년
+
+**함께 읽으면 좋은 글:**
+
+- [DeepSeek V4 완전 정리: V4-Pro·V4-Flash — 1M 컨텍스트·오픈웨이트](https://daily1bite.com/ko/blog/ai-tools/deepseek-v4-pro-flash-1m-context-open-weights-2026) - 셀프호스팅으로 올릴 만한 오픈웨이트 모델
+- [Kimi K2.6 vs Qwen 3.6 Max-Preview: 1T 모델 두 개, 정반대 전략](https://daily1bite.com/ko/blog/ai-tools/kimi-k26-vs-qwen-36-max-preview-open-vs-closed-2026) - 로컬 후보 Qwen이 어떤 모델인지
