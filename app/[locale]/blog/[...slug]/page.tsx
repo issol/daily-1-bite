@@ -20,7 +20,11 @@ interface Props {
   params: Promise<{locale: string; slug: string[]}>;
 }
 
-export const revalidate = 3600;
+// Individual posts rarely change after publishing, and every deploy (daily, on
+// new-post commits) wipes the ISR cache anyway — so staleness is already capped
+// at ~1 day. Match revalidate to that cadence instead of 1h: Next emits
+// `s-maxage=86400`, cutting background ISR re-renders on the long tail ~24x.
+export const revalidate = 86400;
 
 // Build-cost optimization: only pre-render the most recent posts at build time.
 // Older posts are generated on-demand on first request and then cached via ISR
