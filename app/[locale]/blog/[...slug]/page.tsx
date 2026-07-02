@@ -22,12 +22,25 @@ interface Props {
 
 export const revalidate = 3600;
 
+// Build-cost optimization: only pre-render the most recent posts at build time.
+// Older posts are generated on-demand on first request and then cached via ISR
+// (dynamicParams defaults to true). This keeps every deploy from re-rendering the
+// entire back-catalog, which was the main driver of build minutes.
+// Older posts still appear in the sitemap and remain fully indexable.
+// Set to 0 (or a very large number) to pre-render everything again.
+const PRERENDER_RECENT_COUNT = 40;
+
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   // KO only. EN blog posts are redirected to KO at request time (see PostPage below)
   // so we don't pre-render EN routes — keeps Google's crawl budget on the canonical KO URLs.
+  // getAllSlugs('ko') is date-descending, so the first N entries are the newest posts.
   const params: {locale: string; slug: string[]}[] = [];
   const slugs = getAllSlugs('ko');
-  for (const slug of slugs) {
+  const recentSlugs =
+    PRERENDER_RECENT_COUNT > 0 ? slugs.slice(0, PRERENDER_RECENT_COUNT) : slugs;
+  for (const slug of recentSlugs) {
     params.push({locale: 'ko', slug: slug.split('/')});
   }
   return params;
