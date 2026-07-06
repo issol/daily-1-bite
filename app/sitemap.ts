@@ -82,7 +82,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     entries.push({
       url: `${BASE_URL}/ko/blog/${post.slug}`,
-      lastModified: new Date(post.date),
+      lastModified: new Date(post.updated || post.date),
       changeFrequency: 'monthly',
       priority: 0.7,
       alternates: {languages},

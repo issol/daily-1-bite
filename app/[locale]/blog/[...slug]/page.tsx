@@ -107,7 +107,7 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
       title: post.title,
       description: post.description,
       publishedTime: post.date,
-      modifiedTime: post.date,
+      modifiedTime: post.updated || post.date,
       authors: [`${BASE_URL}/about`],
       section: CATEGORIES[post.category] || post.category,
       tags: post.tags,
@@ -163,6 +163,7 @@ export default async function PostPage({params}: Props) {
         title={post.title}
         description={post.description}
         date={post.date}
+        dateModified={post.updated || post.date}
         slug={fullSlug}
         category={categoryLabel}
         tags={post.tags}

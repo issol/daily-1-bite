@@ -22,6 +22,9 @@ export interface PostMeta {
   // frontmatter `noindex: true` → 색인 제외(로봇 noindex + 사이트맵 제외).
   // 시효 지난 속보 등 저가치 글을 색인 대상에서 빼 사이트 평균 품질을 올린다.
   noindex?: boolean;
+  // frontmatter `updated: "YYYY-MM-DD"` → 심화 재작성 시 갱신일.
+  // dateModified/사이트맵 lastModified 신선도 신호. 없으면 date로 폴백.
+  updated?: string;
 }
 
 export interface Post extends PostMeta {
@@ -75,6 +78,7 @@ export function getAllPosts(locale: Locale = 'ko'): PostMeta[] {
       readingTime: formatReadingTime(Math.ceil(stats.minutes), locale),
       thumbnail: data.thumbnail || null,
       noindex: data.noindex === true,
+      updated: data.updated || null,
     } as PostMeta;
   });
 
@@ -102,6 +106,7 @@ export function getPostBySlug(slug: string, locale: Locale = 'ko'): Post | null 
         readingTime: formatReadingTime(Math.ceil(stats.minutes), locale),
         thumbnail: data.thumbnail || null,
         noindex: data.noindex === true,
+        updated: data.updated || null,
         content,
       };
     }

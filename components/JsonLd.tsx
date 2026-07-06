@@ -72,6 +72,7 @@ interface ArticleJsonLdProps {
   title: string;
   description: string;
   date: string;
+  dateModified?: string;
   slug: string;
   category: string;
   tags: string[];
@@ -83,6 +84,7 @@ export function ArticleJsonLd({
   title,
   description,
   date,
+  dateModified,
   slug,
   category,
   tags,
@@ -99,7 +101,7 @@ export function ArticleJsonLd({
     description,
     url,
     datePublished: date,
-    dateModified: date,
+    dateModified: dateModified || date,
     inLanguage: locale === 'en' ? 'en-US' : 'ko-KR',
     image: {
       '@type': 'ImageObject',
