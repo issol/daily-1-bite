@@ -95,6 +95,8 @@ argument-hint: '[주제번호 또는 "주제 제목" --category ai-tools|ai-tuto
 | 🛠 실전 적용 | 동작하는 코드/설정/워크플로우 | 실제 스니펫 + 결과 |
 
 **판정:**
+- 번호 입력이면 `~/blog-drafts/.last-topics.json`의 해당 주제 `indexability`를 먼저 확인:
+  **`EPHEMERAL`이면 무조건 `noindex: true`** (topic 단계에서 이미 속보로 분류됨).
 - 가치 레이어 **2개 이상 반영** → 정상 발행(색인 대상). Step 1로.
 - 시효성 속보(매출·투자·IPO·인수·유출·출시)인데 2개를 **채울 수 없다** →
   frontmatter `noindex: true` 추가 후 발행(색인 제외). 억지로 채우려 날조 금지.
