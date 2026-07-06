@@ -9,7 +9,8 @@ const SITE_FLOOR = new Date('2026-03-24');
 export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];
 
-  const koPosts = getAllPosts('ko');
+  // noindex:true 글은 사이트맵에서 제외 — 색인 제외 신호와 일관성 유지.
+  const koPosts = getAllPosts('ko').filter((p) => !p.noindex);
   const enPostSlugs = new Set(getAllPosts('en').map((p) => p.slug));
 
   // Latest post date — used as dynamic lastModified for home/blog index/category roots.
