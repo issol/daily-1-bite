@@ -269,6 +269,36 @@ _Photo by [작가명](프로필URL?utm_source=daily-1-bite&utm_medium=referral) 
 
 > **중요**: 리서치 없이 작성하는 것은 금지입니다. 공식 출처에서 확인되지 않은 수치/기능은 작성 불가.
 
+### Step 2.8: 실측 주입 (🧪 레이어 자동 생성 — Claude 모델/비교 글에서 강력 권장)
+
+> **왜**: 자동 파이프라인이 만들 수 없던 유일한 것 = **1인칭 실측 데이터**(Experience).
+> 이걸 넣는 글은 commodity 요약과 근본적으로 달라져 색인·helpful-content 회복에 가장 유리하다.
+> (2026-04 색인 붕괴 회복 방침, 경로 2)
+
+**대상**: 주제가 **Claude 계열 모델**(Opus/Sonnet/Haiku)이거나 **모델 비교/성능**을 다루면,
+실제 API를 호출해 진짜 수치·출력을 뽑아 본문에 삽입한다.
+
+```bash
+# 동일 프롬프트로 실제 호출 → 지연시간·토큰·비용·실제 출력 실측 → 마크다운 블록 생성
+node ~/daily-1-bite/scripts/measure.mjs \
+  --prompt "글 주제와 관련된 실제 태스크 프롬프트(예: 이 코드의 버그를 찾아줘: ...)" \
+  --models claude-opus-4-8,claude-sonnet-5 \
+  --max-tokens 400 \
+  --out ~/blog-drafts/measure-block.md
+```
+
+- 요구: 환경변수 `ANTHROPIC_API_KEY`(사용자 머신). 없으면 스크립트가 "측정 안 됨"으로 표기하고
+  종료코드 1을 반환 → 그 경우 이 글은 🧪 레이어를 못 채우므로 Step 0 게이트에서 다른 가치
+  레이어로 보강하거나 `noindex` 판정.
+- 출력된 `measure-block.md`(비교표 + 실제 출력 발췌 + 측정 일시)를 **본문에 그대로 삽입**한다.
+  이것이 Step 0의 🧪(직접 테스트) 레이어를 실제 데이터로 충족시킨다.
+- **정직성**: 스크립트가 측정한 수치만 쓴다. anthropic 외 모델(gpt-*, gemini-*)은 현재 미지원이라
+  "측정 안 됨"으로 나오므로, 비교 글이면 Claude 모델 간 실측을 중심으로 서술하고 타사 모델은
+  공식 발표 기반임을 명시(날조 금지).
+
+> 확장: 타사 모델·번역 API 등은 `scripts/measure.mjs`의 provider 분기에 키/엔드포인트/가격을
+> 추가하면 실측 대상이 넓어진다.
+
 ### Step 3: MDX 파일 생성
 
 **한국어 파일만 생성**: `~/daily-1-bite/content/posts/ko/{category}/` 디렉토리에 파일을 생성합니다.
