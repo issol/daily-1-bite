@@ -21,12 +21,9 @@ export const AUTHOR = {
   description:
     '현직 개발자로서 AI 도구를 실무에서 매일 사용하며, 개발자 관점에서 AI 뉴스와 도구를 솔직하게 정리합니다.',
 
-  // TODO(identity): 실제 프로필 URL을 채우면 Google이 저자를 검증 가능한 실존 인물로 인식한다.
-  //   E-E-A-T 회복의 핵심 신호. 예:
-  //   'https://github.com/<handle>',
-  //   'https://www.linkedin.com/in/<handle>',
-  //   'https://x.com/<handle>',
-  sameAs: [] as string[],
+  // 검증 가능한 실존 인물 신호(sameAs). Google이 저자를 실제 웹 엔티티와 연결한다.
+  //   프로필을 추가할수록(LinkedIn/X 등) 신뢰 신호가 강해진다.
+  sameAs: ['https://github.com/issol'] as string[],
 
   knowsAbout: [
     '인공지능',
