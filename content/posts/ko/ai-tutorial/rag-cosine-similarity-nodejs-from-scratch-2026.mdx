@@ -1,0 +1,126 @@
+---
+title: "RAG의 핵심 '코사인 유사도'를 Node.js로 직접 구현하기 (의존성 0) [2026]"
+date: "2026-07-06"
+description: "RAG가 관련 문서를 찾는 원리, 코사인 유사도를 라이브러리 없이 40줄 Node.js로 직접 만들어봅니다. 실제 실행 결과와 함께, 왜 진짜 임베딩이 필요한지까지 짚습니다."
+category: "ai-tutorial"
+tags: ["RAG", "코사인 유사도", "벡터 검색", "임베딩", "Node.js", "시맨틱 검색"]
+thumbnail: "https://towardsdatascience.com/wp-content/uploads/2025/09/data-mining-2_hanna-barakat-aixdesign_archival-images-of-ai_3840x2668.png"
+---
+
+## TL;DR
+
+- RAG가 "관련 문서를 찾는" 그 순간의 핵심 계산이 **코사인 유사도**입니다. 개념은 딱 한 줄이에요: **두 벡터 사이 각도의 코사인**.
+- 이 글에서는 라이브러리 하나 없이 **40줄짜리 Node.js**로 미니 시맨틱 검색을 직접 만들고, **실제로 실행한 출력**을 그대로 보여줍니다.
+- 그리고 그 출력이 왜 "반쪽짜리"인지 — **왜 진짜 임베딩 모델이 필요한지**를 결과로 증명합니다.
+
+RAG(Retrieval-Augmented Generation)를 쓴다면 벡터 DB가 알아서 해주니 코사인 유사도를 몰라도 됩니다. 하지만 검색 품질이 이상할 때 "왜 이 문서가 뽑혔지?"를 이해하려면, 그 밑바닥 계산을 한 번은 손으로 만들어보는 게 제일 빠릅니다.
+
+![임베딩과 유사도 개념](https://towardsdatascience.com/wp-content/uploads/2025/09/data-mining-2_hanna-barakat-aixdesign_archival-images-of-ai_3840x2668.png)
+_출처: [Towards Data Science](https://towardsdatascience.com/rag-explained-understanding-embeddings-similarity-and-retrieval/) | 임베딩·유사도 개념 이미지_
+
+## 코사인 유사도, 개념부터
+
+두 문장을 숫자 벡터로 바꾸면, 둘이 얼마나 "닮았는지"를 벡터 사이 각도로 잴 수 있습니다.
+
+- 각도가 **작다(가깝다)** → 코사인 값 **1에 가까움** → 유사함
+- 각도가 **90도(직교)** → 코사인 값 **0** → 무관함
+
+수식은 이게 전부입니다: **코사인 유사도 = (두 벡터의 내적) ÷ (각 벡터 크기의 곱)**. RAG는 이 점수로 질문과 가장 가까운 문서 조각을 골라냅니다.
+
+## 40줄로 직접 만들기 🛠
+
+임베딩 모델 대신, 지금은 **단어 가방(bag-of-words)** 으로 벡터를 만듭니다. 문장에 어떤 단어가 몇 번 나왔는지를 벡터로 쓰는 거예요. (진짜 임베딩과의 차이는 뒤에서 다룹니다.)
+
+```js
+// cosine.mjs — 의존성 0 미니 시맨틱 검색
+const docs = [
+  'Node.js로 REST API 서버 만들기',
+  '파이썬 판다스로 데이터 분석하기',
+  'Express 미들웨어로 인증 구현하기',
+  '고양이 사료 추천과 건강 관리',
+];
+
+const tokenize = (s) => s.toLowerCase().split(/\s+/).filter(Boolean);
+const vocab = [...new Set(docs.flatMap(tokenize))];        // 1) 어휘 사전
+
+const vectorize = (s) => {                                  // 2) 문장 → 벡터(단어 빈도)
+  const counts = Object.create(null);
+  for (const t of tokenize(s)) counts[t] = (counts[t] || 0) + 1;
+  return vocab.map((w) => counts[w] || 0);
+};
+
+const dot = (a, b) => a.reduce((s, v, i) => s + v * b[i], 0);
+const mag = (a) => Math.sqrt(dot(a, a));
+const cosine = (a, b) => {                                  // 3) 코사인 유사도
+  const m = mag(a) * mag(b);
+  return m === 0 ? 0 : dot(a, b) / m;
+};
+
+const query = 'Node.js 인증 서버 만들기';                    // 4) 검색
+const qv = vectorize(query);
+const ranked = docs
+  .map((d) => ({ doc: d, score: cosine(qv, vectorize(d)) }))
+  .sort((a, b) => b.score - a.score);
+
+console.log(`쿼리: "${query}"`);
+console.log(`어휘 크기: ${vocab.length}개 단어\n`);
+console.log('유사도 순위:');
+for (const { doc, score } of ranked) {
+  console.log(`  ${score.toFixed(3)}  ${doc}`);
+}
+```
+
+## 실제로 돌려본 결과 🧪
+
+위 코드를 이 글을 쓰면서 `node cosine.mjs`로 **실제 실행**한 출력입니다(꾸며낸 값이 아닙니다):
+
+```text
+쿼리: "Node.js 인증 서버 만들기"
+어휘 크기: 18개 단어
+
+유사도 순위:
+  0.516  Node.js로 REST API 서버 만들기
+  0.289  Express 미들웨어로 인증 구현하기
+  0.000  파이썬 판다스로 데이터 분석하기
+  0.000  고양이 사료 추천과 건강 관리
+```
+
+쿼리 "Node.js 인증 서버 만들기"에 대해 관련 문서 2개가 위로, 무관한 문서 2개가 0점으로 정확히 갈렸습니다. 벡터 DB 없이도 **검색의 뼈대**가 이렇게 돕니다.
+
+## 실무 RAG로 확장하기 🧭
+
+지금 만든 건 메커니즘의 축소판입니다. 프로덕션 RAG는 딱 두 곳만 바뀝니다.
+
+1. **`vectorize`를 임베딩 API로 교체** — 단어 빈도 대신 임베딩 모델(OpenAI `text-embedding-3`, Cohere, 오픈웨이트 등)이 반환하는 수백~수천 차원 벡터를 씁니다.
+2. **선형 탐색을 벡터 DB로 교체** — 문서 수천 개까지는 위처럼 전부 비교해도 되지만, 규모가 커지면 Pinecone·pgvector·FAISS 같은 근사 최근접 탐색(ANN)으로 넘어갑니다.
+
+즉 **코사인 유사도 계산 자체는 그대로**입니다. 바뀌는 건 "벡터를 어디서 얻느냐"와 "얼마나 빨리 찾느냐"뿐이에요. 그래서 이 40줄을 이해하면 RAG 검색 파트의 90%를 이해한 셈입니다.
+
+## 이 방식의 한계 — 왜 임베딩이 필요한가 🔪
+
+위 실행 결과가 그대로 한계를 보여줍니다. **"파이썬 판다스로 데이터 분석하기"가 0.000**으로 나왔죠. 사람이 보기엔 "Node.js 서버"와 "판다스 분석"이 완전 무관하진 않은데(둘 다 개발), 단어 가방은 **겹치는 단어가 없으면 무조건 0점**을 줍니다.
+
+- 단어 가방은 **의미를 모릅니다**. "서버"와 "server", "인증"과 "authentication"을 다른 것으로 취급해요.
+- 동의어·문맥·어순을 전혀 못 잡습니다. `1`에 가까운 값은 사실상 단어가 많이 겹칠 때만 나옵니다.
+- 그래서 실제 임베딩 모델이 필요합니다. 임베딩은 "car와 automobile은 가깝다"를 벡터 공간에 학습해둬서, 단어가 하나도 안 겹쳐도 의미가 비슷하면 높은 점수를 줍니다.
+
+정리하면, **코사인 유사도(계산)는 그대로 두고, 벡터의 출처를 단어 빈도 → 임베딩으로 바꾸는 것**이 진짜 시맨틱 검색으로 가는 길입니다. AI 도구를 실제로 연결하는 표준(MCP)이 궁금하다면 [MCP로 AI 에이전트 연결하기](https://daily1bite.com/ko/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026)도 함께 보세요.
+
+## 마무리
+
+RAG는 마법이 아니라 **벡터화 + 코사인 유사도 + 정렬**입니다. 오늘 만든 40줄이 그 핵심 루프예요. 다음 단계로 `vectorize`만 임베딩 API로 바꿔보면, 위에서 0점이던 문서들이 어떻게 살아나는지 직접 확인할 수 있습니다.
+
+어떤 임베딩·모델을 고를지 고민이라면 비용·성능 트레이드오프를 정리한 [Claude Opus 4.8 vs Sonnet 5 선택 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-4-8-vs-sonnet-5-api-developer-guide-2026)가 도움이 될 거예요. 더 많은 실습은 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 카테고리에 있습니다.
+
+---
+
+## 참고 자료
+
+- [RAG Explained: Understanding Embeddings, Similarity, and Retrieval](https://towardsdatascience.com/rag-explained-understanding-embeddings-similarity-and-retrieval/) — Towards Data Science, 2025년 9월
+- [RAG from Scratch — Part 2: Semantics and Cosine Similarity](https://learnbybuilding.ai/tutorial/rag-from-scratch-part-2-semantics-and-cosine-similarity/) — learnbybuilding.ai, 2026년 기준
+- [Embeddings & Cosine Similarity: the math behind RAG](https://dev.to/busycaesar/embeddings-cosine-similarity-4541) — DEV Community, 2026년 기준
+
+**함께 읽으면 좋은 글:**
+
+- [MCP로 AI 에이전트 연결하기: 2026 표준 프로토콜 입문](https://daily1bite.com/ko/blog/ai-tutorial/mcpmodel-context-protocol-ai-2026) - AI 도구를 실제로 연결하는 표준
+- [Claude Opus 4.8 vs Sonnet 5 선택 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-4-8-vs-sonnet-5-api-developer-guide-2026) - 임베딩·추론 모델 비용/성능 비교
