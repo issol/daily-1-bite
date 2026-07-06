@@ -32,7 +32,13 @@ export const revalidate = 86400;
 // entire back-catalog, which was the main driver of build minutes.
 // Older posts still appear in the sitemap and remain fully indexable.
 // Set to 0 (or a very large number) to pre-render everything again.
-const PRERENDER_RECENT_COUNT = 40;
+//
+// Tunable via env (PRERENDER_RECENT_COUNT). Default raised 40→80: while the site
+// is recovering from the April de-indexing, we want Googlebot to hit warm,
+// CDN-served HTML (instant TTFB) on as many posts as possible rather than
+// cold on-demand ISR. GA4 is now cached (see lib/analytics.ts) so cold renders
+// are cheap regardless, but pre-rendered pages still crawl fastest.
+const PRERENDER_RECENT_COUNT = Number(process.env.PRERENDER_RECENT_COUNT ?? 80);
 
 export const dynamicParams = true;
 
