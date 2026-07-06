@@ -1,6 +1,8 @@
 // JSON-LD 구조화 데이터 컴포넌트
 // SEO + GEO (Generative Engine Optimization) 모두 커버
 
+import {AUTHOR} from '@/lib/author';
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
 export function WebSiteJsonLd() {
@@ -14,8 +16,9 @@ export function WebSiteJsonLd() {
     inLanguage: 'ko-KR',
     publisher: {
       '@type': 'Person',
-      name: 'A꿀벌I',
-      url: `${BASE_URL}/ko/about`,
+      name: AUTHOR.name,
+      url: AUTHOR.url,
+      sameAs: AUTHOR.sameAs,
     },
     potentialAction: {
       '@type': 'SearchAction',
@@ -45,9 +48,10 @@ export function BlogJsonLd() {
     inLanguage: 'ko-KR',
     author: {
       '@type': 'Person',
-      name: 'A꿀벌I',
-      url: `${BASE_URL}/ko/about`,
-      knowsAbout: ['인공지능', 'AI 도구', 'LLM', 'ChatGPT', '생성형 AI'],
+      name: AUTHOR.name,
+      url: AUTHOR.url,
+      sameAs: AUTHOR.sameAs,
+      knowsAbout: AUTHOR.knowsAbout,
     },
     publisher: {
       '@type': 'Organization',
@@ -105,9 +109,10 @@ export function ArticleJsonLd({
     },
     author: {
       '@type': 'Person',
-      name: 'A꿀벌I',
+      name: AUTHOR.name,
       url: `${BASE_URL}/${locale || 'ko'}/about`,
-      knowsAbout: ['인공지능', 'AI 도구', 'LLM', 'ChatGPT', '생성형 AI', 'SEO'],
+      sameAs: AUTHOR.sameAs,
+      knowsAbout: AUTHOR.knowsAbout,
     },
     publisher: {
       '@type': 'Organization',
@@ -236,19 +241,9 @@ export function PersonJsonLd({ name, url, description }: PersonJsonLdProps) {
     name,
     url,
     description,
-    sameAs: [],
-    knowsAbout: [
-      '인공지능 (Artificial Intelligence)',
-      '대형 언어 모델 (LLM)',
-      'ChatGPT',
-      'Claude',
-      'Gemini',
-      'AI 도구 활용',
-      '생성형 AI',
-      '검색엔진 최적화 (SEO)',
-      'Next.js',
-    ],
-    jobTitle: 'AI 뉴스 큐레이터 & 블로거',
+    sameAs: AUTHOR.sameAs,
+    knowsAbout: AUTHOR.knowsAbout,
+    jobTitle: AUTHOR.jobTitle,
   };
 
   return (

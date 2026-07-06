@@ -13,6 +13,7 @@ import {Suspense} from 'react';
 import type {Metadata} from 'next';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import {routing} from '@/i18n/routing';
+import {AUTHOR} from '@/lib/author';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
@@ -89,7 +90,7 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
       isKo ? '인공지능' : 'artificial intelligence',
       isKo ? '매일 한입' : 'Daily 1 Bite',
     ],
-    authors: [{name: 'A꿀벌I', url: `${BASE_URL}/about`}],
+    authors: [{name: AUTHOR.name, url: `${BASE_URL}/about`}],
     // EN 포스트는 noindex — canonical(KO)로 색인 통합
     robots: isKo ? undefined : { index: false, follow: true },
     alternates: {
@@ -217,7 +218,9 @@ export default async function PostPage({params}: Props) {
           )}
 
           <div className="flex items-center gap-3 text-sm text-gray-400">
-            <span className="font-medium text-gray-600">A꿀벌I</span>
+            <Link href="/about" rel="author" className="font-medium text-gray-600 hover:text-amber-500">
+              {AUTHOR.name}
+            </Link>
             <span aria-hidden="true">·</span>
             <time dateTime={post.date}>{post.date}</time>
             <span aria-hidden="true">·</span>
@@ -247,7 +250,7 @@ export default async function PostPage({params}: Props) {
         <article itemScope itemType="https://schema.org/BlogPosting" className="min-w-0">
           <meta itemProp="headline" content={post.title} />
           <meta itemProp="datePublished" content={post.date} />
-          <meta itemProp="author" content="A꿀벌I" />
+          <meta itemProp="author" content={AUTHOR.name} />
           <MDXContent source={post.content} />
         </article>
 

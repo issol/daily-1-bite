@@ -1,5 +1,6 @@
 import { getAllPosts, CATEGORIES } from '@/lib/posts';
 import type { Locale } from '@/lib/posts';
+import { AUTHOR } from '@/lib/author';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
@@ -40,7 +41,7 @@ export async function GET() {
 > 매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다. AI 트렌드, 도구 리뷰, 튜토리얼을 한입 크기로 전달합니다.
 > Daily AI news digest — trends, tool reviews, and tutorials in bite-sized format.
 
-- 운영자 / Author: A꿀벌I
+- 운영자 / Author: ${AUTHOR.name}
 - 언어 / Languages: 한국어 (ko-KR), English (en-US)
 - RSS: ${BASE_URL}/feed.xml
 - 사이트맵 / Sitemap: ${BASE_URL}/sitemap.xml

@@ -1,4 +1,5 @@
 import { getAllPosts, CATEGORIES } from '@/lib/posts';
+import { AUTHOR } from '@/lib/author';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
@@ -26,7 +27,7 @@ export async function GET() {
     <published>${new Date(post.date).toISOString()}</published>
     <updated>${new Date(post.date).toISOString()}</updated>
     <summary><![CDATA[${post.description}]]></summary>
-    <author><name>A꿀벌I</name></author>
+    <author><name>${escapeXml(AUTHOR.name)}</name></author>
     <category term="${category}"/>
     ${post.tags.map((tag) => `<category term="${escapeXml(tag)}"/>`).join('\n    ')}
   </entry>`;
@@ -42,7 +43,7 @@ export async function GET() {
   <id>${BASE_URL}/</id>
   <updated>${new Date().toISOString()}</updated>
   <author>
-    <name>A꿀벌I</name>
+    <name>${escapeXml(AUTHOR.name)}</name>
     <uri>${BASE_URL}/about</uri>
   </author>
   <icon>${BASE_URL}/icon</icon>

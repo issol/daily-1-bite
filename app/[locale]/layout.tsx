@@ -5,6 +5,7 @@ import {routing} from '@/i18n/routing';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import {WebSiteJsonLd} from '@/components/JsonLd';
+import {AUTHOR} from '@/lib/author';
 import type {Metadata} from 'next';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
@@ -34,8 +35,8 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
     keywords: isKo
       ? ['AI 뉴스', '인공지능', 'ChatGPT', 'Claude', 'Gemini', 'LLM', '생성형 AI', 'AI 도구', 'AI 트렌드', 'AI 튜토리얼', 'AI 리뷰', '매일 한입']
       : ['AI news', 'artificial intelligence', 'ChatGPT', 'Claude', 'Gemini', 'LLM', 'generative AI', 'AI tools', 'AI trends', 'AI tutorials'],
-    authors: [{name: 'A꿀벌I', url: `${BASE_URL}/about`}],
-    creator: 'A꿀벌I',
+    authors: [{name: AUTHOR.name, url: `${BASE_URL}/about`}],
+    creator: AUTHOR.name,
     publisher: isKo ? '매일 한입' : 'Daily 1 Bite',
     alternates: {
       canonical: `${BASE_URL}/${locale}`,
