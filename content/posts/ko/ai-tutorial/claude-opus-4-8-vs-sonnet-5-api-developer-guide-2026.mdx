@@ -1,0 +1,117 @@
+---
+title: "Claude Opus 4.8 vs Sonnet 5: API 개발자 실전 선택 가이드 [2026]"
+date: "2026-07-06"
+description: "Opus 4.8과 Sonnet 5, 뭘 써야 할까요? 입력 가격은 2.5배 차이인데 벤치마크는 몇 점 차. 워크로드별 선택 기준·하루 비용 계산·마이그레이션 함정을 정리했습니다."
+category: "ai-tutorial"
+tags: ["Claude", "Opus 4.8", "Sonnet 5", "Anthropic API", "LLM 비용 최적화", "AI 코딩"]
+thumbnail: "https://www-cdn.anthropic.com/images/4zrzovbb/website/458ea645ef6b729f6847cba16932716e6b547f2f-2880x1620.png"
+---
+
+## TL;DR
+
+- **대부분의 프로덕션 워크로드는 Sonnet 5가 정답입니다.** 벤치마크는 Opus 4.8과 몇 점 차이인데, 입력 토큰 가격은 **절반 이하**예요.
+- **Opus 4.8은 "틀리면 안 되는" 작업에만.** 정확도가 비용보다 중요한 에이전틱 코딩·최고 난도 추론이면 그때 올려 쓰는 게 맞습니다.
+- 두 모델 다 API 표면이 4.6 세대에서 크게 바뀌었습니다. **`temperature`·`budget_tokens`·assistant prefill을 그대로 두면 400 에러**가 납니다. 아래 함정 섹션 꼭 보세요.
+
+같은 Anthropic 모델인데 하나는 입력 100만 토큰에 $5, 다른 하나는 $2~3. 이 가격 차이가 실제 청구서에서 어떻게 벌어지는지, 그리고 코드를 어떻게 고쳐야 하는지 실무 관점에서 정리했습니다.
+
+![Claude Sonnet 5 소개](https://www-cdn.anthropic.com/images/4zrzovbb/website/458ea645ef6b729f6847cba16932716e6b547f2f-2880x1620.png)
+_출처: [Anthropic](https://www.anthropic.com/news/claude-sonnet-5) | Claude Sonnet 5 공식 발표 이미지_
+
+## 한눈에 보는 스펙 비교 ⚖️
+
+| 항목 | Claude Opus 4.8 | Claude Sonnet 5 |
+|---|---|---|
+| 입력 가격 (/1M) | **$5** | **$3** (인트로 $2, ~2026-08-31) |
+| 출력 가격 (/1M) | **$25** | **$15** (인트로 $10) |
+| 컨텍스트 창 | 1M | 1M |
+| 최대 출력 | 128K | 128K |
+| Thinking 기본값 | `thinking` 생략 시 **꺼짐** | 생략 시 **adaptive로 켜짐** |
+| effort 지원 | low~max (`xhigh` 포함) | low~max (`xhigh` 포함) |
+| Fast Mode | ✅ (지속 지원 티어) | ❌ |
+| 세션 중 시스템 프롬프트 | ✅ (Opus 4.8 전용) | ❌ |
+
+포지셔닝은 명확합니다. **Opus 4.8은 "가장 똑똑한 모델", Sonnet 5는 "거의 그만큼 똑똑한데 훨씬 싼 모델"**입니다.
+
+## 그래서 성능 차이는 얼마나? 🧭
+
+가격이 2.5배 차이면 성능도 그만큼 차이날 것 같지만, 그렇지 않습니다. 공개 벤치마크상:
+
+- **코딩·터미널·컴퓨터 유즈·추론**: Opus 4.8이 **0.5~6.6점** 우위 ([MarkTechPost 비교](https://www.marktechpost.com/2026/06/30/anthropic-claude-sonnet-5-vs-sonnet-4-6-vs-opus-4-8-agentic-coding-benchmarks-api-pricing-and-cost-performance-tradeoffs-compared/) 기준)
+- **지식 노동(GDPval-AA v2)**: 사실상 **동점** (Sonnet 5 ≈ 1,618 / Opus 4.8 ≈ 1,615)
+
+즉 **"몇 점 더 정확하려고 비용을 2.5배 쓸 것인가"**가 핵심 질문입니다. 개발자 관점에서 저는 이렇게 나눕니다:
+
+- **Sonnet 5로 충분한 경우**: 챗봇, RAG 응답, 요약·추출·분류, 대량 배치, 대부분의 코드 어시스턴트. 몇 점 차이가 사용자 경험을 바꾸지 않고, 비용은 즉시 반으로 줍니다.
+- **Opus 4.8이 필요한 경우**: 오버나이트 자율 코딩, 대규모 리팩터링, 틀리면 롤백 비용이 큰 에이전틱 파이프라인, 최고 난도 추론. 여기선 정확도가 곧 돈입니다.
+
+### 실제 하루 비용 계산
+
+하루에 입력 200만 + 출력 50만 토큰을 쓰는 에이전트를 가정해봅시다.
+
+| 모델 | 계산 | 하루 비용 |
+|---|---|---|
+| Opus 4.8 | 2×$5 + 0.5×$25 | **$22.5** |
+| Sonnet 5 (표준가) | 2×$3 + 0.5×$15 | **$13.5** (약 40%↓) |
+| Sonnet 5 (인트로가) | 2×$2 + 0.5×$10 | **$9.0** (약 60%↓) |
+
+월로 환산하면 Opus 4.8 대비 Sonnet 5는 **월 수백 달러**가 갈립니다. 트래픽이 커질수록 이 격차가 그대로 마진이 됩니다.
+
+## 마이그레이션·API 함정 🔪
+
+여기가 이 글의 핵심입니다. 두 모델 다 4.6 세대에서 **호환성이 깨지는 변경**이 있어서, 예전 코드를 그대로 붙이면 조용히 실패합니다.
+
+1. **`temperature`·`top_p`·`top_k` 제거** — 두 모델 다 기본값이 아닌 샘플링 파라미터를 보내면 **400**. 스타일·다양성은 프롬프트로 유도하세요.
+2. **`thinking: {type: "enabled", budget_tokens: N}` 제거** — **400**입니다. `thinking: {type: "adaptive"}` + `output_config.effort`로 대체.
+3. **Thinking 기본값이 두 모델에서 다릅니다** — `thinking` 필드를 생략하면 **Opus 4.8은 사고 없이**, **Sonnet 5는 adaptive로 사고하며** 실행됩니다. Sonnet 5는 이때 `max_tokens`가 빠듯하면 사고가 예산을 먹고 응답이 잘릴 수 있어요. **명시적으로 지정**하는 걸 권합니다.
+4. **Assistant prefill 제거** — 마지막 assistant 턴 프리필은 **400**. JSON 강제는 `output_config.format`(구조화 출력)으로.
+5. **토크나이저 착시 주의** — Sonnet 5는 신규 토크나이저라 **Sonnet 4.6 대비 같은 텍스트가 ~30% 더 많은 토큰**으로 계산됩니다. 다만 **Opus 4.8과는 동일한 토크나이저**라 둘 사이 토큰 수는 비교 가능 — 즉 위 가격 차이는 착시가 아니라 실제입니다. Sonnet 4.6에서 넘어온다면 `max_tokens`·비용 대시보드를 반드시 재보정하세요.
+6. **인트로 가격 만료** — Sonnet 5 $2/$10은 **2026-08-31까지**. 이후 $3/$15. 장기 비용 계획에 반영하세요.
+
+> 저는 Opus 4.6 시절 코드를 옮기다 3번(thinking 기본값 차이)에서 응답이 잘려 한참 헤맸습니다. "왜 Sonnet만 답이 짧지?" 싶으면 여기부터 보세요.
+
+## 최소 동작 코드 🛠
+
+두 모델 모두 아래 형태가 정답입니다. `model` 문자열만 바꾸면 됩니다.
+
+```ts
+import Anthropic from "@anthropic-ai/sdk";
+
+const client = new Anthropic(); // ANTHROPIC_API_KEY 자동 인식
+
+const res = await client.messages.create({
+  model: "claude-sonnet-5",        // 또는 "claude-opus-4-8"
+  max_tokens: 4096,
+  thinking: { type: "adaptive" },  // 명시 필수 — 생략 시 두 모델 기본이 다름
+  output_config: { effort: "high" }, // low | medium | high | xhigh | max
+  messages: [{ role: "user", content: "이 함수의 버그를 찾아줘: ..." }],
+  // ❌ temperature / top_p / budget_tokens 넣지 말 것 — 400
+});
+
+// content는 블록 배열 — 타입으로 좁혀서 접근
+for (const block of res.content) {
+  if (block.type === "text") console.log(block.text);
+}
+console.log(res.usage.input_tokens, res.usage.output_tokens);
+```
+
+코딩·에이전틱 작업이면 `effort`를 `xhigh`로, 비용에 민감하면 `medium`부터 스윕하며 실측해보세요. 같은 태스크를 두 모델·여러 effort로 돌려 **지연시간·토큰·비용을 직접 재보는 것**이 결국 가장 정확한 선택 기준입니다. (Opus 4.7의 `xhigh`·Auto Mode 활용은 [Claude Opus 4.7 xhigh 실전 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-47-xhigh-auto-mode-guide-2026)에서 더 자세히 다뤘습니다.)
+
+## 결론: 기본은 Sonnet 5, 승급은 필요할 때만
+
+"어떤 모델?"의 답은 대부분 **Sonnet 5로 시작**입니다. 몇 점의 정확도를 위해 2배 넘는 비용을 상시로 지불할 이유는 없어요. 대신 **틀림의 대가가 큰 경로**(자율 코딩, 리팩터링, 고난도 추론)만 골라 Opus 4.8로 승급하세요.
+
+그리고 어느 쪽을 쓰든, 위 6가지 마이그레이션 함정을 먼저 점검하는 게 순서입니다. Opus 4.8의 코딩·정직성 특성이 궁금하면 [Claude Opus 4.8 실사용 리뷰](https://daily1bite.com/ko/blog/ai-tools/claude-opus-4-8-review-coding-honesty-fast-mode-2026)도 함께 보세요. 더 많은 실무 가이드는 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 카테고리에 모아뒀습니다.
+
+---
+
+## 참고 자료
+
+- [Introducing Claude Sonnet 5](https://www.anthropic.com/news/claude-sonnet-5) — Anthropic, 2026년 6월 30일
+- [Pricing — Claude Platform Docs](https://platform.claude.com/docs/en/about-claude/pricing) — Anthropic 공식 문서, 2026년 7월 기준
+- [Claude Sonnet 5 vs Sonnet 4.6 vs Opus 4.8: Benchmarks & Pricing Compared](https://www.marktechpost.com/2026/06/30/anthropic-claude-sonnet-5-vs-sonnet-4-6-vs-opus-4-8-agentic-coding-benchmarks-api-pricing-and-cost-performance-tradeoffs-compared/) — MarkTechPost, 2026년 6월 30일
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Opus 4.7 xhigh·Auto Mode 실전 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-47-xhigh-auto-mode-guide-2026) - effort와 자동 모드를 언제 켜야 하는지
+- [Claude Opus 4.8 실사용 리뷰](https://daily1bite.com/ko/blog/ai-tools/claude-opus-4-8-review-coding-honesty-fast-mode-2026) - 코딩·정직성·Fast Mode 체감
