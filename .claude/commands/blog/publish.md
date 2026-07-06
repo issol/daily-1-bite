@@ -51,7 +51,33 @@ $ARGUMENTS 파싱:
 한국어 파일만 생성됩니다:
 - 한국어: `content/posts/ko/{category}/{slug}.mdx`
 
-파일이 존재하는지 확인 후 Phase 3으로 진행합니다.
+파일이 존재하는지 확인 후 Phase 2.5로 진행합니다.
+
+---
+
+## Phase 2.5: 색인 정책 게이트 (indexability gate) — 필수
+
+> **배경**: 2026-04 이 블로그는 "매일 뉴스 요약"이 commodity 콘텐츠로 판정되어
+> 색인이 붕괴함(122→0). 시효성 속보가 사이트 평균 품질을 낮춰 나머지 글 색인까지
+> 막았다. **이 게이트는 저가치 글이 색인 풀에 들어가는 것을 원천 차단한다.**
+
+발행 전, 글을 **A(에버그린·색인 대상)** / **B(속보·noindex)** 로 분류한다.
+
+**B(noindex)로 분류 → frontmatter에 `noindex: true` 추가하고 그대로 발행:**
+- 시효성 속보(매출·투자·IPO·인수·유출·출시 발표 재정리)이면서
+- 아래 "가치 레이어"가 **2개 미만**인 글:
+  - 🧪 직접 테스트/실행 결과(스샷·수치·소요시간·비용)
+  - ⚖️ 경쟁 도구/이전 버전과의 실측 비교표
+  - 🧭 개발자 실무 관점의 독자 분석("그래서 뭘 바꿔야 하나")
+  - 🔪 한계·비판·주의사항(공식 발표에 없는 판단)
+  - 🛠 실전 적용 코드/설정/워크플로우
+
+**A(색인)로 분류 → `noindex` 없이 발행:**
+- how-to/가이드/비교/리뷰 등 에버그린 검색수요가 있고
+- 가치 레이어 **2개 이상** 포함.
+
+> 판정이 애매하면 B로 보내라(색인 풀 오염 방지가 우선). noindex 글도 접근은 되지만
+> 사이트맵·색인에서 빠진다(`lib/posts.ts` noindex 지원).
 
 ---
 
@@ -103,17 +129,20 @@ git push origin main
 
 ---
 
-## Phase 4: Vercel 배포 확인
+## Phase 4: AWS Amplify 배포 확인
 
-Push 후 Vercel이 자동 배포를 시작합니다. 배포 상태를 확인합니다.
+이 블로그는 **AWS Amplify**로 호스팅됩니다(`amplify.yml`, Next.js SSR/ISR).
+`git push origin main` 시 Amplify가 자동 빌드·배포를 시작합니다.
 
 ```bash
-# Vercel CLI가 설치된 경우
-cd ~/daily-1-bite
-vercel ls --limit 3 2>/dev/null || echo "Vercel CLI 없음 - 대시보드에서 확인하세요"
+# Amplify는 main 푸시 → 자동 배포. 상태는 Amplify 콘솔에서 확인.
+echo "Amplify 콘솔: https://console.aws.amazon.com/amplify/ (main 브랜치 빌드 확인)"
 ```
 
-배포 완료 예상 시간: 1-3분
+배포 완료 예상 시간: 3-6분(빌드 포함). 배포 후 URL 200 확인:
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" https://daily1bite.com/ko/blog/{category}/{slug}
+```
 
 ---
 
@@ -137,7 +166,10 @@ URL: https://daily1bite.com/ko/blog/{category}/{slug}
 Vercel 대시보드: https://vercel.com/dashboard
 
 --- 발행 후 SEO 액션 (필수) ---
-1. 배포 완료 확인 후 GSC URL Inspection으로 색인 요청:
+0. ⚠️ 이 글이 Phase 2.5에서 **B(noindex)** 로 분류됐다면 색인 요청 생략(1번 건너뜀).
+   noindex 글에 색인 요청하면 GSC에 "noindex 제외" 노이즈만 쌓인다.
+
+1. (A=색인 대상 글만) 배포 완료 확인 후 GSC URL Inspection으로 색인 요청:
    https://search.google.com/search-console/inspect?resource_id=sc-domain%3Adaily1bite.com&id=https%3A%2F%2Fdaily1bite.com%2Fko%2Fblog%2F{category}%2F{slug}
    → "URL이 Google에 등록되지 않음" 확인 후 "색인 요청" 버튼 클릭
    (신규 도메인은 자연 색인까지 1-4주 걸리므로 수동 요청 권장)
