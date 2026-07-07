@@ -1,0 +1,116 @@
+---
+title: "LLM API가 자꾸 429를 뱉을 때: 지수 백오프 재시도 직접 구현 [2026]"
+date: "2026-07-07"
+description: "LLM API가 429·과부하로 실패할 때, 지수 백오프+지터 재시도를 라이브러리 없이 Node.js로 구현합니다. 실제 실행한 대기 시간과 흔한 함정까지 정리했습니다."
+category: "ai-tutorial"
+tags: ["LLM API", "지수 백오프", "재시도", "Rate Limit", "429", "Node.js"]
+thumbnail: "https://towardsdatascience.com/wp-content/uploads/2025/09/data-mining-2_hanna-barakat-aixdesign_archival-images-of-ai_3840x2668.png"
+---
+
+## TL;DR
+
+- LLM API를 좀 쓰다 보면 반드시 만나는 게 **429 Too Many Requests**와 5xx 과부하입니다. 답은 **지수 백오프 + 지터** 재시도예요.
+- 즉시 재시도는 **불에 기름**입니다. 실패할 때마다 대기를 2배씩 늘리고, 거기에 **랜덤 지터**를 더해야 합니다.
+- 이 글에서 40줄 Node.js로 직접 만들고 **실제로 실행한 대기 시간**을 보여드립니다. 그리고 대부분의 공식 SDK가 이미 해주는 부분과, 당신이 직접 신경 써야 하는 부분을 나눕니다.
+
+![API 재시도·복원력 개념](https://towardsdatascience.com/wp-content/uploads/2025/09/data-mining-2_hanna-barakat-aixdesign_archival-images-of-ai_3840x2668.png)
+_이미지: 일반 AI/데이터 테마 (출처: [Towards Data Science](https://towardsdatascience.com/rag-explained-understanding-embeddings-similarity-and-retrieval/))_
+
+## 왜 즉시 재시도는 최악인가
+
+429는 "지금 너무 많이 왔으니 잠깐 쉬어라"는 신호입니다. 그런데 실패하자마자 바로 다시 쏘면? **스로틀링이 더 길어집니다.** 여러 클라이언트가 동시에 실패하면 다 같이 재시도하면서 서버를 다시 밀어붙이는 **thundering herd(우르르 몰림)** 가 생기죠.
+
+그래서 정석은 두 가지를 겹칩니다.
+
+1. **지수 백오프** — 대기를 100ms → 200ms → 400ms … 로 2배씩 늘린다.
+2. **지터(jitter)** — 여기에 **랜덤 오프셋**을 더해, 클라이언트들이 서로 다른 시점에 재시도하게 흩뿌린다.
+
+## 40줄로 직접 만들기 🛠
+
+```js
+// backoff.mjs — 의존성 0 지수 백오프 + 풀 지터 재시도
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function withRetry(fn, { retries = 5, base = 100, factor = 2, cap = 2000 } = {}) {
+  const t0 = Date.now();
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const res = await fn();
+      console.log(`  성공 (총 시도 ${attempt + 1}회, ${Date.now() - t0}ms 소요)`);
+      return res;
+    } catch (err) {
+      // 재시도할 가치가 있는 오류만: 429 + 5xx. 400/401/403은 재시도해도 소용없다.
+      const retryable = err.status === 429 || err.status >= 500;
+      if (!retryable || attempt >= retries) {
+        console.log(`  포기: ${err.message}`);
+        throw err;
+      }
+      const backoff = Math.min(cap, base * factor ** attempt); // 지수 증가 + 상한
+      const wait = Math.floor(Math.random() * backoff);         // 풀 지터
+      console.log(`  시도 ${attempt + 1} 실패(${err.message}) → ${wait}ms 대기 (백오프 상한 ${backoff}ms)`);
+      await sleep(wait);
+    }
+  }
+}
+
+// 3번은 429처럼 실패하고 4번째에 성공하는 가짜 불안정 작업
+let calls = 0;
+const flakyCall = async () => {
+  calls++;
+  if (calls <= 3) { const e = new Error('429 Too Many Requests'); e.status = 429; throw e; }
+  return { ok: true, attempt: calls };
+};
+
+console.log('지수 백오프 재시도 데모 (base=100ms, factor=2, 풀 지터)');
+await withRetry(flakyCall);
+```
+
+## 실제로 돌려본 결과 🧪
+
+이 글을 쓰면서 `node backoff.mjs`로 **실제 실행**한 출력입니다(꾸며낸 값 아님):
+
+```text
+지수 백오프 재시도 데모 (base=100ms, factor=2, 풀 지터)
+  시도 1 실패(429 Too Many Requests) → 55ms 대기 (백오프 상한 100ms)
+  시도 2 실패(429 Too Many Requests) → 198ms 대기 (백오프 상한 200ms)
+  시도 3 실패(429 Too Many Requests) → 12ms 대기 (백오프 상한 400ms)
+  성공 (총 시도 4회, 268ms 소요)
+```
+
+주목할 점: **백오프 상한은 100 → 200 → 400으로 2배씩** 늘지만, 실제 대기는 지터 때문에 **55ms, 198ms, 12ms**로 제각각입니다. 시도 3에서 상한이 400ms인데 12ms만 기다린 게 바로 지터예요. 이 무작위성이 여러 클라이언트의 재시도를 흩어 thundering herd를 막습니다. (지터가 없으면 다들 정확히 100/200/400ms에 몰립니다.)
+
+## 실무 LLM API에 적용하기 🧭
+
+핵심은 **직접 만들기 전에, 쓰는 SDK가 이미 해주는지 확인**하는 겁니다.
+
+- **Anthropic·OpenAI 공식 SDK는 기본으로 재시도를 내장**합니다. 예를 들어 Anthropic SDK는 `408/409/429/5xx`와 연결 오류를 **지수 백오프로 자동 재시도**하고(기본 `max_retries=2`), 응답의 **`retry-after` 헤더를 존중**합니다. 대부분은 `maxRetries` 값만 올리면 끝이에요.
+- **직접 구현이 필요한 경우**: 커스텀 큐, 요청 우선순위, 배치 파이프라인처럼 SDK 재시도만으로 부족할 때. 이때 위 패턴을 씁니다.
+- **`Retry-After` 헤더가 있으면 그 값을 최우선**으로 따르세요. 서버가 "정확히 몇 초 뒤에 오라"고 알려주는 거니, 내 백오프 계산보다 정확합니다. 헤더가 없을 때만 지수 백오프로 폴백.
+
+즉 "재시도 로직을 처음부터 짜는" 상황은 생각보다 드뭅니다. **언제 SDK에 맡기고 언제 직접 짤지**를 아는 게 실무 감각이에요. 어떤 모델·SDK를 고를지 고민이면 [Claude Opus 4.8 vs Sonnet 5 선택 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-4-8-vs-sonnet-5-api-developer-guide-2026)를 참고하세요.
+
+## 흔한 함정 🔪
+
+1. **모든 오류를 재시도하지 말 것** — `400`(잘못된 요청)·`401`(인증 실패)·`403`은 백 번 재시도해도 똑같이 실패합니다. **429와 5xx만** 재시도 대상. 위 코드의 `retryable` 판정이 그 역할입니다.
+2. **지터를 빼먹지 말 것** — 지수 백오프만 있고 지터가 없으면, 동시에 실패한 클라이언트들이 정확히 같은 시점에 다시 몰려 429를 재생산합니다.
+3. **총 대기 시간에 상한을 둘 것** — 100ms → 200ms → 400ms → 800ms … 는 금방 수십 초가 됩니다. 재시도 횟수(`retries`)와 개별 백오프 상한(`cap`)을 둘 다 두세요.
+4. **HTTP 라이브러리 타임아웃 ≠ 전체 시간** — `fetch`/`axios`의 타임아웃은 대개 **청크 단위 읽기** 타임아웃이라, 스트리밍 응답이 찔끔찔끔 오면 전체는 무한정 걸릴 수 있습니다. 하드 데드라인이 필요하면 루프 바깥에서 경과 시간을 직접 재세요.
+
+## 마무리
+
+429는 에러가 아니라 **"속도를 맞춰라"는 정상 신호**입니다. 지수 백오프 + 지터로 대응하고, `Retry-After`가 있으면 그걸 우선하세요. 그리고 대부분은 **SDK가 이미 해준다**는 걸 기억하면, 직접 짜다 삽질할 일이 줄어듭니다.
+
+더 많은 실전 가이드는 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 카테고리에, RAG 검색을 밑바닥부터 만드는 실습은 [코사인 유사도 직접 구현하기](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026)에 있습니다.
+
+---
+
+## 참고 자료
+
+- [Timeouts, retries, and backoff with jitter](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/) — AWS Builders' Library
+- [How to handle rate limits](https://developers.openai.com/cookbook/examples/how_to_handle_rate_limits) — OpenAI Cookbook
+- [API Rate Limiting Best Practices (2026)](https://www.getknit.dev/blog/10-best-practices-for-api-rate-limiting-and-throttling) — Knit, 2026년 기준
+
+**함께 읽으면 좋은 글:**
+
+- [RAG의 핵심 코사인 유사도를 Node.js로 직접 구현하기](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026) - 의존성 0 실습 시리즈
+- [Claude Opus 4.8 vs Sonnet 5 선택 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-4-8-vs-sonnet-5-api-developer-guide-2026) - 어떤 모델·SDK를 쓸까
