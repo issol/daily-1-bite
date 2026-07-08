@@ -1,0 +1,142 @@
+---
+title: "LLM 스트리밍 응답 직접 파싱하기: SSE 파서를 Node.js로 (의존성 0) [2026]"
+date: "2026-07-08"
+description: "ChatGPT처럼 토큰이 흐르는 UX의 밑바닥, SSE. 라이브러리 없이 Node.js로 파서를 직접 만들고, 청크가 중간에 잘려도 안 깨지는 이유를 실행 결과로 확인합니다."
+category: "ai-tutorial"
+tags: ["LLM 스트리밍", "SSE", "Server-Sent Events", "Node.js", "실시간", "스트리밍 파서"]
+thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Fiber_optic_illuminated.jpg/1280px-Fiber_optic_illuminated.jpg"
+---
+
+## TL;DR
+
+- ChatGPT·Claude가 답을 **한 글자씩 흘려주는** 그 UX의 밑바닥은 **SSE(Server-Sent Events)** 입니다.
+- SSE는 `event:`·`data:` 줄과 **빈 줄(이벤트 경계)** 로 된 아주 단순한 텍스트 프로토콜이에요. 40줄이면 직접 파싱합니다.
+- 함정은 딱 하나: **네트워크 청크는 이벤트 중간에서 잘려서 도착**합니다. 그래서 **버퍼링**이 핵심이고, 이 글에서 실제로 잘라 흘려보내며 증명합니다.
+
+![광섬유를 통과하는 빛 — 데이터 스트림의 은유](https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Fiber_optic_illuminated.jpg/1280px-Fiber_optic_illuminated.jpg)
+_이미지: Fiber optic illuminated by [Hustvedt](https://commons.wikimedia.org/wiki/File:Fiber_optic_illuminated.jpg), Wikimedia Commons (CC BY-SA 3.0)_
+
+## SSE 포맷, 5분이면 끝
+
+LLM 스트리밍 응답은 이렇게 생긴 텍스트가 이어서 옵니다.
+
+```text
+event: content_block_delta
+data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"안녕"}}
+
+event: message_stop
+data: {"type":"message_stop"}
+```
+
+규칙은 세 개뿐입니다.
+
+- `event:` 줄 = 이벤트 이름
+- `data:` 줄 = 페이로드(보통 JSON). 여러 `data:` 줄이면 개행으로 이어붙임
+- **빈 줄 = "이 이벤트 끝"** 신호
+- `:`로 시작하는 줄 = keep-alive 주석(무시)
+
+## 40줄로 직접 만들기 🛠
+
+핵심은 **들어오는 조각을 버퍼에 쌓고, 줄 단위로 잘라, 빈 줄이 나오면 한 이벤트를 확정**하는 것입니다.
+
+```js
+// sse.mjs — 의존성 0 SSE 파서
+function createSSEParser(onEvent) {
+  let buffer = '';
+  let event = 'message';
+  let data = '';
+  return function feed(chunk) {
+    buffer += chunk;
+    let idx;
+    while ((idx = buffer.indexOf('\n')) !== -1) {
+      const line = buffer.slice(0, idx).replace(/\r$/, '');
+      buffer = buffer.slice(idx + 1);
+      if (line === '') {                     // 빈 줄 = 이벤트 경계
+        if (data) onEvent(event, data);
+        event = 'message'; data = '';
+      } else if (line.startsWith(':')) {
+        // keep-alive 주석 — 무시
+      } else if (line.startsWith('event:')) {
+        event = line.slice(6).trim();
+      } else if (line.startsWith('data:')) {
+        data += (data ? '\n' : '') + line.slice(5).trim();
+      }
+    }
+  };
+}
+
+// Anthropic 스타일 메시지 스트림 샘플
+const raw =
+  'event: message_start\n' +
+  'data: {"type":"message_start"}\n\n' +
+  'event: content_block_delta\n' +
+  'data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"안녕"}}\n\n' +
+  'event: content_block_delta\n' +
+  'data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"하세요, "}}\n\n' +
+  'event: content_block_delta\n' +
+  'data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"스트리밍!"}}\n\n' +
+  'event: message_stop\n' +
+  'data: {"type":"message_stop"}\n\n';
+
+let text = '';
+const parse = createSSEParser((event, data) => {
+  const json = JSON.parse(data);
+  if (event === 'content_block_delta' && json.delta?.type === 'text_delta') {
+    text += json.delta.text;
+    process.stdout.write(json.delta.text); // 도착하는 대로 출력
+  }
+  if (event === 'message_stop') console.log('\n[스트림 종료]');
+});
+
+// 네트워크처럼 '아무렇게나' 17자씩 쪼개서 흘려보낸다(이벤트 중간에서 잘려도 되는지)
+console.log('청크 경계를 일부러 이벤트 중간에서 잘라 흘려보냄:');
+for (let i = 0; i < raw.length; i += 17) parse(raw.slice(i, i + 17));
+console.log(`조립된 전체 텍스트: "${text}"`);
+```
+
+## 실제로 돌려본 결과 🧪
+
+이 글을 쓰면서 `node sse.mjs`로 **실제 실행**한 출력입니다(꾸며낸 값 아님):
+
+```text
+청크 경계를 일부러 이벤트 중간에서 잘라 흘려보냄:
+안녕하세요, 스트리밍!
+[스트림 종료]
+조립된 전체 텍스트: "안녕하세요, 스트리밍!"
+```
+
+포인트는 이겁니다. 스트림을 **17자씩** 잘라서 넣었으니 대부분의 청크는 `data: {"type":...` 같은 이벤트 **한복판에서 잘렸습니다.** 그런데도 텍스트가 `안녕하세요, 스트리밍!`으로 정확히 조립됐죠. **버퍼가 불완전한 줄을 물고 있다가, 개행이 도착해야 처리**하기 때문입니다. 이게 SSE 파싱의 전부이자 핵심입니다.
+
+## 실무 LLM API에 적용하기 🧭
+
+- **Anthropic**: 텍스트 조각은 `content_block_delta` 이벤트의 `delta.text_delta.text`에 담깁니다(위 샘플 그대로). `message_stop`이 끝 신호.
+- **OpenAI**: 청크는 `choices[0].delta.content`에 오고, 스트림 종료는 **`data: [DONE]`** 라는 특수 문자열로 표시됩니다. 그래서 `data:`가 `[DONE]`이면 JSON 파싱하지 말고 종료 처리해야 해요.
+- **가장 중요한 실무 팁**: 대부분 **직접 파싱할 필요가 없습니다.** 공식 SDK가 스트림 헬퍼를 제공해요. 예를 들어 Anthropic SDK는 `client.messages.stream(...)`으로 토큰 델타를 이벤트로 주고, `.finalMessage()`로 완성 메시지를 돌려줍니다. **직접 SSE를 뜯는 건 커스텀 프록시·게이트웨이·다른 언어 브릿지를 만들 때**의 이야기입니다.
+
+즉 이 40줄은 "SDK가 안에서 무슨 일을 하는지"를 이해하기 위한 것입니다. 원리를 알면 스트림이 중간에 끊기거나 이상하게 조립될 때 어디를 봐야 할지 바로 감이 옵니다. API 호출이 실패·과부하로 끊길 때의 대응은 [지수 백오프 재시도 직접 구현하기](https://daily1bite.com/ko/blog/ai-tutorial/llm-api-exponential-backoff-retry-nodejs-2026)에서 다뤘습니다.
+
+## 흔한 함정 🔪
+
+1. **청크 경계를 믿지 말 것** — 위에서 증명했듯 네트워크 청크는 이벤트·줄 중간에서 잘립니다. `chunk`를 곧바로 `JSON.parse` 하면 **불완전한 JSON에서 터집니다.** 반드시 버퍼링 후 완성된 `data:`만 파싱하세요.
+2. **`[DONE]` 같은 비-JSON 데이터** — OpenAI의 종료 신호는 JSON이 아닙니다. `data` 값이 `[DONE]`이면 파싱 전에 걸러야 합니다.
+3. **keep-alive 주석** — 서버는 연결 유지를 위해 `:` 로 시작하는 빈 주석을 보냅니다. 무시하지 않으면 파싱이 꼬여요.
+4. **HTTP 타임아웃 ≠ 전체 시간** — `fetch`/`axios`의 타임아웃은 대개 **청크 단위 읽기** 타임아웃이라, 토큰이 찔끔찔끔 오는 스트림은 전체가 무한정 걸릴 수 있습니다. 하드 데드라인이 필요하면 루프 바깥에서 경과 시간을 직접 재세요.
+
+## 마무리
+
+SSE는 어렵지 않습니다. **줄 단위 버퍼링 + 빈 줄에서 이벤트 확정**, 이 두 문장이 전부예요. 실무에선 SDK 스트림 헬퍼를 쓰되, 그 안에서 벌어지는 일을 알고 있으면 스트리밍 버그를 훨씬 빨리 잡습니다.
+
+더 많은 의존성 0 실습은 [RAG 코사인 유사도 직접 구현](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026)에, 다른 실전 가이드는 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 카테고리에 있습니다.
+
+---
+
+## 참고 자료
+
+- [Using server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events) — MDN Web Docs
+- [Streaming Messages](https://platform.claude.com/docs/en/build-with-claude/streaming) — Anthropic 공식 문서
+- [How to stream completions](https://developers.openai.com/cookbook/examples/how_to_stream_completions) — OpenAI Cookbook
+
+**함께 읽으면 좋은 글:**
+
+- [LLM API가 자꾸 429를 뱉을 때: 지수 백오프 재시도](https://daily1bite.com/ko/blog/ai-tutorial/llm-api-exponential-backoff-retry-nodejs-2026) - 스트림이 끊길 때의 재시도
+- [RAG의 핵심 코사인 유사도를 Node.js로 직접 구현하기](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026) - 의존성 0 실습 시리즈
