@@ -1,0 +1,216 @@
+---
+title: "RAG 텍스트 청킹: 재귀적 분할기를 Node.js로 직접 구현 (의존성 0) [2026]"
+date: "2026-07-11"
+description: "긴 문서를 RAG 청크로 나누는 재귀적 텍스트 분할기를 의존성 0 Node.js로 만듭니다. 오버랩 검증과 저장량 트레이드오프까지 직접 실행해 정리했습니다."
+category: "ai-tutorial"
+tags: ["RAG", "텍스트 청킹", "text splitter", "chunk overlap", "임베딩", "Node.js"]
+thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Puzzle_pieces.jpg/1280px-Puzzle_pieces.jpg"
+---
+
+## TL;DR
+
+- RAG 품질의 절반은 **청킹**에서 갈립니다. 청크가 너무 크면 임베딩이 뭉개지고, 너무 작으면 문맥이 끊겨요.
+- 그래서 **재귀적 텍스트 분할기**를 의존성 0 Node.js로 직접 만듭니다. 문단 → 문장 → 단어 → 문자 순으로 경계를 시도해 의미 단위를 최대한 보존해요.
+- 오버랩을 실제로 검증해보니 인접 청크가 **정확히 20자**를 공유했고, 오버랩을 20 → 40으로 올리자 저장량이 **+40% → +74%**로 늘었습니다. 공짜가 아니에요.
+- 어제 만든 [토큰 추정기](https://daily1bite.com/ko/blog/ai-tutorial/llm-token-counter-cost-estimator-nodejs-from-scratch-2026)를 `lenFn`으로 주입하면 **토큰 예산 기준 청킹**도 됩니다. 시리즈가 여기서 이어집니다.
+
+![겹쳐 맞물리는 퍼즐 조각 — 오버랩 청킹의 은유](https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Puzzle_pieces.jpg/1280px-Puzzle_pieces.jpg)
+_출처: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Puzzle_pieces.jpg) (CC BY-SA) | 청크는 퍼즐 조각처럼 살짝 겹쳐야 경계에서 문맥이 끊기지 않는다_
+
+## 왜 청킹이 RAG의 절반일까
+
+혹시 RAG를 붙였는데 답변이 엉뚱하게 나온 경험 있으신가요? 임베딩 모델이나 프롬프트를 의심하기 쉽지만, 범인은 보통 **청킹**입니다.
+
+검색 증강 생성(RAG)은 문서를 잘게 쪼개 임베딩한 뒤, 질문과 가까운 청크를 찾아 LLM에 붙여줍니다. 이때 청크를 어떻게 나누느냐가 검색 정확도를 좌우해요. 문단 하나를 통째로 임베딩하면 여러 주제가 한 벡터에 뭉뚱그려져 "무슨 얘기든 어중간하게 비슷한" 청크가 됩니다. 반대로 한 문장씩 쪼개면 앞뒤 문맥이 잘려서, 정작 답에 필요한 정보가 다른 청크로 흩어지죠.
+
+임베딩과 유사도 자체는 [RAG의 핵심 코사인 유사도를 Node.js로 직접 구현하기](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026)에서 다뤘으니, 오늘은 그 **앞단**인 청킹을 직접 만들어 봅니다.
+
+## 사전 준비
+
+필요한 건 Node.js뿐입니다. 외부 패키지는 하나도 안 씁니다. 저는 Node v22에서 돌렸어요. `text-splitter.mjs` 파일 하나에 전부 담습니다.
+
+## 1단계: 구분자 계층 정하기
+
+재귀적 분할기의 핵심 아이디어는 **큰 의미 단위부터 시도**하는 겁니다. 문단이 한도에 맞으면 문단째로 두고, 넘치면 문장으로, 그래도 넘치면 단어로, 최후엔 문자로 쪼갭니다.
+
+```js
+// text-splitter.mjs — 의존성 0
+const DEFAULT_SEPARATORS = ["\n\n", "\n", ". ", " ", ""];
+
+// 이 텍스트에 존재하는 첫 번째 구분자를 고른다.
+function pickSeparator(text, separators) {
+  for (let i = 0; i < separators.length; i++) {
+    const sep = separators[i];
+    if (sep === "" || text.includes(sep)) {
+      return { sep, rest: separators.slice(i + 1) };
+    }
+  }
+  return { sep: "", rest: [] };
+}
+```
+
+`rest`가 중요합니다. 지금 구분자로 쪼갠 조각이 여전히 크면, **남은 더 작은 구분자들**로 재귀 분할하기 위해 넘겨줄 목록이에요.
+
+## 2단계: 조각을 청크로 채우기
+
+쪼갠 조각들을 chunkSize 한도까지 이어 붙입니다. 여기서는 오버랩을 넣지 않아요. (오버랩은 4단계에서 따로 붙입니다 — 이유는 뒤에서 설명합니다.)
+
+```js
+function mergeSplits(splits, sep, chunkSize, lenFn) {
+  const chunks = [];
+  let current = [];
+  let total = 0;
+  const joiner = sep === "" ? "" : sep;
+
+  for (const piece of splits) {
+    const pieceLen = lenFn(piece);
+    if (total + pieceLen > chunkSize && current.length > 0) {
+      chunks.push(current.join(joiner));
+      current = [];
+      total = 0;
+    }
+    current.push(piece);
+    total += pieceLen;
+  }
+  if (current.length > 0) chunks.push(current.join(joiner));
+  return chunks;
+}
+```
+
+`lenFn`은 길이를 재는 함수입니다. 기본은 문자 수지만, 여기에 **토큰 추정기를 꽂으면 토큰 예산 기준으로 청킹**할 수 있어요. 이게 뒤에서 시리즈를 잇는 지점입니다.
+
+## 3단계: 재귀로 큰 조각 쪼개기
+
+이제 전체를 묶습니다. 작은 조각은 버퍼에 쌓아 `mergeSplits`로 내보내고, 한도를 넘는 큰 조각은 더 작은 구분자로 재귀 분할합니다.
+
+```js
+function packChunks(text, chunkSize, separators, lenFn) {
+  const { sep, rest } = pickSeparator(text, separators);
+  const raw = sep === "" ? text.split("") : text.split(sep);
+
+  const finalChunks = [];
+  let buffer = [];
+  for (const part of raw) {
+    if (lenFn(part) < chunkSize) {
+      buffer.push(part);
+    } else {
+      if (buffer.length) {
+        finalChunks.push(...mergeSplits(buffer, sep, chunkSize, lenFn));
+        buffer = [];
+      }
+      if (rest.length) {
+        finalChunks.push(...packChunks(part, chunkSize, rest, lenFn)); // 재귀
+      } else {
+        finalChunks.push(part);
+      }
+    }
+  }
+  if (buffer.length) finalChunks.push(...mergeSplits(buffer, sep, chunkSize, lenFn));
+  return finalChunks.filter((c) => c.trim().length > 0);
+}
+```
+
+## 4단계: 오버랩 붙이기 (여기가 함정입니다)
+
+처음엔 저도 `mergeSplits` 안에서 "청크를 확정할 때 끝 조각 몇 개를 남겨 다음 청크 앞에 두는" 방식으로 오버랩을 넣었습니다. 그런데 **오버랩이 0으로 나오더라고요.**
+
+원인은 이렇습니다. 조각(문장) 하나가 오버랩 크기보다 크면, 남기려던 조각이 통째로 오버랩 예산을 초과해 버립니다. 그래서 아무것도 못 남기고 오버랩이 사라져요. 널리 쓰는 LangChain식 분할기도 조각이 오버랩보다 크면 이 경계에서 오버랩이 사실상 0이 됩니다. **버그가 아니라 원리적 한계**예요.
+
+그래서 저는 **문자 단위 오버랩**으로 바꿨습니다. 조각 경계와 무관하게, 각 청크 앞에 직전 청크의 꼬리 N자를 그냥 붙입니다. 항상 정확히 겹치죠.
+
+```js
+function applyOverlap(chunks, chunkOverlap) {
+  if (chunkOverlap <= 0 || chunks.length <= 1) return chunks;
+  return chunks.map((c, i) =>
+    i === 0 ? c : chunks[i - 1].slice(-chunkOverlap) + c
+  );
+}
+
+export function splitText(text, {
+  chunkSize = 200, chunkOverlap = 40,
+  separators = DEFAULT_SEPARATORS, lenFn = (s) => s.length,
+} = {}) {
+  const packed = packChunks(text, chunkSize, separators, lenFn);
+  return applyOverlap(packed, chunkOverlap);
+}
+```
+
+## 실행 결과
+
+318자짜리 한국어 문서를 `chunkSize=60, overlap=20`으로 돌리면 이렇게 나옵니다.
+
+```
+원문 길이(문자): 318
+
+[청크 0] 47자: 검색 증강 생성(RAG)은 외부 문서를 검색해 LLM 답변에 근거를 붙이...
+[청크 1] 51자: LM 답변에 근거를 붙이는 기법입니다핵심은 긴 문서를 적당한 크기의 청크...
+...
+총 청크 수: 8 | 평균 56자 | 최대 68자 (한도 60 + 오버랩 20)
+```
+
+오버랩이 진짜 붙었는지 검증해봤습니다. 청크 0의 꼬리와 청크 1의 머리를 비교하니:
+
+```
+청크0 꼬리: "색해 LLM 답변에 근거를 붙이는 기법입니다"
+청크1 머리: "LM 답변에 근거를 붙이는 기법입니다핵심은 "
+실제 겹친 길이: 20자
+```
+
+정확히 **20자**를 공유합니다. 경계에서 문맥이 끊기지 않게 만드는 게 이거예요.
+
+![책장에 꽂힌 문서들 — 결국 쪼개서 검색해야 할 대상](https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Bookshelf.jpg/1280px-Bookshelf.jpg)
+_출처: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Bookshelf.jpg) (CC BY-SA) | 긴 문서를 어떻게 쪼개느냐가 검색 품질을 좌우한다_
+
+## ⚖️ 오버랩은 공짜가 아니다
+
+오버랩을 키우면 경계 문맥은 좋아지지만 **같은 내용을 여러 청크에 중복 저장**하게 됩니다. 임베딩 비용과 벡터 저장량이 그만큼 늘어요. 실제로 재봤습니다.
+
+| 오버랩 | 청크 수 | 총 저장량 | 원문 대비 |
+|---|---|---|---|
+| 0 | 8 | 304자 | −4% |
+| 20 | 8 | 444자 | **+40%** |
+| 40 | 8 | 552자 | **+74%** |
+
+오버랩 20자만으로 저장량이 40% 뛰었습니다. (오버랩 0에서 −4%인 건, 청크를 이어 붙일 때 구분자 문자가 빠지기 때문이에요.) 임베딩은 청크마다 API 비용이 붙으니, 오버랩은 "검색 품질 ↑ vs 비용 ↑"의 저울질입니다. 저는 보통 **청크 크기의 10~20%** 정도를 오버랩으로 잡습니다.
+
+## 🧭 토큰 예산으로 청킹하기 (시리즈 연결)
+
+임베딩 모델에는 문자 한도가 아니라 **토큰 한도**가 있습니다. 그래서 `lenFn`에 어제 만든 토큰 추정기를 그대로 꽂으면 토큰 예산 기준으로 쪼갤 수 있어요.
+
+```js
+import { estimateHybrid } from "./token-estimator.mjs"; // 어제 만든 추정기
+
+const chunks = splitText(doc, {
+  chunkSize: 60,        // 이제 '토큰' 예산
+  chunkOverlap: 12,
+  lenFn: estimateHybrid, // 길이 함수만 바꾸면 끝
+});
+```
+
+돌려보면 5개 청크가 나오고 **최대 추정 토큰이 51로 한도 60 아래**에 들어옵니다. 다만 추정기는 오차가 있으니(어제 글에서 한국어 +6%, 코드 −21%를 봤죠), 임베딩 모델의 하드 토큰 한도에 딱 붙여 쓰지 말고 **여유를 두세요.** 정확한 한도가 필요하면 해당 임베딩 모델의 토크나이저를 쓰는 게 맞습니다.
+
+## 자주 겪는 함정
+
+- **오버랩이 0으로 나온다** → 조각 경계 기반 오버랩의 원리적 한계. 위처럼 문자 단위 오버랩으로 바꾸세요.
+- **청크가 한도를 넘는다** → 구분자 계층 맨 끝에 `""`(문자 분할)가 있는지 확인하세요. 없으면 쪼갤 수 없는 긴 토큰이 그대로 남습니다.
+- **코드·표를 청킹하면 깨진다** → `\n\n`/`\n` 위주 구분자는 산문용입니다. 코드는 함수 경계, 마크다운은 헤더(`##`) 기준 구분자를 추가하는 게 좋아요.
+
+## 마치며
+
+40여 줄로 RAG 파이프라인의 앞단을 직접 만들어 봤습니다. 재귀적 분할로 의미 단위를 보존하고, 문자 단위 오버랩으로 경계 문맥을 지키고, 토큰 추정기를 꽂아 예산까지 맞췄어요.
+
+다음 단계는 이 청크들을 임베딩해서 [코사인 유사도](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026)로 검색하는 겁니다. 토큰 카운터 → 청킹 → 유사도 검색으로 "의존성 0 RAG" 3부작이 완성되네요. 더 많은 실전 구현은 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 카테고리에서 이어집니다.
+
+---
+
+## 참고 자료
+
+- [Recursively split by character](https://python.langchain.com/docs/how_to/recursive_text_splitter/) — LangChain 공식 문서, 2026년 기준
+- [Introducing Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) — Anthropic, 청킹과 검색 품질
+- [Chunking Strategies for LLM Applications](https://www.pinecone.io/learn/chunking-strategies/) — Pinecone, 청크 크기·오버랩 가이드
+
+**함께 읽으면 좋은 글:**
+
+- [LLM 토큰 수 세기: API 없이 토큰·비용 추정기를 Node.js로](https://daily1bite.com/ko/blog/ai-tutorial/llm-token-counter-cost-estimator-nodejs-from-scratch-2026) - 이 글의 `lenFn`으로 꽂은 어제의 토큰 추정기
+- [RAG의 핵심 '코사인 유사도'를 Node.js로 직접 구현하기](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026) - 청킹한 조각을 임베딩해 검색하는 다음 단계
+- [LLM 스트리밍 응답 직접 파싱하기: SSE 파서를 Node.js로](https://daily1bite.com/ko/blog/ai-tutorial/llm-streaming-sse-parser-nodejs-from-scratch-2026) - 의존성 0으로 LLM을 다루는 같은 시리즈
