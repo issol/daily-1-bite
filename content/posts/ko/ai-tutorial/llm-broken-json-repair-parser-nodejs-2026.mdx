@@ -1,0 +1,206 @@
+---
+title: "LLM이 뱉는 깨진 JSON 복구하기: 견고한 파서를 Node.js로 (의존성 0) [2026]"
+date: "2026-07-15"
+description: "LLM이 뱉는 깨진 JSON(펜스·트레일링 콤마·잘림)을 복구하는 파서를 의존성 0 Node.js로 구현합니다. 깨진 샘플 5개를 직접 실행해 복구 결과와 한계까지 정리했습니다."
+category: "ai-tutorial"
+tags: ["LLM JSON", "JSON 복구", "JSON.parse", "structured output", "Node.js", "파서"]
+thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Kintsugi.jpg/1280px-Kintsugi.jpg"
+---
+
+## TL;DR
+
+- LLM한테 "JSON으로만 답해"라고 해도, 현실에선 `` ```json `` 펜스로 감싸거나, 트레일링 콤마를 붙이거나, 응답이 중간에 잘려서 옵니다. 그대로 `JSON.parse`에 넣으면 터져요.
+- 그래서 **깨진 JSON을 복구해서 파싱하는 파서**를 의존성 0 Node.js로 만듭니다. 펜스 제거 → 스마트쿼트 정규화 → 트레일링 콤마 제거 → **잘린 구조 자동 닫기**까지 4단계예요.
+- 실제로 깨진 샘플 5개를 돌려보니 전부 복구됐고, `undefined`/`NaN`처럼 **파서로는 못 고치는 케이스**도 확인했습니다. 이 한계선이 이 글의 핵심입니다.
+
+![금으로 이어 붙인 도자기(킨츠기) — 깨진 것을 버리지 않고 이어서 다시 쓴다](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Kintsugi.jpg/1280px-Kintsugi.jpg)
+_출처: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Kintsugi.jpg) | 깨진 그릇을 금으로 이어 붙이는 킨츠기. 깨진 JSON도 버리지 말고 이어 붙이면 된다._
+
+## LLM JSON이 왜 자꾸 깨지나
+
+결론부터 말하면, LLM은 JSON을 "출력 형식"이 아니라 "그럴듯한 텍스트"로 생성하기 때문입니다. 스키마를 아무리 강조해도 확률적으로 토큰을 뱉는 모델이라, 사람이 흔히 하는 실수(트레일링 콤마, 코드블록 습관)를 똑같이 따라 합니다.
+
+저는 지난달에 사이드 프로젝트에서 상품 리뷰를 요약해 `{ "summary": ..., "score": ... }`로 받는 파이프라인을 짰는데요. 로컬 테스트 100번 중 7~8번은 `SyntaxError: Unexpected token`으로 죽었습니다. 로그를 까보니 모델이 친절하게 `` ```json ``으로 감싸주거나, 마지막에 "도움이 됐길 바랍니다!" 같은 인사를 붙여놨더라고요. 솔직히 좀 허탈했습니다. 프롬프트에 "JSON만 출력해"라고 대문자로 세 번이나 썼는데도요.
+
+OpenAI의 Structured Outputs나 Anthropic의 tool use처럼 **스키마를 강제하는 기능**을 쓰면 이 문제는 크게 줄어듭니다. 하지만 (1) 모든 모델·엔드포인트가 지원하는 게 아니고, (2) 로컬 오픈웨이트 모델은 지원이 들쭉날쭉하고, (3) 스트리밍 도중 잘린 응답은 여전히 깨진 채로 옵니다. 그래서 **마지막 방어선으로 복구 파서 하나는 있어야** 합니다.
+
+## 깨지는 5가지 패턴
+
+제가 실제 로그에서 반복해서 본 깨짐은 대략 이렇게 분류됩니다.
+
+| # | 패턴 | 예시 | 원인 |
+|---|------|------|------|
+| ① | 마크다운 펜스 | `` ```json\n{...}\n``` `` | 코드블록으로 감싸는 습관 |
+| ② | 앞뒤 잡소리 | `Here is the JSON: {...} Hope it helps!` | 대화형 응답 습관 |
+| ③ | 트레일링 콤마 | `{"a":1,"b":2,}` | 사람이 자주 하는 실수 모방 |
+| ④ | 스마트쿼트 | `{"title": "..."}` (곧은 따옴표 아님) | 한글/문서 톤에서 자동 변환된 따옴표 |
+| ⑤ | 응답 잘림 | `{"user":"issol","history":[{"role":"user"` | max_tokens 초과·스트리밍 중단 |
+
+①②는 **껍데기** 문제라 잘라내면 되고, ③④는 **치환**으로 해결됩니다. 진짜 까다로운 건 ⑤예요. 응답이 문자열 한복판에서 끊기면 열린 괄호·따옴표를 우리가 대신 닫아줘야 합니다.
+
+## 복구 파서 구현 (의존성 0)
+
+전략은 단순합니다. **원본이 유효하면 그대로 파싱**하고, 실패하면 단계별로 복구해서 재시도합니다. 억지로 다 뜯어고치지 않고, 되는 만큼만 손대는 게 핵심이에요.
+
+### 1단계 — 껍데기 벗기기
+
+```js
+// 마크다운 펜스/앞뒤 잡소리 제거 → 첫 { 또는 [ 부터 시작
+function extractJsonSlice(text) {
+  let s = text.trim();
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) s = fence[1].trim();       // ```json ... ``` 안쪽만
+  const start = s.search(/[{[]/);
+  if (start > 0) s = s.slice(start);     // "Here is..." 같은 앞머리 제거
+  return s;
+}
+```
+
+### 2단계 — 스마트쿼트 정규화
+
+```js
+function normalizeQuotes(s) {
+  return s
+    .replace(/[“”„‟]/g, '"')  // “ ” „ ‟ → "
+    .replace(/[‘’‚‛]/g, "'"); // ‘ ’ ‚ ‛ → '
+}
+```
+
+### 3단계 — 트레일링 콤마 제거 + 잘린 구조 닫기 (핵심)
+
+여기가 제일 신경 쓴 부분입니다. **문자열 내부를 존중**하면서 스캔해야 합니다. 즉 `"a, b}"` 같은 값 안의 콤마나 중괄호를 구조로 착각하면 안 돼요. 그래서 `inString` 플래그로 문자열 안/밖을 추적합니다.
+
+```js
+function balanceAndClean(s) {
+  const stack = [];          // 열린 { [ 를 쌓는다
+  let out = '';
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+
+    if (inString) {                       // 문자열 내부: 그대로 통과
+      out += ch;
+      if (escaped) { escaped = false; continue; }
+      if (ch === '\\') { escaped = true; continue; }
+      if (ch === '"') inString = false;
+      continue;
+    }
+
+    if (ch === '"') { inString = true; out += ch; continue; }
+
+    if (ch === ',') {                     // 트레일링 콤마: 뒤가 } 또는 ] 면 버림
+      if (/^\s*[}\]]/.test(s.slice(i + 1))) continue;
+      out += ch;
+      continue;
+    }
+
+    if (ch === '{' || ch === '[') { stack.push(ch); out += ch; continue; }
+    if (ch === '}' || ch === ']') { stack.pop(); out += ch; continue; }
+
+    out += ch;
+  }
+
+  if (inString) out += '"';               // 문자열이 잘린 채 끝났으면 닫기
+  while (stack.length) {                   // 안 닫힌 구조를 역순으로 닫기
+    out += stack.pop() === '{' ? '}' : ']';
+  }
+  return out;
+}
+```
+
+### 4단계 — 조립
+
+```js
+export function repairJson(raw) {
+  try { return JSON.parse(raw); } catch {}          // 빠른 경로: 이미 유효하면 끝
+
+  let s = normalizeQuotes(extractJsonSlice(raw));
+  try { return JSON.parse(s); } catch {}            // 껍데기만 벗겨도 되면 끝
+
+  return JSON.parse(balanceAndClean(s));            // 균형 복구 후 최종 파싱
+}
+```
+
+`JSON.parse`를 세 번 시도하는 구조예요. 되도록 **원본을 덜 건드리는 순서**로 배치했습니다. 멀쩡한 JSON을 괜히 정규식으로 주무르다 오히려 망치는 걸 막으려는 거죠.
+
+## 실행: 깨진 샘플 5개 돌려보기
+
+말로만 하면 안 미덥죠. 위 5가지 패턴을 그대로 샘플로 만들어 실제로 돌렸습니다. 아래는 `node repair-json.mjs`의 실제 출력입니다.
+
+```text
+Node v22.15.1 — repairJson 데모
+
+① 마크다운 펜스로 감쌈
+  입력: "```json\n{\"name\": \"Claude\", \"ok\": true}\n```"
+  복구: {"name":"Claude","ok":true}
+  ✅ 성공
+
+② 앞뒤 잡소리 + 펜스
+  입력: "Sure! Here is the JSON you asked for:\n```json\n{\"lang\": \"ko\", \"score\": 9.5}\n```\nHope it helps!"
+  복구: {"lang":"ko","score":9.5}
+  ✅ 성공
+
+③ 트레일링 콤마
+  입력: "{\"a\": 1, \"b\": 2, \"items\": [1, 2, 3,],}"
+  복구: {"a":1,"b":2,"items":[1,2,3]}
+  ✅ 성공
+
+④ 스마트쿼트(“ ”)
+  입력: "{“title”: “깨진 JSON”, “tags”: [“llm”, “parse”]}"
+  복구: {"title":"깨진 JSON","tags":["llm","parse"]}
+  ✅ 성공
+
+⑤ 응답이 중간에 잘림(truncated)
+  입력: "{\"user\": \"issol\", \"history\": [{\"role\": \"user\", \"content\": \"안녕"
+  복구: {"user":"issol","history":[{"role":"user","content":"안녕"}]}
+  ✅ 성공
+```
+
+특히 ⑤가 인상적이었어요. 입력은 `..."content": "안녕`에서 **문자열 한복판에 끊겨** 있는데, 복구 결과는 따옴표를 닫고(`"안녕"`), 열려 있던 객체와 배열, 바깥 객체까지 순서대로 `}]}` 로 닫아줍니다. 스트리밍 중간 상태를 그때그때 파싱해 미리보기를 그릴 때 이 동작이 특히 쓸모 있습니다. 스트리밍 파싱 자체가 궁금하다면 [LLM 스트리밍 응답 직접 파싱하기](https://daily1bite.com/ko/blog/ai-tutorial/llm-streaming-sse-parser-nodejs-from-scratch-2026)에서 SSE 파서를 밑바닥부터 만든 글을 함께 보시면 좋습니다.
+
+![금맥처럼 이어진 킨츠기 도자기 — 이음새를 숨기지 않고 드러낸다](https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Kintsugi_art.jpg/1280px-Kintsugi_art.jpg)
+_출처: [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Kintsugi_art.jpg) | 복구는 흔적을 숨기는 게 아니라, 어디를 고쳤는지 알고 쓰는 것._
+
+## 🔪 이 파서로 못 고치는 것 (중요)
+
+여기가 제일 정직하게 말해야 하는 부분입니다. 이 파서는 **문법적으로 깨진 껍데기**를 고치지, **의미가 망가진 값**은 못 고칩니다. 예를 들어 같은 스크립트에서 이 케이스를 돌리면 이렇게 나옵니다.
+
+```text
+⑥ undefined/NaN 포함(JSON 아님)
+  ❌ 복구 실패: Unexpected token 'u', "{"a": undefined,"... is not valid JSON
+  → 이건 파서로 못 고침. 프롬프트에서 막아야 함.
+```
+
+`undefined`, `NaN`, `Infinity`, JS 스타일 주석(`// ...`), 홑따옴표 키(`{'a':1}`) 같은 건 애초에 JSON 스펙([ECMA-404](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/))에 없는 토큰이라, 무리하게 치환하려 들면 오히려 값을 왜곡합니다. 그래서 저는 **일부러 안 고칩니다.** 이런 건 파서가 아니라 프롬프트·스키마 강제에서 막아야 할 문제예요.
+
+또 하나의 한계: ⑤의 자동 닫기는 **구조를 닫아 파싱은 되게** 하지만, 잘려나간 내용까지 복원하진 못합니다. `"content": "안녕`이 사실은 `"안녕하세요 반갑습니다"`였다면, 복구본은 `"안녕"`이라는 **불완전한 값**을 줍니다. 파싱 성공 ≠ 데이터 완전. 그래서 실무에선 복구된 객체에 대해 **한 번 더 스키마 검증**(필수 필드 존재·타입 확인)을 거는 게 안전합니다. 그리고 애초에 잘림을 줄이려면 `max_tokens`를 넉넉히 주는 게 우선이고요.
+
+## 실무 적용: 어디에 끼우나
+
+제가 쓰는 순서는 이렇습니다.
+
+1. **1차 방어**: 가능하면 모델의 JSON 모드/tool use로 스키마를 강제한다.
+2. **2차 방어**: 응답을 `repairJson`으로 통과시킨다. 대부분의 펜스·콤마·잘림은 여기서 흡수된다.
+3. **3차 방어**: 복구된 객체를 스키마로 검증한다(필수 키·타입). 실패하면 재시도.
+4. **재시도**: 그래도 실패하면 [지수 백오프](https://daily1bite.com/ko/blog/ai-tutorial/llm-api-exponential-backoff-retry-nodejs-2026)로 다시 호출한다. 무한 재시도는 금물.
+
+이렇게 겹겹이 쌓으면, 처음에 100번 중 7~8번 죽던 제 파이프라인이 로컬 테스트 기준으로는 죽지 않게 됐습니다. 물론 표본이 작으니 "체감"으로 받아주세요. 재시도 비용을 아끼려면 요청 전 토큰 예산도 미리 재두면 좋은데, 그건 [토큰·비용 추정기](https://daily1bite.com/ko/blog/ai-tutorial/llm-token-counter-cost-estimator-nodejs-from-scratch-2026)에서 다뤘습니다. 이런 실전 유틸이 더 궁금하면 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 카테고리 글도 함께 보세요.
+
+## 마치며
+
+깨진 JSON 복구는 화려하진 않지만, LLM을 프로덕션에 붙이는 순간 반드시 만나는 문제입니다. 핵심은 두 가지예요. **되도록 원본을 덜 건드리고**(멀쩡한 걸 망치지 말 것), **문법만 고치되 의미는 손대지 말 것**(왜곡 방지). 오늘 만든 60줄짜리 파서는 라이브러리 없이도 현실의 깨짐 대부분을 흡수합니다.
+
+여담이지만, 처음엔 정규식 하나로 다 때우려다 오히려 값 안의 콤마를 지워먹는 버그를 만들었습니다. `inString` 추적을 넣고 나서야 안정됐어요. 문자열 안팎을 구분하는 이 작은 상태 하나가 파서의 신뢰도를 갈랐습니다.
+
+## 참고 자료
+
+- [ECMA-404: The JSON Data Interchange Standard](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/) — Ecma International, JSON 표준 스펙
+- [JSON.parse() — MDN Web Docs](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse) — Mozilla, 2026년 기준
+- [Structured Outputs — OpenAI Platform](https://platform.openai.com/docs/guides/structured-outputs) — OpenAI 공식 문서, 2026년 기준
+
+**함께 읽으면 좋은 글:**
+
+- [LLM 스트리밍 응답 직접 파싱하기: SSE 파서를 Node.js로](https://daily1bite.com/ko/blog/ai-tutorial/llm-streaming-sse-parser-nodejs-from-scratch-2026) - 잘린 JSON이 나오는 그 스트리밍을 밑바닥부터 파싱하기
+- [LLM 토큰 수 세기: API 없이 토큰·비용 추정기를 Node.js로](https://daily1bite.com/ko/blog/ai-tutorial/llm-token-counter-cost-estimator-nodejs-from-scratch-2026) - 재시도 비용을 아끼려면 토큰부터 재보기
