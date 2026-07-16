@@ -1,0 +1,202 @@
+---
+title: "인메모리 벡터 스토어 직접 구현: RAG 시맨틱 검색을 Node.js로 (의존성 0) [2026]"
+date: "2026-07-17"
+description: "외부 벡터 DB 없이 벡터 스토어를 Node.js로 직접 구현합니다. 코사인 top-k 검색, 사전 정규화 1.83배 최적화, 브루트포스 1만 벡터 15ms 실측까지 담았습니다."
+category: "ai-tutorial"
+tags: ["벡터 스토어", "시맨틱 검색", "RAG", "Node.js", "임베딩"]
+thumbnail: "https://images.unsplash.com/photo-1528353518104-dbd48bee7bc4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+---
+
+RAG 붙이려는데 첫 단계부터 Pinecone 가입하고, Chroma 서버 띄우고, Docker 컨테이너 하나 더 물고 계신가요. 저도 처음엔 그랬는데요. 문서 몇백 개짜리 사이드 프로젝트에서 벡터 DB를 별도로 굴리는 건 대부분 과합니다. 벡터 스토어의 핵심은 생각보다 단순하고, 순정 Node.js로 100줄이면 충분히 만듭니다.
+
+이 글에서는 외부 의존성 0으로 인메모리 벡터 스토어를 직접 구현합니다. 그리고 "그래서 이거 언제까지 버티냐"를 직접 벤치마크해서 브루트포스의 한계선을 실측으로 그어보겠습니다.
+
+![밤하늘의 별들 — 고차원 공간에 흩어진 벡터, 그리고 가장 가까운 이웃 찾기](https://images.unsplash.com/photo-1528353518104-dbd48bee7bc4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Chan Hoi](https://unsplash.com/@jokerhoi?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 임베딩 벡터는 고차원 공간의 한 점이고, 검색은 그중 가장 가까운 점을 찾는 일입니다._
+
+## TL;DR
+
+- 벡터 스토어 = **벡터 저장 + 코사인 유사도로 top-k 최근접 검색**. 그게 전부입니다.
+- 삽입할 때 벡터를 **미리 정규화**해두면 검색은 내적(dot product)만으로 끝납니다. 매 쿼리 코사인 대비 제 환경에서 **1.83배** 빨랐습니다.
+- 브루트포스 검색은 1,536차원 기준 **1만 벡터에서 약 15ms/쿼리**. 이 정도면 대부분의 개인·중소 프로젝트는 외부 벡터 DB가 필요 없습니다.
+- 10만 벡터를 넘어가면 148ms까지 늘어납니다. 이 지점부터 HNSW 같은 ANN 인덱스를 고민하면 됩니다.
+
+## 가설: "작은 RAG엔 벡터 DB가 필요 없다"
+
+벡터 검색이 하는 일을 한 문장으로 줄이면 이렇습니다. **쿼리 벡터와 가장 방향이 비슷한 문서 벡터 k개를 찾는다.** 방향의 유사도를 재는 게 코사인 유사도인데, 이건 예전에 [RAG의 핵심 '코사인 유사도'를 Node.js로 직접 구현하기](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026)에서 밑바닥부터 다뤘습니다. 오늘은 그 위에 "저장하고 검색하는 그릇", 즉 스토어를 얹습니다.
+
+가설은 단순합니다. 문서가 수천~수만 개 수준이면, 전부 순회하며 유사도를 계산하는 브루트포스만으로도 충분히 빠르다. 진짜 그런지 코드로 확인해봅시다.
+
+## 실험 환경
+
+- Node.js 22.15.1 (순정, npm install 없음)
+- 외부 라이브러리 0개
+- `Float32Array`로 벡터를 담고, `performance.now()`로 지연을 측정
+
+임베딩 자체는 보통 OpenAI 같은 [임베딩 API](https://platform.openai.com/docs/guides/embeddings)로 뽑지만, 그건 키가 필요하고 이 글의 주제도 아닙니다. 그래서 이번엔 의존성 0을 유지하려고 **해싱 기반 토이 임베더**를 직접 만들어 파이프라인을 끝까지 돌립니다. 실전에선 이 자리에 진짜 임베딩 함수만 끼우면 스토어 구조는 그대로 재사용됩니다.
+
+## 1단계: 정규화라는 지름길
+
+코사인 유사도는 두 벡터의 내적을 각자의 크기(norm)로 나눈 값입니다. 그런데 검색할 때마다 문서 벡터의 크기를 다시 계산하는 건 낭비입니다. 크기는 문서를 넣는 순간 정해지니까요.
+
+그래서 **삽입 시점에 벡터를 단위 벡터로 정규화**해두면, 이후 검색에서는 그냥 내적만 하면 그게 곧 코사인 값이 됩니다.
+
+```js
+function norm(v) {
+  let s = 0;
+  for (let i = 0; i < v.length; i++) s += v[i] * v[i];
+  return Math.sqrt(s);
+}
+function normalize(v) {
+  const n = norm(v) || 1;              // 0벡터 방어
+  const out = new Float32Array(v.length);
+  for (let i = 0; i < v.length; i++) out[i] = v[i] / n;
+  return out;
+}
+function dot(a, b) {
+  let s = 0;
+  for (let i = 0; i < a.length; i++) s += a[i] * b[i];
+  return s;
+}
+```
+
+## 2단계: 벡터 스토어
+
+이제 그릇을 만듭니다. `add`로 넣고, `search`로 top-k를 뽑습니다. top-k는 전체를 정렬하지 않고, 크기 k짜리 후보 목록만 유지하며 더 좋은 점수가 나올 때만 교체합니다. k가 작으면 전체 정렬보다 이 방식이 쌉니다.
+
+```js
+class VectorStore {
+  constructor() { this.ids = []; this.vectors = []; this.meta = []; }
+
+  add(id, vector, meta = {}) {
+    this.ids.push(id);
+    this.vectors.push(normalize(vector)); // 넣을 때 1회 정규화
+    this.meta.push(meta);
+    return this;
+  }
+
+  search(queryVector, k = 5) {
+    const q = normalize(queryVector);
+    const top = []; // {score, i} 오름차순, 크기 k 유지
+    for (let i = 0; i < this.vectors.length; i++) {
+      const score = dot(q, this.vectors[i]); // 정규화돼 있으니 내적 = 코사인
+      if (top.length < k) {
+        top.push({ score, i });
+        top.sort((a, b) => a.score - b.score);
+      } else if (score > top[0].score) {
+        top[0] = { score, i };            // 최소값 교체
+        top.sort((a, b) => a.score - b.score);
+      }
+    }
+    return top.sort((a, b) => b.score - a.score)
+      .map(({ score, i }) => ({ id: this.ids[i], score, meta: this.meta[i] }));
+  }
+
+  get size() { return this.ids.length; }
+}
+```
+
+여기까지가 벡터 스토어의 전부입니다. 진짜로요. 나머지는 다 이 뼈대에 살을 붙이는 이야기입니다.
+
+![얽혀 있는 네트워크 노드 — 검색이란 결국 이 점들 사이의 거리를 재는 일](https://images.unsplash.com/photo-1545987796-200677ee1011?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Alina Grubnyak](https://unsplash.com/@alinnnaaaa?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 브루트포스는 모든 점과의 거리를 하나하나 잽니다._
+
+## 3단계: 토이 임베더로 끝까지 돌려보기
+
+검색이 실제로 되는지 보려면 텍스트를 벡터로 바꿀 무언가가 필요합니다. 단어를 해시해서 차원 하나에 빈도를 더하는, 아주 단순한 임베더를 씁니다.
+
+```js
+const DIM = 256;
+function embed(text) {
+  const v = new Float32Array(DIM);
+  const tokens = text.toLowerCase().split(/[\s,.]+/).filter(Boolean);
+  for (const t of tokens) {
+    let h = 2166136261;                 // FNV 해시
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+    v[(h >>> 0) % DIM] += 1;            // term frequency
+  }
+  return v;
+}
+```
+
+한국어 문서 6개를 색인하고 두 개의 쿼리를 던져봤습니다. 실행하면 이렇게 나옵니다.
+
+```text
+# 색인된 문서 수: 6
+
+## 쿼리: "고양이 먹이"
+  0.3162  d5  고양이 사료는 단백질 함량이 중요하다
+  0.2887  d3  Node.js는 서버 사이드 자바스크립트 런타임이다
+  0.0000  d2  강아지는 산책을 좋아하고 사람을 잘 따른다
+
+## 쿼리: "자바스크립트 런타임"
+  0.5774  d3  Node.js는 서버 사이드 자바스크립트 런타임이다
+  0.3162  d5  고양이 사료는 단백질 함량이 중요하다
+  0.0000  d2  강아지는 산책을 좋아하고 사람을 잘 따른다
+```
+
+"자바스크립트 런타임"이 d3(Node.js)를 0.5774로 1등으로 집어낸 건 깔끔합니다. 그런데 "고양이 먹이" 검색에서 **d3(Node.js)가 2등으로 끼어든 게 보이시나요.** 고양이랑 Node.js는 아무 상관이 없죠.
+
+이게 스토어의 버그일까요? 아닙니다. 스토어는 정확히 시킨 대로 코사인 top-k를 뽑았습니다. 문제는 임베더입니다. 256차원짜리 해싱 임베더에선 서로 다른 단어가 같은 차원으로 충돌합니다. "먹이"와 "Node.js"의 어떤 토큰이 같은 버킷에 떨어지면 가짜 유사도가 생깁니다. **검색 품질은 스토어가 아니라 임베딩이 결정한다** — 이게 이 실험에서 가장 중요한 교훈입니다. 실전에서 토이 임베더를 진짜 임베딩 모델로 바꾸면 이 충돌이 사라집니다.
+
+## 4단계: 정규화는 얼마나 이득인가
+
+앞에서 "삽입 시 정규화해두면 빠르다"고 했는데, 얼마나 빠른지 재봤습니다. 1,536차원(OpenAI `text-embedding-3-small`과 같은 크기) 벡터 1만 개에서, 매 쿼리마다 코사인을 풀 계산하는 방식과 사전 정규화 후 내적만 하는 방식을 비교했습니다.
+
+```text
+매 쿼리 코사인(norm 재계산): 27.17 ms/query
+사전 정규화 내적:            14.81 ms/query
+속도 향상: 1.83x
+```
+
+같은 결과를 주면서 **1.83배** 빠릅니다. 문서 norm을 검색 때마다 다시 구하지 않는 것만으로 이 정도 차이가 납니다. 벡터 개수가 많을수록 이 이득은 그대로 누적됩니다.
+
+## 5단계: 브루트포스는 언제 무너지나
+
+핵심 질문입니다. 전부 순회하는 방식이 몇 개까지 실용적일까요. 1,536차원에서 벡터 수를 늘려가며 top-10 검색 지연을 측정했습니다.
+
+| 벡터 수(N) | 검색 지연 (ms/query) | 체감 |
+|---|---|---|
+| 1,000 | 1.44 | 즉각 |
+| 10,000 | 14.76 | 무난 (API 왕복보다 짧음) |
+| 100,000 | 148.58 | 눈에 띄게 느림 |
+
+1만 개까지는 약 15ms입니다. 임베딩 API 한 번 왕복하는 시간(수백 ms)보다 훨씬 짧으니, 이 구간에선 검색 지연이 병목이 아닙니다. 반면 10만 개를 넘으면 100ms대로 올라와 사용자 체감이 나빠지기 시작합니다.
+
+이 감각은 업계 기준과도 맞습니다. Qdrant는 [HNSW 설명 자료](https://qdrant.tech/course/essentials/day-2/what-is-hnsw/)에서 수만 개 이하 규모에선 브루트포스(FLAT)가 오히려 더 빠르고 RAM도 적게 쓴다고 말합니다. Google Cloud도 [pgvector 인덱싱 글](https://cloud.google.com/blog/products/databases/faster-similarity-search-performance-with-pgvector-indexes)에서 데이터가 작을 땐 인덱스 없이 정확 검색(exact)이 낫다고 정리합니다. HNSW·IVF 같은 근사 최근접(ANN) 인덱스는 [FAISS의 ANN 설명](https://pyimagesearch.com/2026/02/16/vector-search-with-faiss-approximate-nearest-neighbor-ann-explained/)처럼 **정확도를 조금 내주고 속도를 크게 얻는** 트레이드오프라, 정말 큰 데이터에서만 값어치를 합니다.
+
+정리하면 이렇습니다.
+
+- **~1만 벡터**: 오늘 만든 브루트포스로 충분. 외부 벡터 DB 불필요.
+- **1만~10만**: 브루트포스로도 되지만 캐싱·필터링을 고민할 시점.
+- **10만+**: HNSW 같은 ANN 인덱스나 전용 벡터 DB로 넘어갈 때.
+
+## 실무 적용 가이드
+
+제가 이 스토어를 실제로 쓸 때의 순서는 이렇습니다. 문서를 [재귀적 텍스트 청킹](https://daily1bite.com/ko/blog/ai-tutorial/rag-recursive-text-splitter-chunking-nodejs-from-scratch-2026)으로 잘게 나누고, 각 청크를 임베딩 API로 벡터화하고, 그걸 이 `VectorStore`에 `add`합니다. 검색은 쿼리도 같은 임베더로 벡터화해서 `search`에 넣으면 끝입니다. 임베딩 호출량이 많다면 [토큰·비용 추정](https://daily1bite.com/ko/blog/ai-tutorial/llm-token-counter-cost-estimator-nodejs-from-scratch-2026)을 먼저 해서 예산을 잡아두는 걸 권합니다.
+
+주의할 점도 있습니다. 이 구현은 **프로세스 메모리에만 존재**하므로 서버를 재시작하면 사라집니다. 실서비스라면 벡터를 JSON이나 바이너리로 디스크에 덤프했다가 부팅 때 다시 읽어들이는 로직이 필요합니다. `Float32Array`는 `Buffer`로 바로 직렬화되니 이 부분은 어렵지 않습니다. 또 삭제·갱신이 잦으면 배열 중간을 비우는 대신 tombstone 방식으로 표시만 해두는 게 낫습니다.
+
+![차곡차곡 쌓인 문서 폴더 — 결국 색인되어 검색될 대상들](https://images.unsplash.com/photo-1468779036391-52341f60b55d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Beatriz Pérez Moya](https://unsplash.com/@beatriz_perez?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 스토어는 결국 이 문서들을 벡터로 바꿔 담아두는 서랍입니다._
+
+## 마무리
+
+벡터 스토어는 마법이 아닙니다. 정규화된 벡터를 배열에 담고, 쿼리와의 내적으로 top-k를 뽑는 게 전부입니다. 그리고 그 단순한 브루트포스가 1,536차원 1만 벡터까지 15ms로 버팁니다. 대부분의 우리 프로젝트는 여기 안에 들어옵니다.
+
+다음에 RAG를 붙일 때, 벡터 DB부터 깔기 전에 "내 문서가 몇 개지?"를 먼저 세어보세요. 1만 개 아래라면 오늘 만든 100줄이 인프라 하나를 덜어줄 겁니다. 더 많은 실전 구현은 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 카테고리에 계속 쌓고 있습니다.
+
+---
+
+## 참고 자료
+
+- [HNSW Indexing Fundamentals](https://qdrant.tech/course/essentials/day-2/what-is-hnsw/) — Qdrant, 2026년 기준
+- [Faster similarity search performance with pgvector indexes](https://cloud.google.com/blog/products/databases/faster-similarity-search-performance-with-pgvector-indexes) — Google Cloud Blog, 2026년 기준
+- [Vector Search with FAISS: Approximate Nearest Neighbor (ANN) Explained](https://pyimagesearch.com/2026/02/16/vector-search-with-faiss-approximate-nearest-neighbor-ann-explained/) — PyImageSearch, 2026년 2월 16일
+- [Embeddings 가이드](https://platform.openai.com/docs/guides/embeddings) — OpenAI, 2026년 기준
+
+**함께 읽으면 좋은 글:**
+
+- [RAG의 핵심 '코사인 유사도'를 Node.js로 직접 구현하기](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026) - 이 글에서 쓴 유사도 계산의 밑바닥
+- [RAG 텍스트 청킹: 재귀적 분할기를 Node.js로 직접 구현](https://daily1bite.com/ko/blog/ai-tutorial/rag-recursive-text-splitter-chunking-nodejs-from-scratch-2026) - 스토어에 넣기 전 문서를 자르는 단계
+- [LLM 토큰 수 세기: API 없이 토큰·비용 추정기를 Node.js로](https://daily1bite.com/ko/blog/ai-tutorial/llm-token-counter-cost-estimator-nodejs-from-scratch-2026) - 임베딩 비용을 미리 가늠하는 법
