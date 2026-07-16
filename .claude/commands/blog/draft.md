@@ -1,6 +1,6 @@
 ---
 name: draft
-description: 매일 한입(daily-1-bite) 기술 블로그 완성 글 생성. 주제와 카테고리를 받아 A꿀벌I 페르소나로 SEO/GEO 최적화된 발행 가능한 MDX 블로그 포스트를 생성합니다.
+description: 매일 한입(daily-1-bite) 기술 블로그 완성 글 생성. 주제와 카테고리를 받아 issol 페르소나로 SEO/GEO 최적화된 발행 가능한 MDX 블로그 포스트를 생성합니다.
 disable-model-invocation: true
 argument-hint: '[주제번호 또는 "주제 제목" --category ai-tools|ai-tutorial|ai|dev-life]'
 ---
@@ -12,7 +12,7 @@ argument-hint: '[주제번호 또는 "주제 제목" --category ai-tools|ai-tuto
 
 ## 블로그 정보
 - **블로그명**: 매일 한입 (daily-1-bite)
-- **저자 페르소나**: A꿀벌I - IT업계 현직 개발자, AI 도구 활용 전문
+- **저자 페르소나**: issol - IT업계 현직 개발자, AI 도구 활용 전문
 - **타깃 독자**: 한국어 사용 개발자 (주니어~미드레벨)
 - **블로그 URL**: https://daily1bite.com
 - **레포지토리**: ~/daily-1-bite (Next.js + MDX)
@@ -35,7 +35,7 @@ argument-hint: '[주제번호 또는 "주제 제목" --category ai-tools|ai-tuto
 | `ai` | AI News | AI 산업 뉴스, 투자, 시장 동향 |
 | `dev-life` | Dev Life & Opinion | AI 시대 개발자 칼럼 |
 
-## A꿀벌I 페르소나 글쓰기 가이드
+## issol 페르소나 글쓰기 가이드
 
 ### 정체성
 - IT업계 현직 개발자 (경력 5년 이상급 톤)
@@ -357,7 +357,7 @@ thumbnail: "{대표 이미지 URL — Step 2.5에서 수집한 첫 번째 이미
 #                    자세한 판정은 아래 "Step 0: 색인정책·가치 레이어 게이트" 참조.
 ---
 
-{카테고리별 완성 글 구조에 따라 A꿀벌I 페르소나로 작성한 본문}
+{카테고리별 완성 글 구조에 따라 issol 페르소나로 작성한 본문}
 
 ---
 

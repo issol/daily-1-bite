@@ -11,9 +11,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
 export const AUTHOR = {
-  // TODO(identity): 실명 또는 일관되게 유지할 필명으로 확정할 것.
-  //   현재 'A꿀벌I'는 발음상 'AI'를 연상시켜, AI 콘텐츠로 강등된 사이트에는 불리한 신호.
-  name: 'A꿀벌I',
+  // 일관 유지 필명. 'A꿀벌I'(발음상 'AI' 연상 → AI-강등 사이트에 역신호)에서
+  // GitHub 핸들과 동일한 'issol'로 확정 — sameAs의 github.com/issol와 엔티티 일치.
+  name: 'issol',
 
   url: `${BASE_URL}/ko/about`,
   email: 'isolatorv@gmail.com',

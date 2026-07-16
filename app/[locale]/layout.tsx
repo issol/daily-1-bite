@@ -69,11 +69,18 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
       images: [`${BASE_URL}/og-default.png`],
       creator: '@daily1bite',
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {index: true, follow: true, 'max-video-preview': -1, 'max-image-preview': 'large', 'max-snippet': -1},
-    },
+    // EN 섹션 전체 noindex — KO 통합 전략에 맞춰 영어 정적/목록 페이지(/en, /en/blog,
+    // /en/about, /en/contact, /en/privacy-policy 등)를 색인에서 제외한다.
+    // 저품질 영어 번역 중복 표면을 없애 사이트 평균 품질을 올린다. robots 미설정 하위
+    // 페이지는 이 값을 상속하므로, 여기서 locale로 분기하면 EN 섹션이 통째로 noindex된다.
+    // (EN 블로그 글은 이미 page.tsx에서 KO로 308 redirect + noindex 처리됨.)
+    robots: isKo
+      ? {
+          index: true,
+          follow: true,
+          googleBot: {index: true, follow: true, 'max-video-preview': -1, 'max-image-preview': 'large', 'max-snippet': -1},
+        }
+      : {index: false, follow: true},
     verification: {
       other: {'naver-site-verification': 'df304bda19da5080e0fc42e56de4dd425715f552'},
     },

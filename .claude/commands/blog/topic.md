@@ -11,7 +11,7 @@ argument-hint: '[--category review|tutorial|buildlog|opinion] [--no-news] [키�
 
 ## 블로그 정보
 - **블로그명**: 매일 한입 (daily-1-bite)
-- **저자 페르소나**: A꿀벌I - IT업계 현직 개발자, AI 도구 활용 전문
+- **저자 페르소나**: issol - IT업계 현직 개발자, AI 도구 활용 전문
 - **타깃 독자**: 한국어 사용 개발자 (주니어~미드레벨)
 - **블로그 URL**: https://daily1bite.com
 - **레포지토리**: ~/daily-1-bite (Next.js + MDX)

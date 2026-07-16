@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PersonJsonLd } from '@/components/JsonLd';
+import { AUTHOR } from '@/lib/author';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
@@ -12,12 +13,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: '소개',
     description:
-      '매일 한입을 운영하는 A꿀벌I를 소개합니다. 현직 개발자가 AI 도구를 실무에서 직접 써보고 솔직하게 정리하는 AI 뉴스 블로그입니다.',
+      `매일 한입을 운영하는 ${AUTHOR.name}를 소개합니다. 현직 개발자가 AI 도구를 실무에서 직접 써보고 솔직하게 정리하는 AI 뉴스 블로그입니다.`,
     alternates: {
       canonical: `${BASE_URL}/${locale}/about`,
     },
     openGraph: {
-      title: 'A꿀벌I 소개 | 매일 한입',
+      title: `${AUTHOR.name} 소개 | 매일 한입`,
       description: '현직 개발자가 AI 도구를 실무에서 직접 써보고 솔직하게 정리하는 AI 뉴스 블로그입니다.',
       url: `${BASE_URL}/${locale}/about`,
     },
@@ -29,9 +30,9 @@ export default async function AboutPage({ params }: Props) {
   return (
     <>
       <PersonJsonLd
-        name="A꿀벌I"
+        name={AUTHOR.name}
         url={`${BASE_URL}/${locale}/about`}
-        description="현직 개발자로서 AI 도구를 실무에서 매일 사용하며, 개발자 관점에서 AI 뉴스와 도구를 솔직하게 정리합니다."
+        description={AUTHOR.description}
       />
 
       <div className="max-w-2xl mx-auto px-4 py-16">
@@ -46,11 +47,22 @@ export default async function AboutPage({ params }: Props) {
 
           {/* 운영자 소개 */}
           <div className="bg-white rounded-2xl border border-gray-100 p-8 space-y-5">
-            <h2 className="text-xl font-bold text-gray-900">운영자 소개 — A꿀벌I</h2>
+            <h2 className="text-xl font-bold text-gray-900">운영자 소개 — {AUTHOR.name}</h2>
 
             <p>
               IT 업계에서 6년째 일하고 있는 현직 개발자입니다. 백엔드 위주로 일하다가
               2024년 말부터 AI 도구를 실무에 본격적으로 도입하기 시작했습니다.
+            </p>
+
+            <p className="text-sm">
+              <a
+                href="https://github.com/issol"
+                target="_blank"
+                rel="me noopener noreferrer"
+                className="text-amber-600 font-medium hover:underline"
+              >
+                GitHub · @issol ↗
+              </a>
             </p>
 
             <p>
