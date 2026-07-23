@@ -12,7 +12,6 @@ import {Link} from '@/i18n/navigation';
 import {Suspense} from 'react';
 import type {Metadata} from 'next';
 import {getTranslations, setRequestLocale} from 'next-intl/server';
-import {routing} from '@/i18n/routing';
 import {AUTHOR} from '@/lib/author';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
@@ -68,14 +67,14 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
   const ogImage = post.thumbnail || `${BASE_URL}/og-default.png`;
   const isKo = locale === 'ko';
 
+  // KO 단독 hreflang 클러스터.
+  // EN 글 URL은 KO로 308 redirect되므로 hreflang="en"으로 지목하면 "리디렉트되는 URL을
+  // 대체 언어 버전으로 선언"하는 모순이 되고, Google은 클러스터 전체를 무효 처리한다.
+  // (routing.locales를 순회하던 이전 코드가 EN 번역이 있는 글마다 이 문제를 만들었다.)
   const languages: Record<string, string> = {
     'x-default': `${BASE_URL}/ko/blog/${fullSlug}`,
+    ko: `${BASE_URL}/ko/blog/${fullSlug}`,
   };
-  for (const loc of routing.locales) {
-    if (hasTranslation(fullSlug, loc as Locale)) {
-      languages[loc] = `${BASE_URL}/${loc}/blog/${fullSlug}`;
-    }
-  }
 
   // EN 포스트는 KO를 canonical로 지정 — 동일 주제 중복 콘텐츠 해소
   const canonicalUrl = isKo ? url : `${BASE_URL}/ko/blog/${fullSlug}`;

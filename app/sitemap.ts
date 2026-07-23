@@ -11,7 +11,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // noindex:true 글은 사이트맵에서 제외 — 색인 제외 신호와 일관성 유지.
   const koPosts = getAllPosts('ko').filter((p) => !p.noindex);
-  const enPostSlugs = new Set(getAllPosts('en').map((p) => p.slug));
 
   // Latest post date — used as dynamic lastModified for home/blog index/category roots.
   // Falls back to SITE_FLOOR when no posts exist yet.
@@ -67,18 +66,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }
 
   // Blog posts — KO only.
-  // EN posts carry noindex + a permanent redirect to KO, so emitting them in
-  // the sitemap would only confuse Google about the canonical URL.
+  //
+  // EN alternate는 의도적으로 내보내지 않는다. EN 글 URL은 KO로 308 redirect되므로
+  // hreflang="en"으로 지목하면 "리디렉트되는 URL을 대체 버전으로 선언"하는 꼴이 되어
+  // Google이 hreflang 클러스터 자체를 무효 처리한다(이전엔 79개가 이 상태였다).
+  // 존재하지 않는 언어 버전을 광고하는 것보다 KO 단일 클러스터가 정확하다.
   for (const post of koPosts) {
     const languages: Record<string, string> = {
       'x-default': `${BASE_URL}/ko/blog/${post.slug}`,
       ko: `${BASE_URL}/ko/blog/${post.slug}`,
     };
-    if (enPostSlugs.has(post.slug)) {
-      // Keep the hreflang reference so Google knows the EN translation exists,
-      // even though the EN URL itself is not crawled.
-      languages.en = `${BASE_URL}/en/blog/${post.slug}`;
-    }
 
     entries.push({
       url: `${BASE_URL}/ko/blog/${post.slug}`,

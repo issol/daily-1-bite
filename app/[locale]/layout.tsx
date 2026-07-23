@@ -40,9 +40,11 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
     publisher: isKo ? '매일 한입' : 'Daily 1 Bite',
     alternates: {
       canonical: `${BASE_URL}/${locale}`,
+      // hreflang은 KO 단독 클러스터. EN 페이지는 noindex(아래 robots 참고)라
+      // hreflang="en"으로 지목하면 색인 불가 URL을 대체 버전으로 선언하는 셈이 되고,
+      // Google은 그런 클러스터를 통째로 무시한다.
       languages: {
         'ko': `${BASE_URL}/ko`,
-        'en': `${BASE_URL}/en`,
         'x-default': `${BASE_URL}/ko`,
       },
       types: {

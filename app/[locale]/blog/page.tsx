@@ -25,9 +25,9 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
       : 'Browse all posts on the Daily 1 Bite blog. AI news, tool reviews, and tutorials.',
     alternates: {
       canonical: `${BASE_URL}/${locale}/blog`,
+      // KO 단독 hreflang 클러스터 — /en/blog는 noindex라 대체 버전으로 선언하지 않는다.
       languages: {
         ko: `${BASE_URL}/ko/blog`,
-        en: `${BASE_URL}/en/blog`,
         'x-default': `${BASE_URL}/ko/blog`,
       },
     },
