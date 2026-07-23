@@ -1,0 +1,334 @@
+---
+title: "하이브리드 검색(BM25+벡터+RRF)을 Node.js로 직접 구현 — RRF는 0.000 올렸다 [2026]"
+date: "2026-07-23"
+description: "BM25·벡터 검색·RRF 융합을 의존성 0으로 만들고 MRR을 실측했습니다. RRF는 0.000, 한국어 토크나이저 교체는 0.375를 올렸습니다."
+category: "ai-tutorial"
+tags: ["하이브리드 검색", "BM25", "RRF", "RAG", "Node.js"]
+thumbnail: "https://images.unsplash.com/photo-1468779036391-52341f60b55d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080"
+---
+
+2026년에 나온 RAG 검색 가이드는 거의 다 같은 처방을 내립니다. BM25로 키워드를 잡고, 벡터로 의미를 잡고, RRF로 두 순위를 합치고, 크로스 인코더로 리랭킹하라. 스택을 쌓을수록 정확도가 올라간다는 이야기입니다.
+
+그런데 r/Rag에 「[예상보다 훨씬 큰 효과를 낸 RAG 개선이 뭐였나요?](https://www.reddit.com/r/Rag/comments/1uvi3bf/whats_one_rag_improvement_that_mattered_far_more/)」라는 스레드가 올라왔을 때(2026-07-13, 32포인트·39댓글), 가장 많은 표를 받은 답은 그 스택 중 어느 것도 아니었습니다.
+
+> "Query rewriting, and it wasn't close. We spent ages on chunking and embeddings and got steady but modest gains. Then we added a cheap LLM call in front of retrieval that rewrites the user's question i…"
+> — [u/HauntingAccess6434](https://reddit.com/r/Rag/comments/1uvi3bf/comment/oxfxuwm/) · r/Rag 14 업보트
+
+쿼리 재작성이었고, 그것도 압도적이었다는 겁니다. 청킹과 임베딩에 오랜 시간을 쏟아 얻은 건 꾸준하지만 미미한 개선이었고요.
+
+그래서 직접 만들어서 재보기로 했습니다. BM25도 RRF도 의존성 0으로 짜고, 평가셋을 만들어 숫자를 뽑았습니다. 결론부터 말하면, 제 실험에서 **RRF가 올린 MRR은 0.000이었습니다.**
+
+![차곡차곡 쌓인 문서 폴더 — 결국 색인되어 검색될 대상들](https://images.unsplash.com/photo-1468779036391-52341f60b55d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Beatriz Pérez Moya](https://unsplash.com/@beatriz_perez?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 검색 품질 이야기는 결국 이 문서들을 어떤 단위로 쪼개 색인했느냐로 돌아옵니다._
+
+## TL;DR
+
+- BM25 + 벡터 검색 + RRF 융합을 순정 Node.js로 구현했습니다. 전부 합쳐 120줄 남짓입니다.
+- 문서 14개·쿼리 8개 평가셋에서 **RRF 융합이 올린 MRR은 0.000**이었습니다. 대신 지연은 3.5~6배가 됐습니다.
+- 같은 실험에서 **한국어 토크나이저를 공백 분리 → 문자 bigram → 조사 분리로 바꾸자 MRR이 0.563 → 0.938로 올랐습니다.** Recall@3은 63% → 100%.
+- 영어 튜토리얼이 말해주지 않는 것: 한국어에서 BM25는 **조사** 때문에 먼저 무너집니다. `HNSW는`과 `HNSW`는 다른 토큰입니다.
+- RRF가 쓸모없다는 뜻이 아닙니다. **순서가 틀렸다**는 뜻입니다. 융합은 두 검색기가 각자 제 몫을 한 다음에 얹는 것입니다.
+
+## 가설: 스택을 쌓으면 검색이 좋아지는가
+
+이 글의 가설은 튜토리얼들이 공통으로 주장하는 문장 그대로입니다. 키워드 검색과 벡터 검색은 서로 반대 방향으로 실패하니, 둘을 합치면 각자의 구멍이 메워진다.
+
+실패 방향이 반대라는 말 자체는 맞습니다. 벡터 검색은 `ECONNRESET` 같은 희귀 토큰을 뭉개버립니다. 임베딩 공간에서 그런 단어들은 서로 구별되지 않는 지점으로 몰리니까요. 반대로 BM25는 같은 뜻을 다른 단어로 쓴 문서를 절대 못 찾습니다. 글자가 겹치지 않으면 점수가 0입니다.
+
+여기까지는 교과서입니다. 검증할 부분은 그다음입니다. **"그래서 합치면 실제로 얼마나 올라가는가."** 튜토리얼들은 보통 이 자리에 남의 논문 수치를 인용하고 넘어갑니다. 직접 재보겠습니다.
+
+## 실험 환경
+
+측정에 쓴 환경과 평가 기준입니다.
+
+- Node.js v22.15.1 (순정, `npm install` 없음), macOS 26.5.2, Apple Silicon
+- 외부 라이브러리 0개
+- 코퍼스: 한국어 문서 14개 (개발 주제 12개 + 무관한 문서 2개)
+- 평가셋: 쿼리 8개, 각 쿼리마다 정답 문서 1개를 미리 지정
+- 지표: **MRR**(정답이 몇 등으로 나왔는지의 역수 평균, 1등이면 1.0)과 **Recall@3**(정답이 상위 3개 안에 들어온 비율)
+
+코퍼스가 14개인 건 작습니다. 절대 수치를 주장하려는 게 아니라, 같은 코퍼스에 방식만 갈아끼웠을 때 **어느 쪽이 숫자를 움직이는지**를 보려는 실험입니다.
+
+벡터 쪽은 이전 글에서 만든 [인메모리 벡터 스토어](https://daily1bite.com/ko/blog/ai-tutorial/in-memory-vector-store-semantic-search-nodejs-2026)를 그대로 가져왔습니다. 임베딩은 API 키가 필요하니 그때와 동일하게 해싱 기반 토이 임베더를 씁니다. 이 선택이 결과 해석에 중요한 제약을 남기는데, 그건 뒤에서 정직하게 짚겠습니다.
+
+## 1단계: BM25를 직접 구현하기
+
+BM25는 "이 단어가 이 문서에 몇 번 나왔나"에 두 가지 보정을 얹은 랭킹 함수입니다.
+
+첫째, 같은 단어가 10번 나왔다고 1번 나온 것보다 10배 중요하지는 않습니다(포화). 둘째, 긴 문서는 어떤 단어든 더 많이 포함하게 되니 길이로 깎아야 합니다(길이 정규화). 이 둘을 `k1`과 `b`가 조절합니다.
+
+```js
+class BM25 {
+  constructor(docs, tokenize, k1 = 1.2, b = 0.75) {
+    this.k1 = k1; this.b = b; this.tokenize = tokenize;
+    this.ids = docs.map((d) => d.id);
+    this.tf = docs.map((d) => {
+      const m = new Map();
+      for (const t of tokenize(d.text)) m.set(t, (m.get(t) || 0) + 1);
+      return m;
+    });
+    this.len = this.tf.map((m) => [...m.values()].reduce((a, c) => a + c, 0));
+    this.avgdl = this.len.reduce((a, c) => a + c, 0) / this.len.length;
+    this.df = new Map();
+    for (const m of this.tf) for (const t of m.keys()) this.df.set(t, (this.df.get(t) || 0) + 1);
+    this.N = docs.length;
+  }
+
+  idf(t) {
+    const n = this.df.get(t) || 0;
+    return Math.log(1 + (this.N - n + 0.5) / (n + 0.5)); // 음수가 안 나오는 형태
+  }
+
+  search(query, k = 10) {
+    const qt = this.tokenize(query);
+    const scored = this.ids.map((id, i) => {
+      let s = 0;
+      for (const t of qt) {
+        const f = this.tf[i].get(t) || 0;
+        if (!f) continue;
+        const denom = f + this.k1 * (1 - this.b + (this.b * this.len[i]) / this.avgdl);
+        s += this.idf(t) * ((f * (this.k1 + 1)) / denom);
+      }
+      return { id, score: s };
+    });
+    return scored.filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score).slice(0, k);
+  }
+}
+```
+
+`k1 = 1.2`, `b = 0.75`는 관례적인 기본값입니다. IDF는 흔한 단어에서 음수가 나오지 않도록 `log(1 + …)` 형태를 썼습니다.
+
+생성자가 `tokenize`를 인자로 받는 게 이 글의 복선입니다. 나중에 이 함수 하나만 갈아끼웁니다.
+
+## 2단계: 벡터 검색 쪽
+
+벡터 검색은 [코사인 유사도](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026) 편에서 다룬 그대로입니다. 저장할 때 벡터를 단위 길이로 정규화해두면 검색은 내적만으로 끝납니다.
+
+```js
+const DIM = 256;
+function embed(text) {
+  const v = new Float32Array(DIM);
+  for (const t of tokWhitespace(text)) {
+    let h = 2166136261;                                  // FNV 해시
+    for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+    v[(h >>> 0) % DIM] += 1;
+  }
+  return v;
+}
+
+const DOCVECS = DOCS.map((d) => ({ id: d.id, v: normalize(embed(d.text)) }));
+
+function vectorSearch(query, k = 10) {
+  const q = normalize(embed(query));
+  return DOCVECS
+    .map(({ id, v }) => {
+      let s = 0;
+      for (let i = 0; i < DIM; i++) s += q[i] * v[i];    // 정규화됐으니 내적 = 코사인
+      return { id, score: s };
+    })
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score).slice(0, k);
+}
+```
+
+## 3단계: RRF로 두 순위를 합치기
+
+RRF(Reciprocal Rank Fusion)의 핵심은 **점수를 안 쓴다**는 것입니다. BM25 점수는 4.7 같은 값이고 코사인은 0~1 사이입니다. 이걸 직접 더하려면 정규화 규칙을 정해야 하는데, 그 규칙이 곧 새로운 튜닝 파라미터가 됩니다.
+
+RRF는 그 문제를 우회합니다. 각 검색기가 매긴 **순위만** 보고 `1 / (k + 순위)`를 더합니다.
+
+```js
+function rrf(rankings, k = 60, topK = 10) {
+  const acc = new Map();
+  for (const list of rankings) {
+    list.forEach((item, idx) => {
+      acc.set(item.id, (acc.get(item.id) || 0) + 1 / (k + idx + 1)); // 순위만 사용
+    });
+  }
+  return [...acc.entries()].map(([id, score]) => ({ id, score }))
+    .sort((a, b) => b.score - a.score).slice(0, topK);
+}
+```
+
+`k = 60`은 [Cormack·Clarke·Buettcher의 2009년 SIGIR 논문](https://research.google/pubs/reciprocal-rank-fusion-outperforms-condorcet-and-individual-rank-learning-methods/)에서 온 값입니다. RRF를 처음 제안한 그 논문이고, 지금 모든 튜토리얼이 쓰는 60은 거기서 그대로 굳어진 상수입니다. k가 크면 상위권과 하위권의 점수 차가 완만해져서, 한 검색기가 1등으로 꼽았다는 사실의 영향력이 줄어듭니다.
+
+구현은 이게 전부입니다. 12줄입니다.
+
+## 4단계: 평가 하네스
+
+숫자가 없으면 "좋아진 것 같다"에서 끝납니다. 정답을 미리 정해두고 순위를 재는 코드를 붙입니다.
+
+```js
+function evaluate(searchFn) {
+  let rrSum = 0, hit3 = 0;
+  for (const { q, gold } of QUERIES) {
+    const res = searchFn(q);
+    const rank = res.findIndex((r) => r.id === gold) + 1; // 0이면 못 찾음
+    rrSum += rank ? 1 / rank : 0;
+    if (rank && rank <= 3) hit3++;
+  }
+  return { mrr: rrSum / QUERIES.length, recall3: hit3 / QUERIES.length };
+}
+```
+
+정답이 1등이면 1.0, 2등이면 0.5, 못 찾으면 0입니다. 이걸 쿼리 8개에 대해 평균낸 게 MRR입니다.
+
+![두 갈래로 갈라지는 길](https://images.unsplash.com/photo-1429743305873-d4065c15f93e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Jens Lelie](https://unsplash.com/@madebyjens?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 융합은 두 갈래를 합치는 일입니다. 문제는 두 갈래가 각자 제대로 된 길이었냐는 것이고요._
+
+## 실험 결과: RRF는 아무것도 올리지 못했다
+
+같은 코퍼스와 같은 평가셋에 방식만 바꿔 돌린 결과입니다.
+
+| 검색 방식 | MRR | Recall@3 | 지연 |
+|---|---|---|---|
+| BM25 (공백 토크나이저) | 0.563 | 63% | 0.0020 ms |
+| BM25 (한글 문자 bigram) | 0.813 | 88% | 0.0031 ms |
+| BM25 (bigram + 조사 분리) | **0.938** | **100%** | 0.0040 ms |
+| 벡터 (토이 임베더) | 0.333 | 63% | 0.0079 ms |
+| RRF: BM25(공백) + 벡터 | 0.563 | 63% | 0.0253 ms |
+| RRF: BM25(bigram) + 벡터 | 0.813 | 88% | 0.0121 ms |
+| RRF: BM25(조사 분리) + 벡터 | 0.938 | 100% | 0.0139 ms |
+
+세로로 짝을 지어 보면 이야기가 분명해집니다.
+
+- BM25(공백) 단독 **0.563** → 여기에 벡터를 RRF로 합치면 **0.563**
+- BM25(bigram) 단독 **0.813** → RRF로 합치면 **0.813**
+- BM25(조사 분리) 단독 **0.938** → RRF로 합치면 **0.938**
+
+**세 경우 모두 융합의 기여는 0.000입니다.** 지연만 3.5~6배로 늘었습니다.
+
+반면 토크나이저를 바꾼 효과는 이렇습니다.
+
+- 공백 → 문자 bigram: MRR **+0.250**
+- 문자 bigram → 조사 분리 추가: MRR **+0.125**
+- 합쳐서 **+0.375**, 지연 증가는 0.0020 → 0.0040ms
+
+한쪽은 0.375를 올리고 지연이 2배, 다른 쪽은 0.000을 올리고 지연이 6배입니다.
+
+## 진짜 범인: 한국어 조사
+
+쿼리별로 몇 등에 나왔는지를 펼치면 무슨 일이 벌어졌는지 보입니다.
+
+| 쿼리 | BM25(공백) | BM25(bigram) | BM25(조사 분리) | 벡터 |
+|---|---|---|---|---|
+| 자바스크립트 런타임 | 1 | 1 | 1 | 1 |
+| ECONNRESET 연결 끊김 | 1 | 1 | 1 | 2 |
+| 429 재시도 백오프 | x | 1 | 1 | x |
+| 문서를 잘게 나누는 방법 | 2 | 2 | 2 | 3 |
+| HNSW 인덱스 | x | x | 1 | x |
+| 토큰 비용 추정 | 1 | 1 | 1 | 3 |
+| 고양이 먹이 | 1 | 1 | 1 | 2 |
+| 벡터 정규화 | x | 1 | 1 | x |
+
+`x`는 아예 못 찾은 겁니다. 공백 토크나이저에서 세 쿼리가 통째로 실패했습니다. 이유는 전부 똑같습니다.
+
+문서에는 `429를`, `정규화해두면`, `HNSW는`이라고 적혀 있고, 사용자는 `429`, `정규화`, `HNSW`라고 칩니다. 공백으로 자르면 이건 **서로 다른 토큰**입니다. 교집합이 비었으니 BM25 점수는 0이고, 점수가 0이면 순위에 아예 오르지 못합니다.
+
+영어에서는 이 문제가 이 정도로 심하지 않습니다. `retry`와 `retries` 정도의 차이라 스테머 하나로 대부분 흡수됩니다. 한국어는 조사가 무한정 붙습니다. 그래서 영어권 하이브리드 검색 가이드를 그대로 따라 하면, 정작 한국어 코퍼스에서는 **BM25 쪽이 반쯤 죽은 채로** 융합에 들어갑니다.
+
+문자 bigram은 이걸 상당 부분 해결합니다. `정규화해두면`을 `정규`, `규화`, `화해`, `해두`, `두면`으로 쪼개면 쿼리 `정규화`의 `정규`·`규화`와 겹칩니다.
+
+```js
+function tokBigram(s) {
+  const out = [];
+  for (const w of s.toLowerCase().split(/[\s,.]+/).filter(Boolean)) {
+    if (/[가-힣]/.test(w)) {
+      if (w.length === 1) out.push(w);
+      for (let i = 0; i < w.length - 1; i++) out.push(w.slice(i, i + 2));
+    } else {
+      out.push(w);                       // 영문·숫자는 그대로
+    }
+  }
+  return out;
+}
+```
+
+그런데 이걸로도 `HNSW 인덱스`는 여전히 실패합니다. 문서의 토큰이 `hnsw는`인데, 이 토큰에는 한글이 섞여 있어서 통째로 bigram 처리되어 `hn`, `ns`, `sw`, `w는`이 됩니다. 쿼리의 `hnsw`는 한글이 없으니 통째로 남고요. 또 안 겹칩니다.
+
+영문·숫자 뒤에 붙은 한글 조사를 먼저 떼주면 해결됩니다.
+
+```js
+function tokMixed(s) {
+  const out = [];
+  for (let w of s.toLowerCase().split(/[\s,.]+/).filter(Boolean)) {
+    const m = w.match(/^([a-z0-9.+#-]+)([가-힣]+)$/);   // hnsw는 → hnsw + 는
+    if (m) { out.push(m[1]); w = m[2]; }
+    if (/[가-힣]/.test(w)) {
+      if (w.length === 1) out.push(w);
+      for (let i = 0; i < w.length - 1; i++) out.push(w.slice(i, i + 2));
+    } else if (w) out.push(w);
+  }
+  return out;
+}
+```
+
+정규식 한 줄입니다. 이 한 줄이 `HNSW 인덱스`를 못 찾음에서 1등으로 바꿨고, Recall@3을 88%에서 100%로 올렸습니다. 형태소 분석기를 붙이면 더 깔끔하겠지만, 그건 의존성이 생기는 이야기고 여기서는 정규식으로 얻을 수 있는 지점까지만 갔습니다.
+
+![데이터 분석 화면](https://images.unsplash.com/photo-1776521796613-564c9f7d02e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080)
+_Photo by [Aryaabhisek Mahapatra](https://unsplash.com/@aryaabhisek?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | 평가셋 없이 검색을 고치면 "좋아진 것 같다"에서 끝납니다._
+
+## 커뮤니티도 이미 같은 말을 하고 있었다
+
+숫자를 뽑고 나서 앞서 본 r/Rag 스레드를 다시 읽으니 다르게 보였습니다. 사람들이 지목한 건 하나같이 **알고리즘 스택 바깥**이었습니다.
+
+RAG 검색 개선을 다룬 실무 영상의 최상위 댓글도 같은 방향입니다.
+
+> "I love how the >30% retrieval gain was from assessing the root issue with the data and not some magic hand waavy mixture of algorithms de jour"
+> — [@ccahua](https://www.youtube.com/watch?v=smGbeghV1JE) · 6 likes
+
+30% 넘는 검색 개선이 유행하는 알고리즘 조합이 아니라 **데이터의 근본 원인을 들여다본 것**에서 나왔다는 점이 좋았다는 이야기입니다. 제 실험에서 그 "근본 원인"에 해당한 게 토크나이저였습니다.
+
+같은 영상의 최다 추천 댓글은 좀 더 냉소적입니다.
+
+> "Bold of you to assume that my rag system even has 50 % accuracy"
+> — [@Bolo74894](https://www.youtube.com/watch?v=smGbeghV1JE) · 12 likes
+
+내 RAG가 50% 정확도라도 나온다고 가정하다니 대담하다는 겁니다. 웃기려고 쓴 댓글이지만 12표가 붙은 이유가 있습니다. 리랭커를 얹을지 고민하는 단계보다 훨씬 앞에서 무너져 있는 시스템이 그만큼 많다는 뜻이니까요.
+
+## 그래서 RRF는 쓸모없는가
+
+아닙니다. 이 실험이 보여준 건 RRF가 나쁘다는 게 아니라 **순서가 틀렸다**는 것입니다.
+
+RRF는 두 개의 서로 다른 신호를 합치는 규칙입니다. 합칠 신호가 실제로 서로 다를 때만 값을 만듭니다. 제 실험에서는 그 조건이 성립하지 않았습니다.
+
+솔직하게 말하면 이 실험에는 명확한 제약이 있습니다.
+
+- **벡터 쪽이 토이 임베더입니다.** 단어를 해시해 빈도를 세는 방식이라 의미를 진짜로 이해하지 못합니다. 사실상 또 하나의 어휘 기반 검색기였고, BM25와 신호가 겹쳤습니다. 진짜 임베딩 모델을 쓰면 RRF의 기여는 0보다 커질 가능성이 높습니다.
+- **코퍼스 14개, 쿼리 8개는 작습니다.** 쿼리 하나가 등수를 바꾸면 MRR이 0.06씩 움직입니다. 이 표의 소수점 셋째 자리를 믿을 만한 규모가 아닙니다.
+- 그래도 **+0.375 대 +0.000**이라는 격차는 이 정도 표본으로도 뒤집히기 어려운 크기입니다.
+
+제약을 다 인정하고도 남는 교훈은 이겁니다. **융합은 두 검색기가 각자 제 몫을 한 다음에 얹는 것입니다.** 한쪽이 조사 때문에 세 쿼리를 통째로 놓치고 있는 상태에서 RRF를 붙이면, 못 찾는 문서를 두 번 못 찾을 뿐입니다.
+
+## 실무에서는 어떤 순서로 손대야 하나
+
+제가 이 실험을 하고 나서 정리한 순서입니다.
+
+1. **평가셋부터 만듭니다.** 쿼리 20~30개와 정답 문서만 있으면 됩니다. 이게 없으면 이 글의 표를 만들 수 없고, 뭘 고쳐도 좋아졌는지 알 수 없습니다. 가장 지루하고 가장 먼저 해야 하는 일입니다.
+2. **BM25 단독 점수를 먼저 봅니다.** 한국어라면 토크나이저부터 의심하세요. 못 찾은 쿼리를 하나씩 열어 문서의 토큰과 쿼리의 토큰을 눈으로 비교하면 원인이 대부분 5분 안에 나옵니다.
+3. **쿼리 쪽을 봅니다.** r/Rag에서 가장 많은 표를 받은 답이 이것이었습니다. 사용자가 던지는 문장과 문서에 적힌 표현의 거리를 좁히는 작업입니다.
+4. **그다음에 벡터와 RRF를 얹습니다.** 이 순서로 오면 융합이 실제로 무엇을 더해주는지 숫자로 보입니다.
+
+문서를 어떤 단위로 자르느냐도 여기에 얽혀 있습니다. 조각이 너무 크면 BM25의 길이 정규화가 불리하게 작동하고, 너무 작으면 문맥이 끊깁니다. 그 이야기는 [RAG 텍스트 청킹: 재귀적 분할기 직접 구현](https://daily1bite.com/ko/blog/ai-tutorial/rag-recursive-text-splitter-chunking-nodejs-from-scratch-2026) 편에서 다뤘습니다.
+
+## 정리
+
+하이브리드 검색은 좋은 도구입니다. 다만 이번 실험에서 제 검색 품질을 실제로 움직인 건 RRF가 아니라 정규식 한 줄이었습니다.
+
+영어로 쓰인 RAG 가이드를 읽을 때 한 가지만 기억하면 좋겠습니다. 거기 적힌 처방은 **영어 텍스트에서 BM25가 이미 제대로 동작한다는 전제** 위에 있습니다. 한국어에서는 그 전제부터 확인해야 합니다. 조사 하나 때문에 검색기가 절반쯤 죽어 있는데 그 위에 리랭커를 얹는 건, 새는 양동이에 물을 더 붓는 일에 가깝습니다.
+
+다른 [AI Tutorial & How-to](https://daily1bite.com/ko/category/ai-tutorial) 글도 함께 보세요.
+
+## 함께 읽으면 좋은 글
+
+- [인메모리 벡터 스토어 직접 구현: RAG 시맨틱 검색을 Node.js로](https://daily1bite.com/ko/blog/ai-tutorial/in-memory-vector-store-semantic-search-nodejs-2026) — 이 글의 벡터 검색 쪽 뼈대
+- [RAG의 핵심 '코사인 유사도'를 Node.js로 직접 구현하기](https://daily1bite.com/ko/blog/ai-tutorial/rag-cosine-similarity-nodejs-from-scratch-2026) — 정규화와 내적이 왜 같은지
+- [RAG 텍스트 청킹: 재귀적 분할기를 Node.js로 직접 구현](https://daily1bite.com/ko/blog/ai-tutorial/rag-recursive-text-splitter-chunking-nodejs-from-scratch-2026) — 색인 단위를 정하는 문제
+
+## 참고 자료
+
+- [Reciprocal Rank Fusion outperforms Condorcet and individual Rank Learning Methods](https://research.google/pubs/reciprocal-rank-fusion-outperforms-condorcet-and-individual-rank-learning-methods/) — Cormack, Clarke, Buettcher, SIGIR 2009. RRF와 k=60의 출처
+- [r/Rag — What's one RAG improvement that mattered far more than you expected?](https://www.reddit.com/r/Rag/comments/1uvi3bf/whats_one_rag_improvement_that_mattered_far_more/) — 2026-07-13, 32포인트·39댓글
+- [2 Methods For Improving Retrieval in RAG](https://www.youtube.com/watch?v=smGbeghV1JE) — Johannes Jolkkonen, 댓글에서 인용
+- [Hybrid Search for RAG: Combining BM25 and Dense Vector Search (2026 Guide)](https://denser.ai/blog/hybrid-search-for-rag/) — 이 글이 검증 대상으로 삼은 표준 처방
