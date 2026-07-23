@@ -1,6 +1,6 @@
 ---
 name: publish
-description: 매일 한입(daily-1-bite) 블로그 글 발행. 주제 발굴 → 초안 생성 → Git 커밋 → Vercel 배포까지 전체 워크플로우를 실행합니다.
+description: 매일 한입(daily-1-bite) 블로그 글 발행. 공식 출처(웹/뉴스)와 last30days 커뮤니티 반응을 함께 수집해 주제 발굴 → 초안 생성 → 색인 게이트 → Git 커밋 → Amplify 배포까지 전체 워크플로우를 실행합니다.
 disable-model-invocation: true
 argument-hint: '[--skip-topic] [--skip-draft] [slug --category <cat>]'
 ---
@@ -37,9 +37,37 @@ $ARGUMENTS 파싱:
 
 ---
 
+## 정보 수집 소스 (전체 워크플로우 공통)
+
+이 파이프라인은 **성격이 다른 두 종류의 소스**를 쓴다. 둘 다 필요하다.
+
+| 소스 | 가져오는 것 | 담당 단계 |
+|---|---|---|
+| WebSearch / WebFetch / NewsAPI | 공식 발표, 릴리스 노트, 보도자료 기반 기사 = **발표자가 하고 싶은 말** | topic 2-A~2-C, draft 2.7 |
+| **`last30days` 스킬** | Reddit·HN·X·YouTube의 실제 반응, 원문 인용·참여수·링크 = **쓴 사람들이 한 말** | topic 2-D, draft 2.75 |
+
+> **왜 두 번째가 필수인가**: 2026-04 이 블로그는 색인이 122→0으로 붕괴했다. 원인은
+> "원본 발표의 재요약"이라는 판정이었다. 공식 소스만 쓰는 한 우리 글은 구조적으로 원본의
+> 열화 복사본이다. `last30days`가 가져오는 커뮤니티 반응은 보도자료에 없고, 요약으로는
+> 만들어낼 수 없으며, 링크로 검증 가능하다. 이것이 draft의 💬 가치 레이어 재료다.
+
+**전제 조건**: `last30days` 플러그인이 설치돼 있어야 한다(`/plugin install last30days@last30days-skill`).
+없거나 실패하면 각 단계가 알아서 건너뛴다 — **파이프라인은 멈추지 않는다.** 다만 그 글은
+💬 레이어 없이 나가므로 다른 레이어로 Step 0 게이트를 통과해야 한다.
+
+> **절대 금지**: `last30days`가 실패했을 때 커뮤니티 반응을 상상해서 채우는 것.
+> 없는 인용과 없는 링크를 만드는 순간, 애초에 이 블로그를 강등시킨 신뢰 문제를 재현하는 것이다.
+
+---
+
 ## Phase 1: 주제 발굴 (`--skip-topic` 없을 때)
 
 `/blog:topic` 스킬을 실행하여 주제를 제안받습니다.
+
+`/blog:topic`은 내부적으로 웹검색·NewsAPI에 더해 **`last30days`로 커뮤니티 신호를 수집**하고
+(Step 2-D), 각 주제에 `communitySignal`(LOUD/QUIET/none)을 붙여 돌려줍니다.
+**LOUD 주제를 우선 선택하십시오** — 반응이 있는 소재라야 우리 글이 원본 발표와 다른 물건이 됩니다.
+
 사용자가 주제를 선택하면 Phase 2로 진행합니다.
 
 ---
@@ -47,6 +75,10 @@ $ARGUMENTS 파싱:
 ## Phase 2: 초안 생성 (`--skip-draft` 없을 때)
 
 `/blog:draft {선택된 번호}` 스킬을 실행하여 초안을 생성합니다.
+
+draft는 Step 2.7(공식 출처)에 이어 **Step 2.75에서 `last30days` 커뮤니티 반응을 수집**하고,
+원문 인용 + 핸들 + URL + 참여수를 갖춘 인용만 💬 레이어로 인정합니다.
+topic 단계에서 이미 `communityEvidence`를 모았으면 재수집하지 않습니다.
 
 한국어 파일만 생성됩니다:
 - 한국어: `content/posts/ko/{category}/{slug}.mdx`
@@ -146,6 +178,20 @@ curl -s -o /dev/null -w "%{http_code}\n" https://daily1bite.com/ko/blog/{categor
 
 ---
 
+## Phase 5: 주제 큐 갱신 (`last30days` 사용한 경우만)
+
+`last30days`는 발굴한 주제를 자체 큐에 누적한다. 발행한 주제를 covered로 표시해야
+다음 `/blog:topic` 실행에서 같은 주제가 다시 후보로 올라오지 않는다.
+
+Skill 도구로 `last30days` 호출, args: `mark "{큐에 있던 주제명}" as covered`
+
+- **큐에 있던 정확한 주제명**을 써야 한다(우리가 지은 한국어 제목이 아니라).
+  이름이 틀리면 스킬이 exit 2로 거절하고 큐 목록을 알려준다 — 그때 맞는 이름으로 다시 부른다.
+- topic 단계에서 `last30days`를 안 썼거나 큐에 없던 주제면 이 Phase를 건너뛴다.
+- 실패해도 발행은 이미 끝났다. 재시도 1회 후 넘어간다.
+
+---
+
 ## 출력
 
 ```
@@ -153,6 +199,12 @@ curl -s -o /dev/null -w "%{http_code}\n" https://daily1bite.com/ko/blog/{categor
 
 --- 파일 ---
 파일: ~/daily-1-bite/content/posts/ko/{category}/{slug}.mdx
+
+--- 리서치 소스 ---
+공식 출처: {N}개 (WebSearch/WebFetch)
+커뮤니티(last30days): {LOUD 인용 N개 / QUIET / 미실행-사유}
+가치 레이어: {본문에 실제 반영된 레이어 나열, 예: 💬 ⚖️ 🧭}
+색인 판정: {A=색인 대상 | B=noindex}
 
 --- Git ---
 커밋: feat: 새 글 - {ko_title}

@@ -1,8 +1,8 @@
 ---
 name: topic
-description: 매일 한입(daily-1-bite) 블로그 주제 발굴. 웹 검색과 뉴스 API로 최신 AI 트렌드를 조사하고, 기존 글 중복을 방지하며 카테고리별 7개 주제를 제안합니다.
+description: 매일 한입(daily-1-bite) 블로그 주제 발굴. 웹 검색·뉴스 API로 최신 AI 트렌드를 조사하고 last30days로 Reddit·HN·X 커뮤니티 반응까지 수집해, 기존 글 중복을 피한 7개 주제를 제안합니다.
 disable-model-invocation: true
-argument-hint: '[--category review|tutorial|buildlog|opinion] [--no-news] [키워드 힌트]'
+argument-hint: '[--category review|tutorial|buildlog|opinion] [--no-news] [--no-community] [키워드 힌트]'
 ---
 
 # /blog:topic - 블로그 주제 발굴 커맨드
@@ -35,7 +35,10 @@ argument-hint: '[--category review|tutorial|buildlog|opinion] [--no-news] [키�
 
 $ARGUMENTS에서 다음을 파싱하세요:
 - `--category <값>`: 특정 카테고리 필터 (review→ai-tools, tutorial→ai-tutorial, ai, opinion→dev-life)
-- `--no-news`: 뉴스 API 조회 생략 (오프라인 모드)
+- `--no-news`: 뉴스 API 조회 생략 (오프라인 모드). 커뮤니티 조사(2-D)도 함께 생략된다.
+- `--no-community`: 커뮤니티 조사(2-D, `last30days`)만 생략. NewsAPI는 그대로 사용.
+  `last30days`는 수 분 걸리므로, 빠르게 후보만 훑고 싶을 때 쓴다.
+  단 이 경우 모든 주제의 `communitySignal`이 `none`이 되어 💬 레이어를 쓸 수 없다.
 - 나머지 텍스트: 키워드 힌트
 
 ---
@@ -224,9 +227,53 @@ fi
 - `{DISCOVERED_KEYWORD}`는 Phase 1에서 가장 눈에 띄는 고유명사로 교체
 - API 키가 없거나 호출 실패 시 → 웹 검색 결과만 사용 (에러 무시)
 
-#### 2-D. 트렌드 교차 검증 (핵심 단계)
+#### 2-D. 커뮤니티 신호 수집 — `last30days` 스킬 (필수, `--no-news` / `--no-community` 시에만 생략)
 
-Phase 1 + Phase 2 웹검색 결과와 NewsAPI 결과를 대조하여, 각 후보 소재의 **신선도 등급**을 판정합니다.
+> **왜 이 단계를 추가했나**: 2-A~2-C는 전부 **발표자 측 자료**다(공식 블로그, 보도자료를
+> 받아쓴 기사, 뉴스 API). 그 소재로 쓴 글이 "원본 발표의 재요약"으로 판정돼 색인이 붕괴했다.
+> `last30days`는 Reddit·HN·X·YouTube에서 **사람들이 실제로 뭐라고 했는지**를 인용문과
+> 참여수(업보트·댓글수)와 함께 가져온다. 기사가 아니라 반응이다. 이건 보도자료 재요약으로는
+> 절대 나올 수 없는 정보이고, draft 단계의 💬 가치 레이어 재료가 된다.
+
+**2-D-1. 파이프라인 큐 확인 (중복 방지)**
+
+`last30days`는 과거 발굴한 주제를 자체 큐에 누적한다. Step 1의 로컬 MDX 스캔이 "이미 쓴 글"을
+막는다면, 이 큐는 "이미 후보로 올렸던 주제"를 알려준다.
+
+Skill 도구로 `last30days` 호출, args: `what's in my topic queue`
+→ 미발행 후보 목록(주제명·도메인·최초 포착일)을 받는다. 여기 있는 주제는 Step 3에서 우선 고려하되,
+Step 1의 기존 글 목록과 겹치면 제외한다.
+
+**2-D-2. 트렌딩 발굴 (도메인 지정)**
+
+Skill 도구로 `last30days` 호출, args: `what's exploding in AI developer tools`
+(키워드 힌트가 있으면 그 도메인으로 바꾼다. 예: `what's exploding in AI coding agents`)
+
+이 호출은 3단계 프로토콜(nominate → judge → finalize)로 돌며 수 분이 걸린다. **정상이다.**
+결과는 주제별 카드로 오고, 각 카드에 근거 항목·상위 댓글·참여수가 붙는다.
+
+**2-D-3. 소재 심층 확인 (선택)**
+
+2-A~2-C 또는 2-D-2에서 특정 고유명사가 유력해지면 그 이름으로 한 번 더:
+Skill 도구로 `last30days` 호출, args: `{제품명/모델명}` (예: `Cursor 3.5 shared canvases`)
+
+**수집 결과에서 반드시 보존할 것 (draft로 넘길 재료):**
+- 인용문 **원문 그대로** + 작성자 핸들(`u/name`, `@handle`) + **원문 URL**
+- 참여수(업보트/댓글수/조회수)와 그 출처 서브레딧·채널명
+- 커뮤니티가 **갈리는 지점**(찬반이 붙은 논점) — 이게 글의 가장 좋은 소재다
+
+**실패 시 처리 (중요):**
+- 스킬이 없거나, 첫 실행 설정이 안 끝났거나, 호출이 실패하면 → **이 단계를 건너뛰고 2-E로 진행**.
+  주제 발굴 자체를 중단하지 말 것.
+- 대신 해당 주제의 `communitySignal`을 `none`으로 기록한다. draft가 이걸 보고 💬 레이어를
+  기대하지 않는다. **없는 커뮤니티 반응을 있는 것처럼 지어내지 말 것.**
+
+---
+
+#### 2-E. 트렌드 교차 검증 (핵심 단계)
+
+Phase 1 + Phase 2 웹검색, NewsAPI, `last30days` 커뮤니티 신호를 대조하여 각 후보 소재의
+**신선도 등급**을 판정합니다.
 
 | 등급 | 조건 | 주제 제안 시 |
 |------|------|-------------|
@@ -235,6 +282,18 @@ Phase 1 + Phase 2 웹검색 결과와 NewsAPI 결과를 대조하여, 각 후보
 | **STALE** | 기사가 2주 이상 전이거나, "2026 best" 리스트에서만 등장 | 제안 제외. 이미 시의성 없음 |
 
 Step 3에서는 **HOT 소재를 최소 3개, WARM 소재를 최대 4개** 사용합니다. STALE 소재는 사용하지 않습니다.
+
+**커뮤니티 신호 등급(별도 축)** — 신선도와 독립적으로 판정하고 둘 다 기록한다:
+
+| 신호 | 조건 | 의미 |
+|---|---|---|
+| **LOUD** | 인용 가능한 댓글 2개 이상 + 참여수 유의미(예: 100+ 업보트 스레드 또는 1만+ 조회 영상) | 💬 레이어 확보 가능. **우선 제안** |
+| **QUIET** | 소재는 확인되나 인용할 만한 반응이 거의 없음 | 제안 가능하나 💬 기대 금지 |
+| **none** | `last30days` 미실행/실패 | 위와 동일. 지어내지 말 것 |
+
+> **LOUD 소재를 최우선으로 제안하라.** 기사가 아니라 반응이 있는 소재라야 우리 글이
+> 원본 발표와 다른 물건이 된다. 신선도 HOT + 신호 QUIET인 소재보다,
+> 신선도 WARM + 신호 LOUD인 소재가 이 블로그에는 더 낫다.
 
 ---
 
@@ -253,7 +312,8 @@ Step 1(기존 글)과 Step 2(트렌드)를 종합하여 주제를 제안합니�
    - 주요 검색 키워드 2-3개
    - 난이도 (별 1-3개)
    - 예상 작성 시간 (직접 작성 기준, AI 보조 제외)
-   - **트렌드 출처** (웹검색/뉴스/내부지식 중 어디서 발굴했는지)
+   - **트렌드 출처** (웹검색/뉴스/커뮤니티(last30days)/내부지식 중 어디서 발굴했는지)
+   - **커뮤니티 신호** (LOUD | QUIET | none) + LOUD면 대표 인용문 1개(원문 + 핸들 + URL)
    - **권장 구조 변형**: 해당 카테고리의 Variant A/B/C 중 이전 글과 겹치지 않는 것 추천
    - **권장 도입부 패턴**: 5가지 도입부 패턴 중 이전 2개 글과 다른 것 추천
 3. `--category` 필터가 있으면 해당 카테고리만 제안
@@ -286,7 +346,8 @@ Step 1(기존 글)과 Step 2(트렌드)를 종합하여 주제를 제안합니�
 ```
 ## 이번 주 AI 글감 제안 ({오늘 날짜})
 
-> 기존 글 {N}개 확인 완료 | 트렌드 소스: {웹검색/뉴스API/둘 다}
+> 기존 글 {N}개 확인 완료 | 트렌드 소스: {웹검색/뉴스API/last30days 커뮤니티}
+> 커뮤니티 신호: LOUD {N}개 · QUIET {N}개 {last30days 미실행 시: "(last30days 미실행 — 사유)"}
 
 ### 기존 글 목록 (중복 방지용)
 {기존 글 제목들을 번호 리스트로 출력}
@@ -300,6 +361,8 @@ Step 1(기존 글)과 Step 2(트렌드)를 종합하여 주제를 제안합니�
 - 난이도: {★☆☆ / ★★☆ / ★★★}
 - 예상 작성 시간: {N}분
 - 신선도: {HOT | WARM} — {근거: 웹검색 N건 + 뉴스 N건, 최신 기사 날짜}
+- 커뮤니티 신호: {LOUD | QUIET | none} — {근거: r/xxx N업보트 스레드, HN N댓글 등}
+  - (LOUD인 경우) 대표 반응: "{원문 그대로}" — {u/name 또는 @handle}, {URL}
 - 권장 구조: Variant {A/B/C} ({변형명}) | 도입부: {패턴명}
 - 왜 이 주제?: {한 줄 이유. 구체적 뉴스/출시/발표 언급}
 
@@ -328,6 +391,19 @@ TIP: 주제를 선택하려면 `/blog:draft {번호}` 를 입력하세요. (예:
       "difficulty": "★★☆",
       "freshness": "HOT",
       "freshnessEvidence": "웹검색 3건 + 뉴스 2건, 최신 2026-03-21",
+      "communitySignal": "LOUD",
+      "communityEvidence": {
+        "summary": "r/LocalLLaMA 340업보트 스레드에서 마이그레이션 비용 논쟁",
+        "quotes": [
+          {
+            "text": "인용문 원문 그대로. 번역하지 말 것.",
+            "author": "u/example",
+            "url": "https://reddit.com/r/.../comment/...",
+            "engagement": "412 upvotes"
+          }
+        ],
+        "contested": "찬반이 갈린 논점 한 줄"
+      },
       "recommendedVariant": "B",
       "recommendedIntroPattern": "statistic"
     }
@@ -337,3 +413,9 @@ TIP: 주제를 선택하려면 `/blog:draft {번호}` 를 입력하세요. (예:
 ```
 
 이 파일은 `/blog:draft {번호}` 호출 시 자동으로 참조됩니다.
+
+> **`communityEvidence` 작성 규칙 (엄수)**: `quotes[].text`는 **원문 그대로**만 넣는다.
+> 한국어로 번역해서 넣으면 draft가 그걸 원문 인용으로 착각해 본문에 박는다 —
+> 그건 존재하지 않는 발언을 만들어내는 것이다. 번역은 draft가 본문에서 원문과 나란히 붙인다.
+> `url`은 `last30days` 결과에서 **복사**만 하고 절대 조합·추측하지 않는다.
+> 커뮤니티 신호가 없으면 `"communitySignal": "none"`으로 두고 `communityEvidence`는 생략한다.
