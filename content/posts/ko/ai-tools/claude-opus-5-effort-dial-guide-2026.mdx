@@ -1,0 +1,246 @@
+---
+title: "Claude Opus 5 완전 정리: effort 5단계 실측, max가 xhigh보다 쌌다 [2026]"
+date: "2026-07-26"
+description: "Opus 4.8과 같은 $5/$25에 Frontier-Bench 18.7%→43.3%. effort 5단계를 직접 돌려보니 max가 xhigh보다 41% 쌌습니다."
+category: "ai-tools"
+tags: ["Claude Opus 5", "effort 파라미터", "Anthropic", "AI 코딩", "LLM 비용", "Claude Code"]
+thumbnail: "https://www-cdn.anthropic.com/images/4zrzovbb/website/54b7ab1d2c2521f83ae5d2da5f9d99321c370d24-2880x1620.png"
+---
+
+**effort를 올리면 정말 더 좋은 답이 나올까요?**
+
+저는 당연히 그럴 거라고 생각했습니다. 그래서 Claude Opus 5가 나온 다음 날, 같은 코드 리뷰 과제를 `low`부터 `max`까지 다섯 번 돌려봤습니다. 결과가 제 예상과 달라서 이 글을 씁니다.
+
+![Claude Opus 5 발표 이미지](https://www-cdn.anthropic.com/images/4zrzovbb/website/54b7ab1d2c2521f83ae5d2da5f9d99321c370d24-2880x1620.png)
+_출처: [Anthropic](https://www.anthropic.com/news/claude-opus-5) | 2026년 7월 24일 공개된 Claude Opus 5_
+
+## TL;DR
+
+- **출시**: 2026년 7월 24일. 모델 ID `claude-opus-5`. 컨텍스트 1M 토큰(기본값이자 최댓값), 최대 출력 128k.
+- **가격**: $5 / $25 per 1M 토큰. Opus 4.8과 **동일**합니다. Fast mode는 $10/$50.
+- **벤치마크**: Frontier-Bench v0.1에서 Opus 4.8 18.7% → Opus 5 **43.3%**, Fable 5(33.7%)보다 위. ARC-AGI 3은 1.5% → **30.2%**.
+- **제가 직접 돌린 결과**: effort를 올릴수록 출력 토큰과 시간은 늘었지만, **찾아낸 핵심 결함은 `low`부터 똑같았습니다.** 그리고 `max`가 `xhigh`보다 **41% 싸고 41% 빨랐습니다.**
+- **가장 중요한 실무 변경점**: 이전 모델용 프롬프트에 있는 "마지막에 검증 단계를 넣어라", "서브에이전트로 검증해라" 같은 지시문은 **지워야 합니다.** Opus 5에서는 과잉 검증을 유발합니다.
+
+---
+
+## 1. 왜 이 모델을 굳이 뜯어봤나
+
+솔직히 말하면 처음엔 시큰둥했습니다. 6월에 Fable 5가 나왔고([Claude Fable 5 완전 정리](https://daily1bite.com/ko/blog/ai-tools/claude-fable-5-mythos-class-public-release-2026)에서 다뤘습니다), 그 전엔 Opus 4.8이 있었고, 두 달에 한 번씩 "역대 최강"이 나오는 상황이 좀 지겨웠거든요.
+
+r/ClaudeAI의 출시 스레드(2,885 업보트, 653 댓글)를 봤더니 저만 그런 게 아니었습니다. 최상위 댓글이 이렇습니다.
+
+> "You're absolutely right to push back. It's worth digging into, because numbers being bigger or smaller than each other is load-bearing"
+> — [u/More_Metal](https://reddit.com/r/ClaudeAI/comments/1v5h6o9/comment/ozisv2q/) · r/ClaudeAI **1,470 업보트**
+
+Claude 특유의 아부성 말투("당신 지적이 정확합니다")를 그대로 흉내 내면서, 벤치마크 숫자의 크고 작음이 결정적인 양 구는 발표 톤을 비꼰 댓글입니다. 이게 1,470 업보트로 1위였습니다.
+
+YouTube 반응도 결이 비슷했습니다. Chase AI 영상(조회 73,316회) 최상위 댓글은 이겁니다.
+
+> "CEO: 'The government made us nerf Fable. What do we do?'
+> Rando employee: 'What if we just call it something else?'
+> CEO: 'Brilliant!'"
+> — [@jamestk656](https://www.youtube.com/watch?v=Txse8Ux69Qg) · **208 likes**
+
+> "new insane model every week basically"
+> — [@EldenLordo66](https://www.youtube.com/watch?v=Txse8Ux69Qg) · **188 likes**
+
+6월 Fable 5 정부 직권 정지 사태를 기억하는 사람들이 "규제로 막힌 Fable을 이름만 바꿔 내놓은 것 아니냐"고 의심하는 겁니다. 근거 있는 주장은 아니지만, 이 온도가 실제 커뮤니티 온도입니다. 발표 자료만 읽으면 절대 안 보이는 부분이죠.
+
+그래서 숫자 말고 **제 손으로 확인할 수 있는 것**을 확인해보기로 했습니다.
+
+## 2. 공식 스펙: 진짜로 바뀐 것들
+
+먼저 [Anthropic 공식 문서](https://platform.claude.com/docs/en/about-claude/models/whats-new-opus-5)에서 확인한 사실만 정리합니다.
+
+| 항목 | Opus 4.8 | **Opus 5** |
+|---|---|---|
+| 모델 ID | `claude-opus-4-8` | `claude-opus-5` |
+| 입력 / 출력 가격 | $5 / $25 | **$5 / $25 (동일)** |
+| 컨텍스트 | 200k(1M 변형 별도) | **1M (기본값 = 최댓값, 변형 없음)** |
+| 최대 출력 토큰 | 64k | **128k** |
+| thinking 기본값 | 꺼짐 | **켜짐** |
+| 프롬프트 캐시 최소 길이 | 1,024 토큰 | **512 토큰** |
+| Frontier-Bench v0.1 | 18.7% | **43.3%** |
+| ARC-AGI 3 | 1.5% | **30.2%** |
+
+Frontier-Bench 기준 Fable 5는 33.7%입니다. 즉 **Opus 5가 Fable 5보다 위인데 가격은 절반**입니다([Vellum 벤치마크 분석](https://www.vellum.ai/blog/claude-opus-5-benchmarks-explained), 2026년 7월 24일).
+
+여기서 r/Anthropic에 176 업보트짜리 질문이 올라왔습니다. [「Anthropic 자체 벤치마크 대부분에서 Opus 5가 Fable 5를 이기는데, 왜 Fable은 여전히 두 배 비싼가?」](https://www.reddit.com/r/Anthropic/comments/1v5wsgz/if_opus_5_beats_fable_5_on_most_of_anthropics_own/)(87 댓글). 정당한 질문입니다.
+
+제 해석은 이렇습니다. **Opus 5의 Fast mode 가격이 정확히 $10/$50, 즉 Fable 5의 정가와 같습니다.** 그리고 CursorBench 3.2에서 Opus 5가 Fable 5의 최고점 0.5% 이내로 붙는 건 **`max` effort일 때**입니다. 정리하면 Fable의 프리미엄은 "더 똑똑함"이 아니라 "같은 수준을 더 적은 시간·설정 부담으로"에 붙어 있습니다. 장기 자율 에이전트처럼 재시도 비용이 사람 리뷰 시간으로 돌아오는 작업이 아니라면, Fable 값을 낼 이유는 줄었습니다.
+
+![Opus 5 벤치마크 비교](https://www-cdn.anthropic.com/images/4zrzovbb/website/a8fb4f77a9fe240e6f27f3bdc47a137f3c74a29d-2600x2578.png)
+_출처: [Anthropic](https://www.anthropic.com/news/claude-opus-5) | Opus 5 벤치마크 비교 차트_
+
+## 3. effort 5단계, 같은 과제로 직접 돌려봤습니다
+
+여기가 이 글의 본론입니다.
+
+공식 문서는 이렇게 말합니다. "Claude Opus 5는 추가 effort를 이전 어떤 Opus보다 안정적으로 더 나은 결과로 변환한다." 그런데 [SitePoint의 FrontierCode 분석](https://www.sitepoint.com/claude-opus-5-medium-effort-frontiercode-benchmark/)은 medium(main 53.4%, extended 63.6%)에서 정점을 찍고 high에서 정체하거나 미세하게 떨어진다고 보고합니다. r/artificial에도 [「effort 다이얼은 단조증가가 아니다」](https://www.reddit.com/r/artificial/comments/1v60pga/opus_5s_effort_dial_is_not_monotonic_above_high/) 스레드가 올라왔고요.
+
+말이 엇갈리니 직접 재봤습니다.
+
+### 실험 설계
+
+RAG 파이프라인에서 실제로 쓰는 배치 함수에 버그를 심고, 그걸 찾게 했습니다.
+
+```javascript
+function chunkByTokenBudget(chunks, budget) {
+  const batches = [];
+  let current = [];
+  let used = 0;
+
+  for (let i = 0; i < chunks.length; i++) {
+    const size = chunks[i].tokens;
+
+    if (used + size > budget) {
+      batches.push(current);   // ← current가 비어 있어도 push된다
+      current = [];
+      used = 0;
+    }
+
+    current.push(chunks[i]);   // ← size > budget이어도 그냥 들어간다
+    used += size;
+  }
+
+  if (current.length > 0) batches.push(current);
+  return batches;
+}
+```
+
+핵심 결함은 두 개입니다. **(1) 첫 청크가 예산보다 크면 빈 배열이 결과에 섞입니다.** **(2) 예산을 혼자 초과하는 청크를 분할도 거부도 없이 통과시킵니다.**
+
+같은 프롬프트를 다섯 번, effort만 바꿔가며 돌렸습니다.
+
+```bash
+for E in low medium high xhigh max; do
+  claude -p "$PROMPT" --model claude-opus-5 --effort "$E" \
+    --output-format json > "out-$E.json"
+done
+```
+
+### 결과
+
+| effort | 소요 시간 | 출력 토큰 | 출력 토큰 비용 | 지적한 항목 수 | 핵심 결함 2개 |
+|---|---|---|---|---|---|
+| `low` | 23.3초 | 1,185 | $0.030 | 6개 | ✅ 둘 다 |
+| `medium` | 24.9초 | 1,509 | $0.038 | 9개 | ✅ 둘 다 |
+| `high` (기본값) | 33.4초 | 2,000 | $0.050 | 8개 | ✅ 둘 다 |
+| `xhigh` | **56.0초** | **3,974** | **$0.099** | 9개 | ✅ 둘 다 |
+| `max` | 33.1초 | 1,714 | $0.043 | **10개 + 전제 정정** | ✅ 둘 다 |
+
+> 비용은 출력 토큰만 $25/1M로 환산한 값입니다. `total_cost_usd`에는 Claude Code 세션의 시스템 프롬프트 캐시 생성분(매 실행 약 21,800 토큰)이 포함돼 절대값이 부풀려지므로, 단계 간 비교에는 출력 토큰이 정직합니다.
+
+세 가지가 눈에 띕니다.
+
+**첫째, 핵심 결함 두 개는 `low`가 이미 다 찾았습니다.** effort를 5배로 올려도 "빈 배치 push"와 "초과 청크 통과"라는 진짜 버그는 그대로 두 개였습니다. 늘어난 건 `tokens`가 문자열일 때, `null`일 때, 음수일 때 같은 **입력 검증 주변 케이스 나열**이었습니다. 실무에서 중요하긴 하지만, "더 깊이 생각해서 더 어려운 버그를 찾았다"는 아니었습니다.
+
+**둘째, `xhigh`가 최악의 가성비였습니다.** 시간 2.4배, 출력 토큰 3.4배를 쓰고 결과물은 `medium`과 같은 9개였습니다. FrontierCode 데이터가 말하는 "고effort 구간에서 정체"를 제 눈으로 본 셈입니다.
+
+**셋째, 그런데 `max`가 `xhigh`보다 41% 빠르고 41% 쌌습니다.** 이건 저도 예상 못 했습니다. `max`는 답변 첫 줄부터 이렇게 시작했습니다.
+
+```
+I'll analyze the code directly — this is a focused bug-hunt on a short
+function, no delegation needed.
+```
+
+**과제 크기를 먼저 판단하고 "여기엔 위임이 필요 없다"고 결정한 뒤 바로 들어갔습니다.** 공식 문서가 말하는 "모델이 언제 얼마나 생각할지 스스로 정한다"가 이 지점입니다. effort는 사고량의 하한이 아니라 **상한**에 가깝습니다. `xhigh`는 그 판단 없이 예산을 다 쓴 반면, `max`는 안 써도 되는 걸 안 썼습니다.
+
+그리고 `max`만 제 프롬프트의 전제를 반박했습니다.
+
+```
+"조용히 데이터를 잃는다"에 대한 정정: 위 코드는 청크를 잃지 않는다 —
+모든 청크는 어떤 배치에든 들어간다. 실제로 잃는 것은 예산 계약이다.
+```
+
+맞는 말입니다. 제가 문제를 설명할 때 부정확하게 썼고, `max`만 그걸 짚었습니다.
+
+![Claude Opus 5 에이전틱 작업 성능](https://www-cdn.anthropic.com/images/4zrzovbb/website/7530b1086992936d7e9d5796a892d1e8fa063253-3840x2160.png)
+_출처: [Anthropic](https://www.anthropic.com/news/claude-opus-5) | 장기 에이전틱 작업에서의 성능_
+
+### 그래서 effort를 어떻게 쓰라는 건가
+
+| 상황 | 권장 | 이유 |
+|---|---|---|
+| 코드 리뷰, 버그 찾기, 요약 | `low`~`medium` | 핵심은 다 잡습니다. 가장 쌉니다 |
+| 일반 코딩 작업 | `high` (기본값) | 굳이 바꿀 이유 없음 |
+| 다단계 리팩터링, 장기 에이전트 | `max` | `xhigh` 건너뛰세요 |
+| **`xhigh`** | **쓰지 마세요** | 제 실측에선 항상 손해였습니다 |
+
+물론 이건 **한 과제, 각 1회 실행** 결과입니다. 통계적으로 유의한 벤치마크가 아니라 재현 가능한 단일 사례로 읽어주세요. 다만 방향은 SitePoint의 FrontierCode 데이터와 같았습니다.
+
+## 4. 마이그레이션할 때 실제로 걸리는 것들
+
+모델 ID만 바꾸면 되는 게 아닙니다. 실무에서 걸릴 것들만 뽑았습니다.
+
+**① thinking이 기본으로 켜집니다.** Opus 4.8에서는 `thinking`을 명시해야 켜졌습니다. Opus 5는 반대입니다. `max_tokens`는 사고 토큰과 응답 토큰의 **합**에 걸리는 한도이므로, 4.8에서 thinking 없이 돌던 워크로드는 `max_tokens`를 다시 잡아야 합니다.
+
+**② `thinking: {"type": "disabled"}` + effort `xhigh`/`max` = 400 에러.** 요청마다 강제되는 파괴적 변경입니다. 둘 중 하나를 포기해야 합니다.
+
+**③ 검증 지시문을 지우세요.** 이게 제일 중요합니다. 공식 문서가 명시적으로 말합니다 — 이전 모델용으로 넣어둔 "마지막에 검증 단계를 포함해라", "서브에이전트를 써서 검증해라" 같은 지시문은 Opus 5에서 **과잉 검증을 유발**하므로 제거하라고요.
+
+이 항목이 커뮤니티의 한 미스터리를 풉니다. r/ClaudeCode에 [「Claude Code에 Opus 5더러 서브에이전트를 쓰지 말라고 지시하는 하드코딩이 있다」](https://www.reddit.com/r/ClaudeCode/comments/1v6y5q2/claude_code_has_a_hardcoded_instruction_telling/)는 글이 올라와 143 업보트를 받았습니다(HN에도 교차 게재). "왜 좋은 기능을 막아놨냐"는 반응이 많았는데, 문서를 보면 답이 나옵니다. **Opus 5는 시키지 않아도 알아서 위임하고 알아서 검증합니다.** 그래서 예전 프롬프트를 그대로 두면 두 번 검증합니다. 하드코딩은 기능 차단이 아니라 중복 제거였던 겁니다.
+
+같은 맥락에서 Anthropic 엔지니어는 이렇게 밝혔습니다.
+
+> "We removed over 80% of Claude Code's system prompt for Opus 5 and Fable 5"
+> — [@trq212](https://twitter.com/trq212/status/2080710971228918066) · Hacker News 20 points
+
+![Claude Opus 5 멀티 에이전트 조율](https://www-cdn.anthropic.com/images/4zrzovbb/website/1af9dbd742e3812be4bf66903740188fb8fd2e33-3840x2160.png)
+_출처: [Anthropic](https://www.anthropic.com/news/claude-opus-5) | 서브에이전트 팀을 조율하는 writer-verifier 패턴_
+
+**④ 답변이 길어집니다.** 문서가 인정하는 사항입니다 — 기본 응답과 산출물이 더 길어지고, 에이전트 세션에서 진행 상황을 더 자주 서술합니다. r/Anthropic에 [「Opus 5는 왜 이렇게 말하나요?」](https://www.reddit.com/r/Anthropic/comments/1v6i6sm/why_does_opus_5_talk_like_this/) 스레드(66 댓글)가 올라온 이유입니다. 버그가 아니라 의도된 변화입니다.
+
+## 5. 한계와 주의사항
+
+장점만 쓰면 광고가 되니 걸리는 것들도 적습니다.
+
+- **Mythos 5보다 뒤처지는 영역이 명시돼 있습니다.** 사이버보안 취약점 익스플로잇, 장기 자율 생물학 연구 과제. Anthropic이 직접 밝힌 한계입니다.
+- **Fast mode는 Claude API 전용입니다.** Bedrock, Google Cloud, Microsoft Foundry에서는 현재 안 됩니다. 클라우드 벤더 락인 환경이라면 이 기능은 없는 셈 치세요.
+- **thinking을 끄면 이상 동작이 있습니다.** 문서가 인정합니다 — `tool_use` 블록 대신 텍스트에 도구 호출을 그대로 써버리거나, 내부 XML 태그가 응답에 섞여 나올 수 있습니다.
+- **출시 직후 안정성.** 7월 26일 r/ClaudeCode에 [「Opus 5 오류율 상승」](https://www.reddit.com/r/ClaudeCode/comments/1v6z5ig/elevated_errors_for_claude_opus_5/) 글이 올라왔습니다. 프로덕션 전환은 며칠 지켜보는 게 안전합니다.
+- **커뮤니티의 "effort 비단조" 주장은 좀 과장됐습니다.** r/artificial 스레드는 "Anthropic 마이그레이션 가이드에 그렇게 적혀 있다"고 했지만, 실제 문서는 정반대로 "effort를 더 나은 결과로 안정적으로 변환한다"고 씁니다. 정체 현상은 실재하지만(제 실측에서도 보였습니다), 공식 문서가 인정한 건 아닙니다. **양쪽 다 조금씩 자기 편한 대로 말하고 있습니다.**
+
+![AI 개발 도구 다이얼](https://images.unsplash.com/photo-1611760357505-922600d8ffa6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NzYwMzh8MHwxfHNlYXJjaHwxfHxzcGVlZG9tZXRlciUyMGRpYWwlMjBnYXVnZXxlbnwwfDB8fHwxNzg1MDczNzA3fDA&ixlib=rb-4.1.0&q=80&w=1080)
+_Photo by [Claude Gabriel](https://unsplash.com/@claudegabriel?utm_source=daily-1-bite&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=daily-1-bite&utm_medium=referral) | effort 다이얼은 올릴수록 좋아지는 게 아니었습니다_
+
+## 6. 누구에게 어떤 모델을 추천하나
+
+| | Sonnet 5 | **Opus 5** | Fable 5 |
+|---|---|---|---|
+| 가격(입/출, 1M) | $2/$10 (8/31까지) → $3/$15 | **$5/$25** | $10/$50 |
+| Frontier-Bench | — | **43.3%** | 33.7% |
+| 추천 대상 | 대량 반복 작업, 비용 민감 | **일상 개발 전반** | 장기 자율 에이전트 |
+| 컨텍스트 | 200k급 | **1M** | 1M |
+
+- **비용이 1순위인 팀**: Sonnet 5. 8월 31일까지 인트로 가격($2/$10)이라 지금이 가장 쌉니다. 모델별 선택 기준은 [Claude Opus 4.8 vs Sonnet 5: API 개발자 실전 선택 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-4-8-vs-sonnet-5-api-developer-guide-2026)에서 더 자세히 다뤘습니다.
+- **Opus 4.8을 쓰던 팀**: 무조건 Opus 5로. **가격이 같은데 Frontier-Bench가 2.3배**입니다. 안 바꿀 이유가 없습니다. 4.8의 강점은 [Claude Opus 4.8 완전 정리](https://daily1bite.com/ko/blog/ai-tools/claude-opus-4-8-review-coding-honesty-fast-mode-2026)에 정리해뒀는데, 그 글의 결론 대부분이 이제 교체됐습니다.
+- **Fable 5를 쓰던 팀**: 워크로드를 나누세요. 일상 작업은 Opus 5로 내리고, 장기 자율 에이전트만 Fable에 남기면 비용이 확 줄어듭니다.
+- **Claude Code 사용자**: 이미 Opus 5가 기본 Opus 모델입니다. Pro는 선택 가능, Max는 기본 선택입니다.
+
+다른 [AI Tools & Review](https://daily1bite.com/ko/category/ai-tools) 글도 함께 보시면 도구 선택에 도움이 될 겁니다.
+
+## 마무리
+
+정리하면 이렇습니다. **가격 동결에 성능 2.3배는 진짜입니다.** 커뮤니티가 냉소적인 것과 별개로 숫자는 숫자고, Opus 4.8을 쓰고 있다면 바꾸지 않을 이유가 없습니다.
+
+다만 **effort를 무작정 올리는 건 손해**였습니다. 제 실측에서 `xhigh`는 언제나 최악의 선택지였고, `low`가 이미 핵심 결함을 다 찾았습니다. 그리고 프롬프트에 남아 있는 옛날 검증 지시문은 지금 지우세요 — 그게 이 마이그레이션에서 제일 조용하고 제일 비싼 함정입니다.
+
+혹시 여러분 환경에서는 다른 결과가 나왔나요? 특히 `xhigh`가 이득이었던 케이스가 있다면 궁금합니다.
+
+---
+
+## 참고 자료
+
+- [Introducing Claude Opus 5](https://www.anthropic.com/news/claude-opus-5) — Anthropic, 2026년 7월 24일
+- [What's new in Claude Opus 5](https://platform.claude.com/docs/en/about-claude/models/whats-new-opus-5) — Anthropic 공식 문서, 2026년 7월 기준
+- [Claude Opus 5 Benchmarks Explained](https://www.vellum.ai/blog/claude-opus-5-benchmarks-explained) — Vellum, 2026년 7월 24일
+- [Claude Opus 5 Is Most Efficient at Medium Effort: FrontierCode Benchmark Data Explained](https://www.sitepoint.com/claude-opus-5-medium-effort-frontiercode-benchmark/) — SitePoint, 2026년 7월
+- [If Opus 5 beats Fable 5 on most of Anthropic's own benchmarks, why is Fable still twice as expensive?](https://www.reddit.com/r/Anthropic/comments/1v5wsgz/if_opus_5_beats_fable_5_on_most_of_anthropics_own/) — r/Anthropic, 176 업보트 / 87 댓글
+
+**함께 읽으면 좋은 글:**
+
+- [Claude Opus 4.8 vs Sonnet 5: API 개발자 실전 선택 가이드](https://daily1bite.com/ko/blog/ai-tutorial/claude-opus-4-8-vs-sonnet-5-api-developer-guide-2026) - 모델 티어별 비용·성능 선택 기준
+- [Claude Fable 5 완전 정리: Mythos 첫 공개·Opus 4.8 2배 가격](https://daily1bite.com/ko/blog/ai-tools/claude-fable-5-mythos-class-public-release-2026) - Opus 5가 절반 가격으로 따라잡은 그 모델
+- [Claude Opus 4.8 완전 정리: 코드 결함 4배 감소·Fast Mode 3배 저렴](https://daily1bite.com/ko/blog/ai-tools/claude-opus-4-8-review-coding-honesty-fast-mode-2026) - 같은 가격의 이전 세대 기록
