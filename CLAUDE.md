@@ -12,7 +12,7 @@ Next.js 15 (App Router) + next-intl 블로그. AWS Amplify SSR/ISR 배포. 콘�
 
 따라서 이 저장소에서 아래를 건드리는 변경은 **일반 코드 수정이 아니다**:
 
-- `middleware.ts`, `i18n/routing.ts` (리디렉션·로케일 라우팅)
+- `next.config.ts`의 `redirects()` (구 `/ko/*`·`/en/*` → 루트 리디렉션)
 - `app/sitemap.ts`, `app/robots.ts`
 - 각 페이지 `generateMetadata`의 `alternates` / `robots`
 - 콘텐츠 frontmatter의 `date` / `noindex`
@@ -22,7 +22,8 @@ Next.js 15 (App Router) + next-intl 블로그. AWS Amplify SSR/ISR 배포. 콘�
 
 - **frontmatter `date`를 소급 수정하지 않는다.** 갱신은 `updated`를 쓴다. (I6 — 날짜 일괄 수정이
   56편을 하루에 몰아넣어 대량발행 신호를 만든 전례가 있다.)
-- **`hreflang="en"`을 다시 내보내지 않는다.** (I2)
+- **`hreflang`을 다시 내보내지 않는다.** 언어가 하나뿐이라 `x-default`도 불필요하다. (I2)
+- **`permanent: true`를 쓰지 않는다.** 308이 나간다. 301이 필요하면 `statusCode: 301`. (I4)
 - **실행하지 않은 것을 실행했다고 쓰지 않는다.** (I7 — 지금 받고 있는 것이 신뢰 강등이다.)
 
 ## 검증

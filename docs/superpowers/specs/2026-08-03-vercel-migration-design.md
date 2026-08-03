@@ -162,8 +162,19 @@ AdSense 재도전 시 Pro($20/mo)로 업그레이드한다. Vercel Hobby는 약�
 ### 2-0. 기대 매핑을 구현보다 먼저 확정한다
 
 현행 프로덕션 sitemap과 레거시 경로를 긁어 `기존 URL → 기대 상태/목적지` 표를
-**구현 전에** 생성하고 커밋한다(`scripts/expected-urls.txt`). 이것이 2단계의 계약이며
-검증은 이 표에 대한 assert다.
+**구현 전에** 생성하고 커밋한다(`scripts/expected-urls.tsv`, 생성기는
+`scripts/gen-expected-urls.sh`). 이것이 2단계의 계약이며 검증은 이 표에 대한 assert다.
+
+> ⚠️ **배포 직전에 재생성한다.** 커밋된 `expected-urls.tsv`는 2026-08-03 스냅샷이다
+> (sitemap 108 URL → 규칙 393건). 주 2~3편 발행 중이므로 며칠만 지나도 신규 글이
+> 매핑에서 빠지고, 빠진 URL은 검증에서 아예 확인되지 않는다. 그러면 "통과"가
+> 아무것도 보장하지 않게 된다.
+>
+> ```bash
+> scripts/gen-expected-urls.sh https://daily1bite.com > scripts/expected-urls.tsv
+> ```
+>
+> 재생성 후 규칙 수가 393보다 **늘었는지** 확인한다. 줄었다면 무언가 잘못된 것이다.
 
 | 기존 | 현재 | 이후 |
 |---|---|---|

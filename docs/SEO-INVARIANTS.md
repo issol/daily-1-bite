@@ -20,35 +20,47 @@
 
 각 항목은 실측으로 검증 가능하다. 검증 명령은 아래 "검증" 절에 있다.
 
-### I1. 색인 대상은 `/ko` 하나다
-- 색인 가능한 URL은 `https://daily1bite.com/ko/...` 뿐이다.
-- EN 섹션(`/en`, `/en/blog`, `/en/about`, ...)은 `noindex, follow`.
-  EN 블로그 글은 KO 버전이 있으면 308로 KO에 되돌린다.
-- **EN을 robots.txt로 차단하지 않는다.** 크롤을 막으면 Googlebot이 noindex/redirect 신호를
-  볼 수 없어 "robots 차단" 노이즈만 늘어난다. 크롤 허용 + noindex가 정답이다.
+### I1. 색인 대상은 루트 URL 하나다
+- 색인 가능한 URL은 `https://daily1bite.com/...` 뿐이다. locale prefix가 없다.
+- 구 URL(`/ko/*`, `/en/*`)은 전부 301로 대응하는 루트 URL을 가리킨다. 색인 대상이 아니다.
+- **구 URL을 robots.txt로 차단하지 않는다.** 크롤을 막으면 Googlebot이 리디렉션 신호를
+  볼 수 없어 "robots 차단" 노이즈만 늘어난다. 크롤 허용 + 301이 정답이다.
 
-### I2. hreflang 클러스터는 KO 단독이다
-- `hreflang="en"`을 **어디에도** 내보내지 않는다: HTML `<link>`, sitemap `xhtml:link`, `Link:` 헤더 전부.
-- 이유: hreflang은 색인 가능하고 상호 참조되는 URL만 가리켜야 한다. 리디렉트되거나
-  noindex인 URL을 대체 언어 버전으로 선언하면 Google이 **클러스터 전체를 무효 처리**한다.
-- `x-default`는 항상 대응하는 `/ko` URL이다. prefix 없는 URL을 가리키면 안 된다(4월 사고의 형태).
+> **개정 이력 (2026-08-03).** 이전 I1은 "색인 대상은 `/ko` 하나, EN 섹션은 noindex"였다.
+> EN 83편 중 KO에 없는 고유 글이 0편이었고 EN 전체가 이미 noindex라 색인 대상에 애초에
+> 없었으므로, i18n 스택을 제거하고 4월 이전 URL 구조로 되돌렸다. 근거와 성패 기준은
+> 아래 "변경 동결" 절에 적었다.
 
-### I3. next-intl의 자동 SEO 기능은 꺼져 있다
-`i18n/routing.ts`:
-- `alternateLinks: false` — `Link:` hreflang 응답 헤더 비활성화. hreflang은 각 page의
-  `metadata.alternates`와 `app/sitemap.ts`만 담당한다(단일 출처).
-- `localeDetection: false` — Accept-Language/쿠키 기반 자동 로케일 전환 금지.
-  켜면 `/`가 영어권 클라이언트에게 noindex인 `/en`으로 간다. Google도 언어 자동 리디렉션을
-  권장하지 않는다.
+### I2. hreflang을 사용하지 않는다
+- 언어가 하나뿐이다. `hreflang`을 **어디에도** 내보내지 않는다:
+  HTML `<link>`, sitemap `xhtml:link`, `Link:` 헤더 전부. `x-default`도 포함이다.
+- 이유: 대체 언어 버전이 존재하지 않는데 `x-default`가 자기 자신을 가리키는 선언은
+  Google에게 아무 정보도 주지 않으면서 hreflang 검증 대상만 늘린다.
+- (구 I2는 "KO 단독 클러스터 + x-default는 항상 `/ko`"였다. EN이 사라지면서 클러스터
+  개념 자체가 불필요해졌다.)
 
-### I4. 리디렉션은 전부 영구(301/308)다
-- `/` → `/ko` : **301**. (next-intl에 맡기면 307이 나가고, 임시 리디렉션은 링크 신호를
-  목적지로 넘기지 않는다. 외부 링크가 가장 많이 꽂히는 URL이라 손실이 크다.)
-- prefix 없는 레거시 경로(`/blog`, `/category`, `/about`, ...) → `/ko/...` : **301** (`middleware.ts`)
-- `/en/blog/<slug>` → `/ko/blog/<slug>` : **308** (`permanentRedirect`)
+### I3. (폐지) next-intl 자동 SEO 기능 차단
+2026-08-03 i18n 제거로 폐지. next-intl 의존성과 `i18n/` 디렉터리가 없다.
+`alternateLinks` / `localeDetection` 설정 대상 자체가 존재하지 않는다.
+
+**번호는 재사용하지 않는다.** 코드 주석과 커밋 메시지가 I4~I8을 참조하고 있어
+재번호하면 과거 기록의 참조가 전부 어긋난다.
+
+`Link:` hreflang 응답 헤더가 어떤 경로에도 없어야 한다는 검사는 계속 유효하다
+(아래 "검증" 절). 프레임워크가 바뀌어도 이 신호가 되살아나면 안 된다.
+
+### I4. 리디렉션은 전부 영구(301)다
+- `/ko` → `/`, `/ko/:path*` → `/:path*` : **301**
+- `/en` → `/`, `/en/:path*` → `/:path*` : **301**
+- 전부 `next.config.ts`의 `redirects()`가 처리한다. `middleware.ts`는 없다.
+- ⚠️ **`permanent: true`는 308을 낸다.** GSC가 가장 보편적으로 "영구 이동"으로 인식하는
+  301을 쓰려면 `statusCode: 301`을 명시해야 한다.
+- **리디렉션 홉은 1회다.** 301의 목적지는 즉시 200이어야 하며 체인과 루프는 금지다.
+  (레거시 규칙과 신규 규칙이 한순간이라도 공존하면 무한 루프가 된다 —
+  방향을 뒤집을 때는 반드시 같은 커밋에서 원자적으로 한다.)
 
 ### I5. sitemap과 색인 상태는 항상 일치한다
-- sitemap에는 `/ko` URL만, `noindex: true`가 아닌 글만 들어간다.
+- sitemap에는 루트 URL만, `noindex: true`가 아닌 글만 들어간다.
 - noindex 글을 sitemap에 남기거나, 색인 대상 글을 sitemap에서 빼면 안 된다.
 
 ### I6. 발행일은 사후에 조작하지 않는다
@@ -70,7 +82,12 @@
 
 ## 변경 동결
 
-**2026-07-23부터 최소 6주간(~2026-09-03) 위 불변식을 바꾸지 않는다.**
+**i18n 제거 배포일부터 4주간 위 불변식을 바꾸지 않는다.**
+
+> ⚠️ **배포 시 채울 것:** 실제 배포일과 종료일을 여기에 적는다.
+> 배포일 `____-__-__` → 동결 종료 `____-__-__`.
+> 비워둔 채로 두면 동결이 언제 끝나는지 아무도 모르게 되고, 그게 4월 이후
+> 정책이 여섯 번 바뀐 방식이다.
 
 - 이 기간에 하는 것: 콘텐츠 재작성(`.seo-audit/cluster-2026-03-29-rewrite.md`), GSC 관찰.
 - 이 기간에 하지 않는 것: canonical/robots/noindex/hreflang/sitemap/리디렉션 정책 변경.
@@ -81,32 +98,71 @@
 관찰 지표(GSC): "크롤링됨 – 현재 색인되지 않음" 건수, 색인된 페이지 수, 노출수.
 기준선(2026-07-23): 색인 0~1, 노출 0, 크롤링됨-미색인 185.
 
+### I1/I2 개정의 근거와 성패 기준 (2026-08-03)
+
+직전 동결(2026-07-23 ~ 2026-09-03)을 11일차에 조기 종료하고 URL 구조를 바꿨다.
+이 절차는 위 "불변식 자체를 바꿔야 한다면" 조항을 따른 것이다.
+
+**(a) 변경을 정당화하는 관찰**
+
+- EN 83편 중 KO에 없는 고유 글이 **0편**이다. 잃을 콘텐츠가 없다.
+- EN 섹션 전체가 이미 `noindex`였다. Google 색인 대상에 EN이 애초에 없었으므로
+  i18n 제거의 **색인 이득은 0에 가깝다**. 실질 변화는 `/ko/*` → `/*` 하나다.
+- 그 대신 신호를 내보내는 표면이 줄어든다: hreflang, `Link:` 헤더, locale 감지,
+  미들웨어가 전부 사라진다. 4월 사고는 이 표면들이 서로 모순되면서 생겼다.
+- 되돌아가는 URL 구조(`/blog/x`)는 색인이 122였던 4월 이전의 그것이다.
+
+**(b) 성패 판단 기준**
+
+배포 4주 후 GSC에서:
+
+- "크롤링됨 – 현재 색인되지 않음"이 기준선 **185 대비 감소**
+- 색인된 페이지 수가 **0~1에서 증가**
+
+**악화 시에도 되돌리지 않는다.** Google이 301을 크롤한 뒤 되돌리면 신호가 두 번
+뒤집혀 되돌리는 쪽이 더 나쁘다. 지표가 나빠지면 롤백이 아니라 원인 규명을 한다.
+이 비대칭 때문에 2단계의 안전장치는 롤백 계획이 아니라 **배포 전 전량 검증**이다
+(`scripts/verify-urls.sh`).
+
 ## 검증
 
-프로덕션 빌드 후 로컬 서버로 전부 확인할 수 있다.
+검사는 스크립트로 있다. 손으로 curl을 치던 절차를 옮긴 것이며, 대상 URL을 인자로
+받으므로 로컬 / preview / 프로덕션 어디서든 같은 것을 돌린다.
 
 ```bash
 npm run build && npx next start -p 3111
 ```
 
 ```bash
-# I4: 루트는 301로 /ko. Accept-Language를 줘도 목적지가 바뀌면 안 된다(I3).
-curl -sI localhost:3111/ | grep -iE 'HTTP|location'
-curl -sI -H 'Accept-Language: en-US,en;q=0.9' localhost:3111/ | grep -iE 'HTTP|location'
-
-# I3: Link 헤더가 어떤 경로에도 없어야 한다.
-curl -sI localhost:3111/ko | grep -i '^link' && echo "위반: Link 헤더가 살아있음"
-
-# I2/I5: sitemap에 hreflang="en"이 0건, /en URL이 0건.
-curl -s localhost:3111/sitemap.xml | grep -c 'hreflang="en"'
-curl -s localhost:3111/sitemap.xml | grep -c '<loc>https://daily1bite.com/en'
-
-# I2: 빌드된 HTML 전체에 EN/레거시 hreflang이 없어야 한다.
-grep -rho 'hrefLang="[^"]*" href="[^"]*"' .next/server/app | sort -u
+# 전 URL 대조 — 기대 매핑(scripts/expected-urls.tsv) 393건에 대한 assert.
+# 매핑 일치 + 리디렉션 홉 1회 + 404 0건 + sitemap + 헤더를 한 번에 본다.
+scripts/verify-urls.sh http://localhost:3111
 ```
 
-기대값(2026-07-23 기준): `/` → 301 `/ko` (두 경우 모두), Link 헤더 없음,
-sitemap hreflang="en" 0건 / `/en` URL 0건 / 총 106 URL.
+`expected-urls.tsv`는 **정책을 바꾸기 전에** 생성한 계약이다. 구현 후에 생성하면
+"구현이 한 대로"를 기대값으로 적게 되어 검증이 동어반복이 된다. 글이 늘면
+배포 직전에 재생성한다:
+
+```bash
+scripts/gen-expected-urls.sh https://daily1bite.com > scripts/expected-urls.tsv
+```
+
+호스팅을 옮기는 등 **응답이 같아야 하는** 변경에는 별도 스크립트를 쓴다.
+출력에서 호스트 고유 헤더를 빼므로 두 호스트의 출력이 바이트 단위로 같아야 한다.
+
+```bash
+scripts/verify-invariants.sh https://<후보>  > /tmp/candidate.txt
+diff scripts/baseline-amplify.txt /tmp/candidate.txt
+```
+
+추가로 빌드 산출물에 hreflang이 남지 않았는지 본다 (I2):
+
+```bash
+grep -rho 'hrefLang="[^"]*"' .next/server/app | sort -u   # 아무것도 안 나와야 한다
+```
+
+기대값(2026-08-03, i18n 제거 후): 매핑 393건 일치, 리디렉션 목적지 152건 전부
+즉시 200, 404 0건, sitemap 총 108 URL / `/ko` 0 / `/en` 0 / hreflang 0.
 
 ## 관련 이력
 
@@ -118,3 +174,10 @@ sitemap hreflang="en" 0건 / `/en` URL 0건 / 총 106 URL.
 | `761b3c7` | AdSense 제거 · EN 섹션 noindex · html lang · 저자 issol 통일 |
 | `9175d51` | `Link:` hreflang 헤더 제거 · localeDetection 해제 · 루트 301 · hreflang="en" 전면 제거 |
 | `8355463` | 2026-03-29 클러스터 56편 → 색인 18편 |
+| (배포일 기재) | Amplify → Vercel 호스팅 이전 — 응답 동등, 정책 무변경 |
+| `56191f9` | i18n 제거 · `/ko` → 루트 URL 이전 — **I1·I2 개정, I3 폐지** |
+
+> 호스팅 이전을 이력에 남기는 이유: 나중에 GSC 지표가 흔들렸을 때 원인 후보에서
+> 빼거나 넣으려면 언제 바뀌었는지 알아야 한다. 두 변경은 3~7일 간격을 두고
+> 따로 배포했다 — 한 배포에 넣으면 지표가 나빠졌을 때 호스팅 탓인지 코드 탓인지
+> 구분할 수 없다.
