@@ -1,0 +1,126 @@
+# verify-invariants against <BASE>
+
+===== I4/I3  루트 리디렉션 =====
+--- / (기본) ---
+status: 301
+location: /ko
+--- / (Accept-Language: en-US) ---
+status: 301
+location: /ko
+
+===== I4  레거시 경로 리디렉션 =====
+--- /blog ---
+status: 301
+location: /ko/blog
+--- /category ---
+status: 301
+location: /ko/category
+--- /about ---
+status: 301
+location: /ko/about
+--- /contact ---
+status: 301
+location: /ko/contact
+--- /stats ---
+status: 301
+location: /ko/stats
+--- /privacy-policy ---
+status: 301
+location: /ko/privacy-policy
+
+===== trailing slash =====
+--- /ko/blog/ ---
+status: 308
+location: /ko/blog
+--- /ko/about/ ---
+status: 308
+location: /ko/about
+
+===== I3  Link 헤더 부재 =====
+/: (없음)
+/ko: (없음)
+/ko/blog: (없음)
+/ko/about: (없음)
+
+===== I2/I5  sitemap =====
+총 <loc> 수:            108
+hreflang="en" 수:      0
+/en URL 수:             0
+/ko URL 수:             108
+hreflang 종류:
+  hreflang="ko"
+  hreflang="x-default"
+
+===== robots.txt =====
+User-Agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+User-Agent: PerplexityBot
+Allow: /
+
+User-Agent: GPTBot
+Allow: /
+
+User-Agent: ChatGPT-User
+Allow: /
+
+User-Agent: ClaudeBot
+Allow: /
+
+User-Agent: Google-Extended
+Allow: /
+
+User-Agent: meta-externalagent
+Allow: /
+
+User-Agent: cohere-ai
+Allow: /
+
+Host: <BASE>
+Sitemap: <BASE>/sitemap.xml
+
+===== 보안 헤더 =====
+x-frame-options:             SAMEORIGIN
+x-content-type-options:      nosniff
+referrer-policy:             strict-origin-when-cross-origin
+x-xss-protection:            1; mode=block
+permissions-policy:          camera=(), microphone=(), geolocation=()
+
+===== 캐시 헤더 =====
+/feed.xml:                   public, max-age=3600, stale-while-revalidate=86400
+/atom.xml:                   public, max-age=3600, stale-while-revalidate=86400
+/sitemap.xml:                public, max-age=86400, stale-while-revalidate=3600
+/robots.txt:                 public, max-age=86400, stale-while-revalidate=3600
+
+===== apple-app-site-association =====
+status:                      200
+content-type:                application/json
+
+===== I1  EN → KO 리디렉션 =====
+--- /en/blog/ai-tools/adobe-firefly-ai ---
+status: 308
+location: /ko/blog/ai-tools/adobe-firefly-ai
+location: /ko/blog/ai-tools/adobe-firefly-ai
+--- /en/blog/ai-tools/ai-3-2 ---
+status: 308
+location: /ko/blog/ai-tools/ai-3-2
+location: /ko/blog/ai-tools/ai-3-2
+--- /en/blog/ai-tools/ai-suno-vs-udio-2026 ---
+status: 308
+location: /ko/blog/ai-tools/ai-suno-vs-udio-2026
+location: /ko/blog/ai-tools/ai-suno-vs-udio-2026
+
+===== 대표 글 canonical =====
+--- /ko/blog/ai-tools/ai-3-2 ---
+status: 200
+canonical: <link rel="canonical" href="<BASE>/ko/blog/ai-tools/ai-3-2"/>
+--- /ko/blog/ai-tools/ai-suno-vs-udio-2026 ---
+status: 200
+canonical: <link rel="canonical" href="<BASE>/ko/blog/ai-tools/ai-suno-vs-udio-2026"/>
+--- /ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix ---
+status: 200
+canonical: <link rel="canonical" href="<BASE>/ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix"/>
+
+# end
