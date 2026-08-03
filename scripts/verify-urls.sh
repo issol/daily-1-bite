@@ -69,7 +69,9 @@ join -t $'\t' -j 1 "$WORK/rules.tsv" "$WORK/actual.tsv" \
         printf "  %s\n    기대: %s %s\n    실제: %s %s\n", path, want_st, want_loc, got_st, got_loc
     }' > "$WORK/mismatch.txt"
 
-MISMATCH="$(grep -c '^  /' "$WORK/mismatch.txt" 2>/dev/null || echo 0)"
+# grep -c 는 0건일 때 "0"을 출력하면서 exit 1을 낸다. `|| echo 0` 을 붙이면 "0"이
+# 두 줄이 되어 산술 비교가 깨진다. 여기서는 세는 것만 하면 되므로 wc를 쓴다.
+MISMATCH="$(awk '/^  \//' "$WORK/mismatch.txt" | wc -l | tr -d ' ')"
 JOINED="$(wc -l < "$WORK/actual.tsv" | tr -d ' ')"
 
 if [[ "$JOINED" != "$TOTAL" ]]; then
