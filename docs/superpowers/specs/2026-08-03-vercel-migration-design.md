@@ -173,6 +173,39 @@ Vercel 대조를 처음 돌렸을 때 diff 5건 중 3건이 실제 차이가 아
 4. 전파 확인 후 프로덕션에서 검증 스크립트 재실행 → 기준값과 diff 0
 5. TTL 원복
 
+### 1-3-1. 실행 기록 (2026-08-03 완료)
+
+- Vercel 프로젝트 `issols-projects/daily-1-bite`, 리전 `icn1` 확인
+- 도메인 apex + www 연결. **`redirect: null` 을 API로 실측 확인** — www에 없던 301이
+  생기지 않았다
+- Cloudflare: apex/www 를 CloudFront에서 Vercel로 교체. 프록시 OFF 유지.
+  `google-site-verification` TXT와 ACM 검증 CNAME은 보존
+- 컷오버 후 검증: `verify-invariants.sh` diff = **허용 diff 7조각만**, 그 외 회귀 0
+- GA4(`/ko/stats`) 정상, 대표 페이지 7종 200
+
+#### ⚠️ 함정: 인증서가 자동 발급되지 않았다
+
+DNS 전환 직후 **apex·www 모두 HTTPS가 `SSL_ERROR_SYSCALL` 로 죽었다.** HTTP(80)는
+정상 응답(301 → `/ko`)했으므로 DNS와 라우팅은 맞았고, 인증서만 없었다.
+
+- `vercel certs ls` 에 해당 도메인 인증서가 **아예 없었다**
+- 도메인 config API는 `misconfigured: false`, `acceptedChallenges: ["http-01"]` 로
+  정상이라고 보고했다. 즉 "설정은 맞는데 발급이 시작되지 않은" 상태였다
+- 해결: `vercel certs issue daily1bite.com www.daily1bite.com` — 12초 만에 발급
+
+**다음에 도메인을 옮길 때는 DNS 전환 직후 `vercel certs ls` 로 인증서 존재를 먼저
+확인한다.** 기다리면 자동으로 되겠거니 하고 방치하면 그동안 사이트가 HTTPS로
+열리지 않는다.
+
+#### 검증 실행 중 일시적 요청 실패
+
+인증서 발급 직후 첫 검증에서 `/about` 한 건의 출력이 통째로 빠져 diff가 9조각으로
+나왔다. 5회 재시도 결과 5/5 정상(301 → `/ko/about`)이었고, 엣지 워밍 중의 일시적
+실패였다. 재실행으로 7조각(허용 diff만)을 확인했다.
+
+교훈: 스크립트는 요청이 실패해도 그 URL의 출력만 비고 넘어간다. **기준값 diff 방식이
+이걸 잡아냈다** — 통과/실패 판정만 봤다면 놓쳤을 것이다.
+
 ### 1-4. 롤백
 
 Amplify 앱은 **2주간 그대로 둔다**(삭제·연결 해제 금지). 롤백은 Cloudflare 레코드
