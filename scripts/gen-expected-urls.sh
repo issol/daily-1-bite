@@ -102,7 +102,12 @@ if [[ -d "$REPO_ROOT/content/posts/en" ]]; then
 fi
 
 # 정적/섹션 경로. /stats 는 sitemap에 없지만 실재하는 페이지다.
-for p in "" /blog /about /contact /stats /privacy-policy /category; do
+#
+# /category 는 일부러 뺐다. middleware.ts의 oldRoutes에는 들어 있지만
+# app/[locale]/category/ 에는 [category]/page.tsx 만 있고 인덱스 페이지가 없어서
+# 현재 프로덕션에서 /category → 301 → /ko/category → 404 다. 이전과 무관한
+# 기존 결함이며(2026-08-03 확인), 여기서 200을 기대하면 검증이 거짓말을 한다.
+for p in "" /blog /about /contact /stats /privacy-policy; do
   emit "/ko${p}" 301 "${p:-/}"
   emit "/en${p}" 301 "${p:-/}"
   emit "${p:-/}" 200 "-"

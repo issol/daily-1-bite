@@ -150,7 +150,6 @@
 /blog/dev-life/terence-tao-ai-mathematician-job-description-2026	200	-
 /blog/dev-life/welcome	200	-
 /blog/seo/blog-seo-3-weeks	200	-
-/category	200	-
 /category/ai	200	-
 /category/ai-tools	200	-
 /category/ai-tutorial	200	-
@@ -244,7 +243,6 @@
 /en/blog/dev-life/stack-overflow-ai	301	/blog/dev-life/stack-overflow-ai
 /en/blog/dev-life/welcome	301	/blog/dev-life/welcome
 /en/blog/seo/blog-seo-3-weeks	301	/blog/seo/blog-seo-3-weeks
-/en/category	301	/category
 /en/contact	301	/contact
 /en/privacy-policy	301	/privacy-policy
 /en/stats	301	/stats
@@ -391,7 +389,6 @@
 /ko/blog/dev-life/terence-tao-ai-mathematician-job-description-2026	301	/blog/dev-life/terence-tao-ai-mathematician-job-description-2026
 /ko/blog/dev-life/welcome	301	/blog/dev-life/welcome
 /ko/blog/seo/blog-seo-3-weeks	301	/blog/seo/blog-seo-3-weeks
-/ko/category	301	/category
 /ko/category/ai	301	/category/ai
 /ko/category/ai-tools	301	/category/ai-tools
 /ko/category/ai-tutorial	301	/category/ai-tutorial
