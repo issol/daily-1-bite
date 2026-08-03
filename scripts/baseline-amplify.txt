@@ -78,8 +78,8 @@ Allow: /
 User-Agent: cohere-ai
 Allow: /
 
-Host: <BASE>
-Sitemap: <BASE>/sitemap.xml
+Host: <SITE>
+Sitemap: <SITE>/sitemap.xml
 
 ===== 보안 헤더 =====
 x-frame-options:             SAMEORIGIN
@@ -115,12 +115,12 @@ location: /ko/blog/ai-tools/ai-suno-vs-udio-2026
 ===== 대표 글 canonical =====
 --- /ko/blog/ai-tools/ai-3-2 ---
 status: 200
-canonical: <link rel="canonical" href="<BASE>/ko/blog/ai-tools/ai-3-2"/>
+canonical: <link rel="canonical" href="<SITE>/ko/blog/ai-tools/ai-3-2"/>
 --- /ko/blog/ai-tools/ai-suno-vs-udio-2026 ---
 status: 200
-canonical: <link rel="canonical" href="<BASE>/ko/blog/ai-tools/ai-suno-vs-udio-2026"/>
+canonical: <link rel="canonical" href="<SITE>/ko/blog/ai-tools/ai-suno-vs-udio-2026"/>
 --- /ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix ---
 status: 200
-canonical: <link rel="canonical" href="<BASE>/ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix"/>
+canonical: <link rel="canonical" href="<SITE>/ko/blog/ai-tools/claude-code-may-2026-update-plugin-url-session-id-mcp-fix"/>
 
 # end
