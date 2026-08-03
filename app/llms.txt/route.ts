@@ -14,7 +14,7 @@ export async function GET() {
       if (categoryPosts.length === 0) return '';
 
       const postLines = categoryPosts
-        .map((p) => `- [${p.title}](${BASE_URL}/ko/blog/${p.slug}): ${p.description}`)
+        .map((p) => `- [${p.title}](${BASE_URL}/blog/${p.slug}): ${p.description}`)
         .join('\n');
 
       return `## ${label}\n\n${postLines}`;

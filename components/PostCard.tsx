@@ -1,4 +1,4 @@
-import {Link} from '@/i18n/navigation';
+import Link from 'next/link';
 
 const CATEGORIES: Record<string, string> = {
   'dev-life': 'Dev Life & Opinion',

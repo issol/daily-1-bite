@@ -24,7 +24,7 @@ export function WebSiteJsonLd() {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: `${BASE_URL}/ko/blog?q={search_term_string}`,
+        urlTemplate: `${BASE_URL}/blog?q={search_term_string}`,
       },
       'query-input': 'required name=search_term_string',
     },
@@ -43,7 +43,7 @@ export function BlogJsonLd() {
     '@context': 'https://schema.org',
     '@type': 'Blog',
     name: '매일 한입',
-    url: `${BASE_URL}/ko/blog`,
+    url: `${BASE_URL}/blog`,
     description: '매일 쏟아지는 AI 뉴스를 보기 쉽게 요약합니다. AI 트렌드, 도구 리뷰, 개발 인사이트를 다룹니다.',
     inLanguage: 'ko-KR',
     author: {
@@ -77,7 +77,6 @@ interface ArticleJsonLdProps {
   category: string;
   tags: string[];
   thumbnail?: string;
-  locale?: string;
 }
 
 export function ArticleJsonLd({
@@ -89,9 +88,8 @@ export function ArticleJsonLd({
   category,
   tags,
   thumbnail,
-  locale,
 }: ArticleJsonLdProps) {
-  const url = `${BASE_URL}/${locale || 'ko'}/blog/${slug}`;
+  const url = `${BASE_URL}/blog/${slug}`;
   const imageUrl = thumbnail || `${BASE_URL}/og-default.png`;
 
   const schema = {
@@ -102,7 +100,7 @@ export function ArticleJsonLd({
     url,
     datePublished: date,
     dateModified: dateModified || date,
-    inLanguage: locale === 'en' ? 'en-US' : 'ko-KR',
+    inLanguage: 'ko-KR',
     image: {
       '@type': 'ImageObject',
       url: imageUrl,
@@ -112,7 +110,7 @@ export function ArticleJsonLd({
     author: {
       '@type': 'Person',
       name: AUTHOR.name,
-      url: `${BASE_URL}/${locale || 'ko'}/about`,
+      url: `${BASE_URL}/about`,
       sameAs: AUTHOR.sameAs,
       knowsAbout: AUTHOR.knowsAbout,
     },
@@ -201,10 +199,9 @@ interface HowToJsonLdProps {
   title: string;
   description: string;
   steps: { name: string; text: string; position: number }[];
-  locale?: string;
 }
 
-export function HowToJsonLd({ title, description, steps, locale }: HowToJsonLdProps) {
+export function HowToJsonLd({ title, description, steps }: HowToJsonLdProps) {
   if (steps.length === 0) return null;
 
   const schema = {
@@ -212,7 +209,7 @@ export function HowToJsonLd({ title, description, steps, locale }: HowToJsonLdPr
     '@type': 'HowTo',
     name: title,
     description,
-    inLanguage: locale === 'en' ? 'en-US' : 'ko-KR',
+    inLanguage: 'ko-KR',
     step: steps.map((step) => ({
       '@type': 'HowToStep',
       position: step.position,

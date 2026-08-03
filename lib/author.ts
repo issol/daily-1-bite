@@ -15,7 +15,7 @@ export const AUTHOR = {
   // GitHub 핸들과 동일한 'issol'로 확정 — sameAs의 github.com/issol와 엔티티 일치.
   name: 'issol',
 
-  url: `${BASE_URL}/ko/about`,
+  url: `${BASE_URL}/about`,
   email: 'isolatorv@gmail.com',
   jobTitle: 'AI 뉴스 큐레이터 & 개발자',
   description:

@@ -17,7 +17,7 @@ export async function GET() {
 
   const entries = posts
     .map((post) => {
-      const url = `${BASE_URL}/ko/blog/${post.slug}`;
+      const url = `${BASE_URL}/blog/${post.slug}`;
       const category = escapeXml(CATEGORIES[post.category] || post.category);
 
       return `  <entry>
@@ -38,7 +38,7 @@ export async function GET() {
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ko">
   <title>매일 한입 | AI 뉴스 요약 블로그</title>
   <subtitle>매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다.</subtitle>
-  <link href="${BASE_URL}/ko" rel="alternate" type="text/html"/>
+  <link href="${BASE_URL}" rel="alternate" type="text/html"/>
   <link href="${BASE_URL}/atom.xml" rel="self" type="application/atom+xml"/>
   <id>${BASE_URL}/</id>
   <updated>${new Date().toISOString()}</updated>

@@ -1,9 +1,28 @@
 import type { NextConfig } from "next";
-import createNextIntlPlugin from 'next-intl/plugin';
-
-const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
+  // ─────────────────────────────────────────
+  // 구 URL → 루트 리디렉션
+  // ─────────────────────────────────────────
+  //
+  // 이전에는 middleware.ts가 `/` → `/ko` 와 무prefix 레거시 경로 → `/ko/...` 를
+  // 처리했다. i18n을 걷어내면서 방향이 반대가 됐다: 이제 무prefix URL이 정답이고
+  // `/ko/*`·`/en/*` 가 구 URL이다.
+  //
+  // 미들웨어 대신 config로 옮긴 이유: Vercel에서 config 리디렉션은 함수 호출 전
+  // 엣지에서 처리되므로 더 빠르고 실행 비용이 0이다. 미들웨어가 사라지면서
+  // 모든 요청에 붙던 미들웨어 실행 비용도 함께 사라진다.
+  //
+  // ⚠️ `permanent: true` 는 308을 낸다. GSC가 가장 보편적으로 "영구 이동"으로
+  //    인식하는 301을 쓰기 위해 statusCode를 명시한다. (I4)
+  async redirects() {
+    return [
+      {source: '/ko', destination: '/', statusCode: 301},
+      {source: '/ko/:path*', destination: '/:path*', statusCode: 301},
+      {source: '/en', destination: '/', statusCode: 301},
+      {source: '/en/:path*', destination: '/:path*', statusCode: 301},
+    ];
+  },
   // ─────────────────────────────────────────
   // 보안 + SEO/GEO HTTP 헤더
   // ─────────────────────────────────────────
@@ -71,9 +90,10 @@ const nextConfig: NextConfig = {
     ];
   },
   // Apple Universal Links: serve AASA from a route handler so we can
-  // force Content-Type: application/json (Amplify's CDN serves files
-  // in public/ with default MIME detection, and the AASA filename has
-  // no extension → octet-stream → Apple silent reject).
+  // force Content-Type: application/json. The AASA filename has no
+  // extension, so serving it from public/ leaves MIME detection to the
+  // CDN → octet-stream → Apple silent reject. (Amplify에서 겪은 문제지만
+  // 확장자 없는 파일이라는 원인은 호스팅과 무관하므로 계속 필요하다.)
   async rewrites() {
     return [
       {
@@ -84,4 +104,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default nextConfig;

@@ -9,7 +9,7 @@ export async function GET() {
 
   const rssItems = posts
     .map((post) => {
-      const url = `${BASE_URL}/ko/blog/${post.slug}`;
+      const url = `${BASE_URL}/blog/${post.slug}`;
       const category = CATEGORIES[post.category] || post.category;
 
       return `

@@ -5,10 +5,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      // 일반 검색엔진 — EN 블로그를 robots로 막지 않는다.
-      // EN 페이지는 308 redirect(→KO) + noindex 로 처리되는데, robots로 크롤을 막으면
-      // Googlebot이 그 redirect/noindex 신호를 볼 수 없어 "robots 차단"·"리디렉션 오류"
-      // 노이즈만 발생한다. 크롤을 허용해야 EN→KO 색인 통합이 정상 작동한다.
+      // 구 URL(/ko/*, /en/*)을 robots로 막지 않는다.
+      // 이들은 301로 루트 URL을 가리키는데, 크롤을 막으면 Googlebot이 그 리디렉션
+      // 신호를 볼 수 없어 "robots 차단"·"리디렉션 오류" 노이즈만 남는다.
+      // 크롤을 허용해야 구 URL의 신호가 새 URL로 넘어간다.
       {
         userAgent: '*',
         allow: '/',
