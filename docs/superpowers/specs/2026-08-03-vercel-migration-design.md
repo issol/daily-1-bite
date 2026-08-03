@@ -82,7 +82,11 @@ Vercel preview / Vercel 프로덕션 어디서든 같은 것을 돌린다.
 
 | 항목 | 기준값(Amplify) | Vercel에서 허용 | 근거 |
 |---|---|---|---|
-| 308 응답의 `location` 헤더 | **2개 중복**(값 동일) | 1개 | RFC상 `Location`은 단일 값이다. 현재 Amplify가 중복으로 싣고 있으며, 1개로 줄어드는 것은 개선이다 |
+| 308 응답의 `location` 헤더 | **2개 중복**(값 동일) | 1개 | 아래 실측 참조 |
+
+실측(2026-08-03): 같은 URL에 대해 로컬 `next start`는 `location`을 **1개**,
+Amplify 프로덕션은 **2개** 내보낸다. 즉 앱이 아니라 **Amplify CDN 계층이 중복시키고
+있다.** RFC상 `Location`은 단일 값이므로 Vercel에서 1개가 되는 것이 정상이다.
 
 그 외의 모든 diff는 **회귀로 간주하고 컷오버를 중단한다.**
 
@@ -176,6 +180,10 @@ AdSense 재도전 시 Pro($20/mo)로 업그레이드한다. Vercel Hobby는 약�
   `app/layout.tsx`에 병합한다: `metadataBase`·폰트·`GoogleAnalytics`·`lang="ko"`는
   루트 것을 유지하고, `NextIntlClientProvider`는 제거, Header/Footer만 승계한다.
 - `app/[locale]/not-found.tsx` → `app/not-found.tsx`
+- `app/[locale]/i/[token]/opengraph-image.tsx` → `app/i/[token]/opengraph-image.tsx`.
+  이 파일과 `app/opengraph-image.tsx`는 `runtime = 'edge'`다. Vercel 네이티브라
+  이전 자체는 문제없으나, 이동 후 OG 이미지가 실제로 렌더되는지 확인한다
+  (빌드 경고: "Using edge runtime on a page currently disables static generation").
 - **`middleware.ts`를 삭제한다.** 리디렉션은 `next.config.ts`의 `redirects()`로
   이관한다. Vercel에서 config 리디렉션은 함수 호출 전 엣지에서 처리되므로 더 빠르고
   비용이 0이며, 미들웨어가 사라지면 전 요청의 미들웨어 실행 비용도 함께 사라진다.

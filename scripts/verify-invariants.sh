@@ -60,6 +60,16 @@ header_value() {
 
 section() { printf '\n===== %s =====\n' "$1"; }
 
+# 도달 가능성 선행 확인.
+#
+# 호스트가 죽어 있으면 curl이 전부 빈 문자열을 돌려주고, "Link 헤더 부재: (없음)"
+# 같은 항목이 통과처럼 출력된다. 위음성이므로 여기서 끊는다.
+# (종료 코드 2 = 검증 실패가 아니라 검증 불가)
+if ! curl -sS -o /dev/null --max-time 20 "$BASE/ko" 2>/dev/null; then
+  echo "FATAL: $BASE 에 도달할 수 없다. 검증을 수행하지 않았다." >&2
+  exit 2
+fi
+
 printf '# verify-invariants against <BASE>\n'
 
 # ---------------------------------------------------------------------------
