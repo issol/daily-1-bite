@@ -131,7 +131,10 @@ Vercel 대조를 처음 돌렸을 때 diff 5건 중 3건이 실제 차이가 아
 
 - Framework preset 자동 감지(Next.js), 빌드·출력 설정 전부 기본값.
   `amplify.yml`의 `baseDirectory: .next` 같은 설정은 불필요하다.
-- Node 22 고정 (`.nvmrc` 준수)
+- **Node 22 고정.** ⚠️ **Vercel은 `.nvmrc`를 읽지 않는다**(그건 Amplify/Netlify 방식).
+  프로젝트 기본값이 24.x로 잡혔었다. `package.json`의 `engines.node: "22.x"` 로 고정한다 —
+  대시보드 토글보다 낫다(버전 관리되고 프로젝트를 다시 만들어도 살아남는다).
+  Amplify가 22였으므로 런타임 메이저가 다르면 "호스트만 바꾼다"는 전제가 깨진다.
 - Function region **`icn1`(서울)**. 현재 CloudFront가 `ICN53` POP에서 나가고 있어
   지연 회귀를 막는다.
 - 환경변수 (Production + Preview 양쪽):
