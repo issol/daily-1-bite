@@ -30,9 +30,18 @@ BASE="${BASE%/}"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# 응답 URL을 기준값에 그대로 박으면 호스트가 달라질 때 전부 diff가 난다.
-# 출력에서는 base를 <BASE>로 치환해 호스트 중립적으로 만든다.
-neutralize() { sed "s|${BASE}|<BASE>|g"; }
+# 호스트 중립화.
+#
+# 두 종류의 호스트가 섞인다:
+#   1) 요청을 보낸 호스트 ($BASE) — Amplify / Vercel / localhost
+#   2) 응답 본문에 박혀 나오는 사이트 정규 도메인 (NEXT_PUBLIC_BASE_URL)
+#      canonical, sitemap <loc>, robots.txt 의 Host/Sitemap 이 여기 해당한다.
+#
+# Amplify 프로덕션에서는 둘이 같아서 구분할 필요가 없었지만, Vercel preview에서
+# 돌리면 1번만 바뀌고 2번은 그대로다. 둘을 서로 다른 토큰으로 치환하면 호스트가
+# 다르다는 이유만으로 diff가 나므로, **같은 토큰**으로 접어서 비교 가능하게 만든다.
+SITE_URL="${NEXT_PUBLIC_BASE_URL:-https://daily1bite.com}"
+neutralize() { sed -e "s|${BASE}|<SITE>|g" -e "s|${SITE_URL}|<SITE>|g"; }
 
 # 상태줄 + Location 만.
 #
@@ -117,10 +126,12 @@ done
 # ---------------------------------------------------------------------------
 section "I2/I5  sitemap"
 SITEMAP="$(curl -sS --max-time 30 "$BASE/sitemap.xml" 2>/dev/null)"
+# 호스트 부분을 [^<]* 로 열어둔다. `<loc>${BASE}/en` 처럼 요청 호스트를 박으면
+# 다른 호스트에서 돌릴 때 0건이 나오고, 그게 "위반 없음"처럼 보인다(위양성).
 echo "총 <loc> 수:            $(grep -c '<loc>' <<<"$SITEMAP")"
 echo "hreflang=\"en\" 수:      $(grep -c 'hreflang="en"' <<<"$SITEMAP")"
-echo "/en URL 수:             $(grep -c "<loc>${BASE}/en" <<<"$SITEMAP")"
-echo "/ko URL 수:             $(grep -c "<loc>${BASE}/ko" <<<"$SITEMAP")"
+echo "/en URL 수:             $(grep -cE "<loc>[^<]*/en(/[^<]*)?</loc>" <<<"$SITEMAP")"
+echo "/ko URL 수:             $(grep -cE "<loc>[^<]*/ko(/[^<]*)?</loc>" <<<"$SITEMAP")"
 echo "hreflang 종류:"
 grep -o 'hreflang="[^"]*"' <<<"$SITEMAP" | sort -u | sed 's/^/  /'
 
@@ -172,15 +183,23 @@ fi
 # ---------------------------------------------------------------------------
 # 대표 글 200 + canonical. sitemap에서 뽑으므로 어느 호스트에서든 같은 3편이다.
 # ---------------------------------------------------------------------------
+# sitemap의 <loc>는 요청 호스트가 아니라 사이트 정규 도메인을 담고 있다.
+# 호스트를 벗겨 경로만 뽑고, 요청은 $BASE 로 보낸다. 예전엔 <loc> 전체를 그대로
+# 요청 URL로 썼는데, 그러면 다른 호스트에서 돌릴 때 매칭이 0건이 되어
+# **아무 글도 검사하지 않고 조용히 통과**했다.
 section "대표 글 canonical"
-while IFS= read -r url; do
-  path="${url#"$BASE"}"
-  echo "--- $path ---"
-  head_of "$url" | neutralize
-  curl -sS --max-time 20 "$url" 2>/dev/null \
-    | grep -o '<link rel="canonical"[^>]*>' \
-    | head -1 | neutralize | sed 's/^/canonical: /'
-done < <(grep -o "<loc>${BASE}/ko/blog/[^<]*</loc>" <<<"$SITEMAP" \
-         | sed 's|<loc>||; s|</loc>||' | sort | head -3)
+POSTS="$(grep -oE "<loc>[^<]*/ko/blog/[^<]*</loc>" <<<"$SITEMAP" \
+         | sed -E 's|<loc>https?://[^/]*||; s|</loc>||' | sort | head -3)"
+if [[ -z "$POSTS" ]]; then
+  echo "위반: sitemap에서 /ko/blog URL을 하나도 찾지 못했다. 검사하지 못했다."
+else
+  while IFS= read -r path; do
+    echo "--- $path ---"
+    head_of "$BASE$path" | neutralize
+    curl -sS --max-time 20 "$BASE$path" 2>/dev/null \
+      | grep -o '<link rel="canonical"[^>]*>' \
+      | head -1 | neutralize | sed 's/^/canonical: /'
+  done <<<"$POSTS"
+fi
 
 printf '\n# end\n'

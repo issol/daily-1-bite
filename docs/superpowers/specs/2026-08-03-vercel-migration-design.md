@@ -82,19 +82,59 @@ Vercel preview / Vercel 프로덕션 어디서든 같은 것을 돌린다.
 
 | 항목 | 기준값(Amplify) | Vercel에서 허용 | 근거 |
 |---|---|---|---|
-| 308 응답의 `location` 헤더 | **2개 중복**(값 동일) | 1개 | 아래 실측 참조 |
+| 308 응답의 `location` 헤더 | **2개 중복**(값 동일) | 1개 | ① |
+| `/feed.xml`·`/atom.xml`의 `stale-while-revalidate` | 있음 | **없음** | ② |
 
-실측(2026-08-03): 같은 URL에 대해 로컬 `next start`는 `location`을 **1개**,
-Amplify 프로덕션은 **2개** 내보낸다. 즉 앱이 아니라 **Amplify CDN 계층이 중복시키고
-있다.** RFC상 `Location`은 단일 값이므로 Vercel에서 1개가 되는 것이 정상이다.
+**① 중복 `location`** — 실측(2026-08-03): 같은 URL에 대해 로컬 `next start`는
+`location`을 1개, Amplify 프로덕션은 2개 내보낸다. 즉 앱이 아니라 **Amplify CDN
+계층이 중복시키고 있다.** RFC상 `Location`은 단일 값이므로 Vercel에서 1개가 되는
+것이 정상이다. → Vercel에서 1개 확인, 예측대로.
+
+**② feed/atom의 `stale-while-revalidate` 소멸** — 사전에 예측하지 못한 차이이므로
+규명 후 사후 등재한다.
+
+- `/sitemap.xml`·`/robots.txt`는 Vercel에서도 `stale-while-revalidate`를 **유지**한다.
+  `/feed.xml`·`/atom.xml`만 잃는다.
+- 차이는 정적(`○`) 대 동적 route handler(`ƒ`)다. feed 쪽 응답에만 `vary: rsc, ...`가
+  붙는다. `max-age=3600`은 `next.config.ts`의 값 그대로이므로 `headers()` 설정 자체는
+  적용되고 있다.
+- `age: 118` 이 붙어 나오므로 **CDN 캐싱은 정상 동작 중**이다. Vercel이 함수 응답의
+  `stale-while-revalidate`를 자기 엣지 재검증에 소비하고 클라이언트 헤더에서 제외하는
+  동작으로 보인다.
+- **판정: 허용.** 색인 신호가 아니다(RSS 캐시 지시자는 크롤·랭킹에 쓰이지 않는다).
+  영향은 브라우저/피드 리더가 백그라운드 재검증을 하지 않는 것뿐이고, CDN 계층의
+  stale 서빙은 유지된다.
 
 그 외의 모든 diff는 **회귀로 간주하고 컷오버를 중단한다.**
+
+#### 검증 스크립트가 호스트에 결합돼 있었다 (2026-08-03 수정)
+
+Vercel 대조를 처음 돌렸을 때 diff 5건 중 3건이 실제 차이가 아니라 **스크립트 결함**
+이었다. sitemap 검사와 대표 글 canonical 검사가 `<loc>${BASE}/...` 처럼 요청 호스트를
+패턴에 박아 넣고 있었다. Amplify에서는 요청 호스트와 사이트 정규 도메인이 같아
+드러나지 않았지만, Vercel preview에서는 달라진다:
+
+- sitemap `/ko`·`/en` 카운트가 전부 0으로 나왔다. `/en` 0건은 **위반 없음처럼 보인다** —
+  위양성이다.
+- 대표 글 canonical 검사는 매칭이 0건이 되어 **아무 글도 검사하지 않고 조용히 통과**했다.
+  이 이전에서 가장 중요한 항목이 실행되지 않았다.
+
+`exit 0` 만 봤다면 통과로 오인했을 것이다. 기준값 diff가 아니었으면 잡히지 않았다.
+수정: 호스트 패턴을 `[^<]*` 로 열고, sitemap `<loc>`에서 경로만 뽑아 `$BASE` 로 요청한다.
+요청 호스트와 사이트 도메인을 **같은 토큰 `<SITE>`** 로 접어 비교 가능하게 만들었다.
+대표 글이 0건이면 조용히 넘어가지 않고 위반으로 출력한다.
+
+교훈: 검증 스크립트는 **통과 케이스와 실패 케이스를 모두** 실측해야 한다. 이 결함은
+"기준 호스트가 아닌 곳에서 처음 돌릴 때"만 드러난다.
 
 ### 1-2. Vercel 프로젝트 설정
 
 - Framework preset 자동 감지(Next.js), 빌드·출력 설정 전부 기본값.
   `amplify.yml`의 `baseDirectory: .next` 같은 설정은 불필요하다.
-- Node 22 고정 (`.nvmrc` 준수)
+- **Node 22 고정.** ⚠️ **Vercel은 `.nvmrc`를 읽지 않는다**(그건 Amplify/Netlify 방식).
+  프로젝트 기본값이 24.x로 잡혔었다. `package.json`의 `engines.node: "22.x"` 로 고정한다 —
+  대시보드 토글보다 낫다(버전 관리되고 프로젝트를 다시 만들어도 살아남는다).
+  Amplify가 22였으므로 런타임 메이저가 다르면 "호스트만 바꾼다"는 전제가 깨진다.
 - Function region **`icn1`(서울)**. 현재 CloudFront가 `ICN53` POP에서 나가고 있어
   지연 회귀를 막는다.
 - 환경변수 (Production + Preview 양쪽):
@@ -132,6 +172,39 @@ Amplify 프로덕션은 **2개** 내보낸다. 즉 앱이 아니라 **Amplify CD
    (문서에 IP를 박아두지 않는다 — 바뀐다)
 4. 전파 확인 후 프로덕션에서 검증 스크립트 재실행 → 기준값과 diff 0
 5. TTL 원복
+
+### 1-3-1. 실행 기록 (2026-08-03 완료)
+
+- Vercel 프로젝트 `issols-projects/daily-1-bite`, 리전 `icn1` 확인
+- 도메인 apex + www 연결. **`redirect: null` 을 API로 실측 확인** — www에 없던 301이
+  생기지 않았다
+- Cloudflare: apex/www 를 CloudFront에서 Vercel로 교체. 프록시 OFF 유지.
+  `google-site-verification` TXT와 ACM 검증 CNAME은 보존
+- 컷오버 후 검증: `verify-invariants.sh` diff = **허용 diff 7조각만**, 그 외 회귀 0
+- GA4(`/ko/stats`) 정상, 대표 페이지 7종 200
+
+#### ⚠️ 함정: 인증서가 자동 발급되지 않았다
+
+DNS 전환 직후 **apex·www 모두 HTTPS가 `SSL_ERROR_SYSCALL` 로 죽었다.** HTTP(80)는
+정상 응답(301 → `/ko`)했으므로 DNS와 라우팅은 맞았고, 인증서만 없었다.
+
+- `vercel certs ls` 에 해당 도메인 인증서가 **아예 없었다**
+- 도메인 config API는 `misconfigured: false`, `acceptedChallenges: ["http-01"]` 로
+  정상이라고 보고했다. 즉 "설정은 맞는데 발급이 시작되지 않은" 상태였다
+- 해결: `vercel certs issue daily1bite.com www.daily1bite.com` — 12초 만에 발급
+
+**다음에 도메인을 옮길 때는 DNS 전환 직후 `vercel certs ls` 로 인증서 존재를 먼저
+확인한다.** 기다리면 자동으로 되겠거니 하고 방치하면 그동안 사이트가 HTTPS로
+열리지 않는다.
+
+#### 검증 실행 중 일시적 요청 실패
+
+인증서 발급 직후 첫 검증에서 `/about` 한 건의 출력이 통째로 빠져 diff가 9조각으로
+나왔다. 5회 재시도 결과 5/5 정상(301 → `/ko/about`)이었고, 엣지 워밍 중의 일시적
+실패였다. 재실행으로 7조각(허용 diff만)을 확인했다.
+
+교훈: 스크립트는 요청이 실패해도 그 URL의 출력만 비고 넘어간다. **기준값 diff 방식이
+이걸 잡아냈다** — 통과/실패 판정만 봤다면 놓쳤을 것이다.
 
 ### 1-4. 롤백
 
