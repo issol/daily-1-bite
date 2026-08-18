@@ -92,8 +92,8 @@ const nextConfig: NextConfig = {
   // Apple Universal Links: serve AASA from a route handler so we can
   // force Content-Type: application/json. The AASA filename has no
   // extension, so serving it from public/ leaves MIME detection to the
-  // CDN → octet-stream → Apple silent reject. (Amplify에서 겪은 문제지만
-  // 확장자 없는 파일이라는 원인은 호스팅과 무관하므로 계속 필요하다.)
+  // CDN → octet-stream → Apple silent reject. (구 Amplify 호스팅에서 겪은
+  // 문제지만 확장자 없는 파일이라는 원인은 호스팅과 무관해 Vercel에서도 필요하다.)
   async rewrites() {
     return [
       {
