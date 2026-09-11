@@ -15,8 +15,20 @@ const nextConfig: NextConfig = {
   //
   // ⚠️ `permanent: true` 는 308을 낸다. GSC가 가장 보편적으로 "영구 이동"으로
   //    인식하는 301을 쓰기 위해 statusCode를 명시한다. (I4)
+  //
+  // www → apex: www.daily1bite.com 은 sitemap·내부링크에 0건이지만 Google이
+  // 과거 기억으로 계속 크롤한다(90일 33건). apex가 canonical을 들고 있어
+  // 색인 중복은 막혔지만, 하루 2회짜리 크롤 예산에서 3%가 중복 호스트로
+  // 새는 것은 회복 국면에서 작지 않다. 호스트를 하나로 접는다. (I1)
+  // 이 규칙을 맨 앞에 두어 www 요청이 먼저 apex로 정규화되게 한다.
   async redirects() {
     return [
+      {
+        source: '/:path*',
+        has: [{type: 'host', value: 'www.daily1bite.com'}],
+        destination: 'https://daily1bite.com/:path*',
+        statusCode: 301,
+      },
       {source: '/ko', destination: '/', statusCode: 301},
       {source: '/ko/:path*', destination: '/:path*', statusCode: 301},
       {source: '/en', destination: '/', statusCode: 301},
