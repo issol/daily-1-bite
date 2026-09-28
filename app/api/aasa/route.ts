@@ -13,6 +13,10 @@
  * App ID format is <TeamID>.<BundleID>. dayseed lives at
  * `MARV67DMQN.app.dayseed.mobile`. Components match `/i/*` for the
  * v1.3 group invite links.
+ *
+ * Joiny (여행 플래너, `MARV67DMQN.app.joiny.mobile`) invite links are
+ * `/t/*` (ADR-0009 in the Joiny repo). The link must be the final URL
+ * on the apex host — a redirect makes iOS open Safari instead of the app.
  */
 
 const AASA = {
@@ -25,6 +29,10 @@ const AASA = {
           { '/': '/ko/i/*', comment: 'v1.3 group invite links (ko locale)' },
           { '/': '/en/i/*', comment: 'v1.3 group invite links (en locale)' },
         ],
+      },
+      {
+        appIDs: ['MARV67DMQN.app.joiny.mobile'],
+        components: [{ '/': '/t/*', comment: 'Joiny trip invite links' }],
       },
     ],
   },
