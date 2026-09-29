@@ -164,6 +164,12 @@ printf '%-28s %s\n' "status:"       "$(head_of "$BASE/.well-known/apple-app-site
 printf '%-28s %s\n' "content-type:" "$(header_value "$BASE/.well-known/apple-app-site-association" content-type)"
 
 # ---------------------------------------------------------------------------
+# Android App Links(Joiny /t/*). 리디렉션 없이 200 + JSON이어야 확인된다.
+section "assetlinks.json"
+printf '%-28s %s\n' "status:"       "$(head_of "$BASE/.well-known/assetlinks.json" | head -1 | cut -d' ' -f2)"
+printf '%-28s %s\n' "content-type:" "$(header_value "$BASE/.well-known/assetlinks.json" content-type)"
+
+# ---------------------------------------------------------------------------
 # I1 — EN 블로그는 308로 KO에 되돌린다. 리포의 EN 글에서 앞 3편을 뽑아 확인.
 #
 # 블로그는 [...slug] 캐치올이라 URL에 카테고리가 들어간다(/blog/<category>/<slug>).
