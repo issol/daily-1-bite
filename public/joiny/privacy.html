@@ -59,8 +59,11 @@
 • 함께하는 사람 정보: 여행 멤버 목록과 역할, 누가 무엇을 바꿨는지(활동 내역)
 • 잠금 화면 실시간 현황을 켠 경우: 앱이 만든 임의의 기기 식별자와 Apple 푸시 토큰
 • 광고: 광고 식별자(IDFA, iOS 앱 추적 투명성에서 허용한 경우에만)와 광고 표시에 필요한 기기 정보(Google AdMob)
+• 가계부 정보: 지출(금액·통화·환율·카테고리·날짜·메모·결제한 사람·나눈 사람)과 송금 기록. "나만 보는 지출"은 작성한 사람만 봅니다.
+• 예약 정보: 교통·숙소 예약(편명, 출발·도착 장소와 시각, 터미널, 예약번호, 금액, 메모)
+• 영수증 사진(영수증 인식을 쓸 때만): 카메라로 찍거나 앨범에서 고른 영수증 사진을 지출 정보(총액·통화·날짜·가게 이름·카테고리)를 읽는 데만 쓰고, 서버에 저장하지 않습니다. 월 사용 한도를 확인하려고 이번 달에 인식한 장 수를 셉니다.
 
-정밀 위치 정보, 연락처, 사진은 수집하지 않습니다. 구글 장소의 이름·주소는 서버에 저장하지 않고 볼 때마다 받아 옵니다.</p>
+정밀 위치 정보와 연락처는 수집하지 않습니다. 사진은 영수증 인식에 직접 고른 사진만 처리합니다. 구글 장소의 이름·주소는 서버에 저장하지 않고 볼 때마다 받아 옵니다.</p>
 </section>
 
 <section>
@@ -70,6 +73,8 @@
 • 초대 링크로 여행에 참여
 • 지도·장소 검색·길찾기 제공
 • 잠금 화면·Dynamic Island에 오늘 일정 표시(켠 경우)
+• 가계부와 정산(누가 누구에게 얼마를 보내면 되는지 계산)
+• 영수증 사진에서 지출 정보를 읽어 입력을 돕기(영수증 인식을 쓴 경우)
 • 광고 게재</p>
 </section>
 
@@ -85,6 +90,7 @@
 • 활동 내역: 여행이 끝나고 90일이 지나면 삭제합니다.
 • 실시간 현황 기기 토큰: 기능을 끄거나 그날 일정이 끝나면 삭제합니다.
 • 기기에 받아 둔 사본(오프라인 보기용): 앱을 마지막으로 쓴 뒤 90일까지 기기에만 남습니다.
+• 영수증 사진: 서버에 보관하지 않습니다. 기기에서는 지출로 등록하거나 버리면 바로 지웁니다(오프라인에서 찍은 사진은 인식할 때까지 기기에만 남습니다). 인식을 맡는 OpenAI는 API로 받은 데이터를 학습에 쓰지 않으며, 남용 감시를 위해 최대 30일 보관한 뒤 삭제합니다.
 • 탈퇴: 로그인 계정은 즉시 삭제하고, 프로필의 닉네임·사진은 지웁니다. 혼자인 여행은 함께 삭제하고, 멤버로 있던 여행에서는 빠집니다. 다른 멤버와 함께한 여행에 남긴 일정은 남고 "탈퇴한 사용자"로 표시됩니다.</p>
 </section>
 
@@ -97,12 +103,14 @@
 • Kakao (카카오 로그인) — 대한민국
 • Google (Google 로그인) — 미국
 • Google AdMob (광고 게재) — 미국
+• OpenAI (영수증 인식: 영수증 사진을 보내 지출 정보를 읽음) — 미국
 
 각 업체는 서비스에 필요한 최소한의 정보만 처리하며, 통신 시점에 암호화된 경로로 전송됩니다.
 • Google 개인정보처리방침: https://policies.google.com/privacy
 • Apple 개인정보처리방침: https://www.apple.com/legal/privacy/
 • Kakao 개인정보처리방침: https://www.kakao.com/policy/privacy
-• Supabase 개인정보처리방침: https://supabase.com/privacy</p>
+• Supabase 개인정보처리방침: https://supabase.com/privacy
+• OpenAI 개인정보처리방침: https://openai.com/policies/privacy-policy</p>
 </section>
 
 <section>
@@ -153,8 +161,11 @@
 • Trip member data: members and roles, and who changed what (activity log)
 • If you turn on the Lock Screen Live Activity: a random device identifier created by the app and an Apple push token
 • Advertising: the advertising identifier (IDFA, only if you allow tracking on iOS) and device information needed to show ads (Google AdMob)
+• Expense data: expenses (amount, currency, exchange rate, category, date, memo, who paid and who shares) and recorded transfers. "Only me" expenses are visible only to the person who added them.
+• Booking data: transport and lodging bookings (flight or train number, departure and arrival places and times, terminal, booking reference, amount, memo)
+• Receipt photos (only when you use receipt scanning): receipt photos you take with the camera or pick from your library are used only to read the expense (total, currency, date, store name, category) and are not stored on our servers. We count how many receipts you scanned this month to apply the monthly limit.
 
-We do not collect precise location, contacts or photos. Google place names and addresses are fetched when shown and are not stored on our servers.</p>
+We do not collect precise location or contacts. Photos are processed only when you choose them for receipt scanning. Google place names and addresses are fetched when shown and are not stored on our servers.</p>
 </section>
 
 <section>
@@ -164,6 +175,8 @@ We do not collect precise location, contacts or photos. Google place names and a
 • Joining trips through invite links
 • Maps, place search and directions
 • Showing today's schedule on the Lock Screen and Dynamic Island (if turned on)
+• Expense tracking and settlement (who should send how much to whom)
+• Reading expense details from receipt photos to help you enter them (if you use receipt scanning)
 • Showing ads</p>
 </section>
 
@@ -179,6 +192,7 @@ Anyone with an invite link can see the trip name, dates and cities, the nickname
 • Activity log: deleted 90 days after the trip ends.
 • Live Activity device tokens: deleted when you turn the feature off or when the day's schedule ends.
 • Offline copies on your device: kept on the device only, up to 90 days after you last used the app.
+• Receipt photos: not stored on our servers. On your device they are deleted as soon as you add the expense or discard the receipt (photos taken offline stay on the device until they are scanned). OpenAI, which reads the receipts, does not use API data for training and keeps it for up to 30 days for abuse monitoring before deleting it.
 • Account deletion: your sign-in account is deleted immediately and your nickname and photo are removed. Trips where you are the only member are deleted, and you leave the other trips. Items you added to shared trips remain and are shown as "Deleted user".</p>
 </section>
 
@@ -190,7 +204,8 @@ Anyone with an invite link can see the trip name, dates and cities, the nickname
 • Apple (Sign in with Apple, Live Activity push) — USA
 • Kakao (Kakao login) — South Korea
 • Google (Google sign-in) — USA
-• Google AdMob (ads) — USA</p>
+• Google AdMob (ads) — USA
+• OpenAI (receipt scanning: receipt photos are sent to read the expense) — USA</p>
 </section>
 
 <section>
