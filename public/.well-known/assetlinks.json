@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.joiny.mobile",
+      "sha256_cert_fingerprints": [
+        "6E:F5:09:4F:8F:26:E9:FB:90:EC:64:5F:53:2D:E1:7E:9B:6A:0F:9A:82:CC:F8:A2:1C:2D:A0:CA:1F:DD:BE:5C",
+        "2A:32:40:55:E8:CB:CA:2A:5E:61:8E:B2:93:57:CD:1C:42:A7:72:4D:95:72:D5:CD:FE:40:DA:2D:35:1D:4E:8D"
+      ]
+    }
+  }
+]
