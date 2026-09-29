@@ -14,6 +14,12 @@ export const JOINY_APP_STORE_URL: string | null = null;
 export const JOINY_ANDROID_PACKAGE = 'app.joiny.mobile';
 export const JOINY_PLAY_PUBLISHED = false;
 
+// 1단계 테스트(동행 테스트) 동안의 설치 주소. 스토어 주소가 있으면 그쪽이 먼저다.
+// TestFlight 외부 테스트 공개 링크. 베타 앱 심사를 통과해 링크가 생기면 채운다.
+export const JOINY_TESTFLIGHT_URL: string | null = null;
+// Play 내부 테스트 참여 링크. 테스터 목록(이메일)에 있는 사람만 참여할 수 있다.
+export const JOINY_PLAY_TEST_URL: string | null = 'https://play.google.com/apps/internaltest/4700560337491597907';
+
 export interface JoinyInvitePreview {
   title: string;
   start_date: string;
@@ -82,6 +88,44 @@ export function inviteHeadline(p: Pick<JoinyInvitePreview, 'inviter' | 'title'>)
 export function playStoreUrl(token: string, from: string | null): string {
   const referrer = new URLSearchParams(from ? { t: token, from } : { t: token }).toString();
   return `https://play.google.com/store/apps/details?id=${JOINY_ANDROID_PACKAGE}&referrer=${encodeURIComponent(referrer)}`;
+}
+
+export interface JoinyInstall {
+  url: string;
+  label: string;
+  /** 설치한 뒤 할 일 */
+  hint: string;
+}
+
+/**
+ * 앱이 없는 사람에게 보여줄 설치 버튼. 스토어 → 테스트(TestFlight·Play 내부 테스트) 순서로 고르고, 둘 다 없으면 null.
+ * Android가 아니면(아이폰·데스크톱) 아이폰 주소를 쓴다.
+ */
+export function joinyInstall(android: boolean, token: string, from: string | null): JoinyInstall | null {
+  if (android) {
+    if (JOINY_PLAY_PUBLISHED) {
+      return { url: playStoreUrl(token, from), label: 'Google Play에서 받기', hint: '설치하면 이 초대로 바로 이어져요.' };
+    }
+    if (JOINY_PLAY_TEST_URL) {
+      return {
+        url: JOINY_PLAY_TEST_URL,
+        label: '테스트 버전 받기',
+        hint: "'테스터 되기'를 누르고 설치한 뒤, 받은 링크를 다시 눌러 주세요.",
+      };
+    }
+    return null;
+  }
+  if (JOINY_APP_STORE_URL) {
+    return { url: JOINY_APP_STORE_URL, label: 'App Store에서 받기', hint: '앱을 설치한 뒤 받은 링크를 다시 눌러 주세요. 바로 이어서 참여할 수 있어요.' };
+  }
+  if (JOINY_TESTFLIGHT_URL) {
+    return {
+      url: JOINY_TESTFLIGHT_URL,
+      label: 'TestFlight로 받기',
+      hint: 'TestFlight 앱을 먼저 설치한 뒤 Joiny를 받고, 받은 링크를 다시 눌러 주세요.',
+    };
+  }
+  return null;
 }
 
 /** 구글 폰트에서 쓰는 글자만 받아 ImageResponse에 넣는다(기본 글꼴에는 한글이 없다). */
