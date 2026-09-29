@@ -16,7 +16,7 @@ export const JOINY_PLAY_PUBLISHED = false;
 
 // 1단계 테스트(동행 테스트) 동안의 설치 주소. 스토어 주소가 있으면 그쪽이 먼저다.
 // TestFlight 외부 테스트 공개 링크. 베타 앱 심사를 통과해 링크가 생기면 채운다.
-export const JOINY_TESTFLIGHT_URL: string | null = null;
+export const JOINY_TESTFLIGHT_URL: string | null = 'https://testflight.apple.com/join/zwkJ2VTU';
 // Play 내부 테스트 참여 링크. 테스터 목록(이메일)에 있는 사람만 참여할 수 있다.
 export const JOINY_PLAY_TEST_URL: string | null = 'https://play.google.com/apps/internaltest/4700560337491597907';
 
