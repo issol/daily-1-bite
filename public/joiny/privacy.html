@@ -47,7 +47,7 @@
 <article id="ko">
 <header>
   <h1>Joiny 개인정보 처리방침</h1>
-  <div class="meta">시행일: 2026-09-29</div>
+  <div class="meta">시행일: 2026-09-30</div>
 </header>
 
 <section>
@@ -58,6 +58,8 @@
 • 장소 정보: 구글 장소를 고른 경우 장소 ID와 좌표(좌표는 30일 안에 새로 받습니다), 지도에서 직접 찍은 위치의 좌표
 • 함께하는 사람 정보: 여행 멤버 목록과 역할, 누가 무엇을 바꿨는지(활동 내역)
 • 잠금 화면 실시간 현황을 켠 경우: 앱이 만든 임의의 기기 식별자와 Apple 푸시 토큰
+• 알림을 허용한 경우: 푸시 알림을 보내기 위한 기기 토큰(Expo 푸시 토큰)과 앱이 만든 임의의 기기 식별자, 여행별 알림 설정
+• 앱 사용 정보: 화면을 연 기록 같은 사용 이벤트(PostHog, 이름·이메일·여행 내용은 보내지 않고 기기마다 만든 임의 식별자로만 구분), 앱이 비정상 종료됐을 때의 오류 기록과 기기 정보(Sentry)
 • 광고: 광고 식별자(IDFA, iOS 앱 추적 투명성에서 허용한 경우에만)와 광고 표시에 필요한 기기 정보(Google AdMob)
 • 가계부 정보: 지출(금액·통화·환율·카테고리·날짜·메모·결제한 사람·나눈 사람)과 송금 기록. "나만 보는 지출"은 작성한 사람만 봅니다.
 • 예약 정보: 교통·숙소 예약(편명, 출발·도착 장소와 시각, 터미널, 예약번호, 금액, 메모)
@@ -73,6 +75,8 @@
 • 초대 링크로 여행에 참여
 • 지도·장소 검색·길찾기 제공
 • 잠금 화면·Dynamic Island에 오늘 일정 표시(켠 경우)
+• 일행의 참여, 일정 변경, 체크리스트 담당을 푸시 알림으로 알리기(허용한 경우)
+• 오류를 고치고 서비스를 개선하기 위한 사용 통계와 오류 분석
 • 가계부와 정산(누가 누구에게 얼마를 보내면 되는지 계산)
 • 영수증 사진에서 지출 정보를 읽어 입력을 돕기(영수증 인식을 쓴 경우)
 • 광고 게재</p>
@@ -89,6 +93,8 @@
 <p>• 계정과 여행 정보: 계정을 유지하는 동안 보관합니다.
 • 활동 내역: 여행이 끝나고 90일이 지나면 삭제합니다.
 • 실시간 현황 기기 토큰: 기능을 끄거나 그날 일정이 끝나면 삭제합니다.
+• 푸시 알림 기기 토큰: 로그아웃하거나 탈퇴하면 삭제하고, 앱을 지워 쓸 수 없게 된 토큰은 알림을 보낼 때 삭제합니다.
+• 사용 통계(PostHog)와 오류 기록(Sentry): 각 서비스의 보관 기간(최대 90일~1년)이 지나면 삭제됩니다.
 • 기기에 받아 둔 사본(오프라인 보기용): 앱을 마지막으로 쓴 뒤 90일까지 기기에만 남습니다.
 • 영수증 사진: 서버에 보관하지 않습니다. 기기에서는 지출로 등록하거나 버리면 바로 지웁니다(오프라인에서 찍은 사진은 인식할 때까지 기기에만 남습니다). 인식을 맡는 OpenAI는 API로 받은 데이터를 학습에 쓰지 않으며, 남용 감시를 위해 최대 30일 보관한 뒤 삭제합니다.
 • 탈퇴: 로그인 계정은 즉시 삭제하고, 프로필의 닉네임·사진은 지웁니다. 혼자인 여행은 함께 삭제하고, 멤버로 있던 여행에서는 빠집니다. 다른 멤버와 함께한 여행에 남긴 일정은 남고 "탈퇴한 사용자"로 표시됩니다.</p>
@@ -99,11 +105,15 @@
 <p>개인정보를 판매하지 않습니다. 서비스 운영을 위해 다음 업체에 처리를 맡깁니다.
 • Supabase (데이터베이스·인증·실시간 동기화) — 서버 위치 대한민국(서울)
 • Google Maps Platform (지도, 장소 검색·정보) — 검색어와 장소 ID를 전송, 미국
-• Apple (Apple 로그인, 실시간 현황 푸시) — 미국
+• Apple (Apple 로그인, 실시간 현황·iOS 푸시 알림 전달) — 미국
 • Kakao (카카오 로그인) — 대한민국
 • Google (Google 로그인) — 미국
 • Google AdMob (광고 게재) — 미국
 • OpenAI (영수증 인식: 영수증 사진을 보내 지출 정보를 읽음) — 미국
+• Expo (푸시 알림 전달: 기기 토큰과 알림 내용) — 미국
+• Google Firebase Cloud Messaging (Android 푸시 알림 전달) — 미국
+• PostHog (사용 통계: 사용 이벤트와 임의 식별자) — 미국
+• Functional Software, Inc. (Sentry, 오류 분석: 오류 기록과 기기 정보) — 미국
 
 각 업체는 서비스에 필요한 최소한의 정보만 처리하며, 통신 시점에 암호화된 경로로 전송됩니다.
 • Google 개인정보처리방침: https://policies.google.com/privacy
@@ -149,7 +159,7 @@
 <article id="en" lang="en">
 <header>
   <h1>Joiny Privacy Policy</h1>
-  <div class="meta">Effective: 2026-09-29</div>
+  <div class="meta">Effective: 2026-09-30</div>
 </header>
 
 <section>
@@ -160,6 +170,8 @@
 • Place data: Google place IDs and coordinates (refreshed within 30 days), or coordinates of pins you drop
 • Trip member data: members and roles, and who changed what (activity log)
 • If you turn on the Lock Screen Live Activity: a random device identifier created by the app and an Apple push token
+• If you allow notifications: a push token (Expo push token), a random device identifier created by the app, and your per-trip notification setting
+• App usage: usage events such as screens opened (PostHog; no name, email or trip content, only a random per-device identifier), and error reports with device information when the app crashes (Sentry)
 • Advertising: the advertising identifier (IDFA, only if you allow tracking on iOS) and device information needed to show ads (Google AdMob)
 • Expense data: expenses (amount, currency, exchange rate, category, date, memo, who paid and who shares) and recorded transfers. "Only me" expenses are visible only to the person who added them.
 • Booking data: transport and lodging bookings (flight or train number, departure and arrival places and times, terminal, booking reference, amount, memo)
@@ -175,6 +187,8 @@ We do not collect precise location or contacts. Photos are processed only when y
 • Joining trips through invite links
 • Maps, place search and directions
 • Showing today's schedule on the Lock Screen and Dynamic Island (if turned on)
+• Sending push notifications when a trip member joins, changes the schedule or assigns you a checklist item (if allowed)
+• Usage statistics and error analysis to fix problems and improve the Service
 • Expense tracking and settlement (who should send how much to whom)
 • Reading expense details from receipt photos to help you enter them (if you use receipt scanning)
 • Showing ads</p>
@@ -191,6 +205,8 @@ Anyone with an invite link can see the trip name, dates and cities, the nickname
 <p>• Account and trip data: kept while your account exists.
 • Activity log: deleted 90 days after the trip ends.
 • Live Activity device tokens: deleted when you turn the feature off or when the day's schedule ends.
+• Push notification tokens: deleted when you sign out or delete your account; tokens that no longer work (app removed) are deleted when a notification is sent.
+• Usage statistics (PostHog) and error reports (Sentry): deleted after each service's retention period (90 days to 1 year).
 • Offline copies on your device: kept on the device only, up to 90 days after you last used the app.
 • Receipt photos: not stored on our servers. On your device they are deleted as soon as you add the expense or discard the receipt (photos taken offline stay on the device until they are scanned). OpenAI, which reads the receipts, does not use API data for training and keeps it for up to 30 days for abuse monitoring before deleting it.
 • Account deletion: your sign-in account is deleted immediately and your nickname and photo are removed. Trips where you are the only member are deleted, and you leave the other trips. Items you added to shared trips remain and are shown as "Deleted user".</p>
@@ -201,11 +217,15 @@ Anyone with an invite link can see the trip name, dates and cities, the nickname
 <p>We do not sell personal data. We use these processors:
 • Supabase (database, authentication, realtime sync) — servers in Seoul, South Korea
 • Google Maps Platform (maps, place search and details) — search text and place IDs, USA
-• Apple (Sign in with Apple, Live Activity push) — USA
+• Apple (Sign in with Apple, Live Activity and iOS push notification delivery) — USA
 • Kakao (Kakao login) — South Korea
 • Google (Google sign-in) — USA
 • Google AdMob (ads) — USA
-• OpenAI (receipt scanning: receipt photos are sent to read the expense) — USA</p>
+• OpenAI (receipt scanning: receipt photos are sent to read the expense) — USA
+• Expo (push notification delivery: push token and notification content) — USA
+• Google Firebase Cloud Messaging (Android push notification delivery) — USA
+• PostHog (usage statistics: usage events and a random identifier) — USA
+• Functional Software, Inc. (Sentry, error analysis: error reports and device information) — USA</p>
 </section>
 
 <section>
