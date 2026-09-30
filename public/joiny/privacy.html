@@ -60,7 +60,7 @@
 • 잠금 화면 실시간 현황을 켠 경우: 앱이 만든 임의의 기기 식별자와 Apple 푸시 토큰
 • 알림을 허용한 경우: 푸시 알림을 보내기 위한 기기 토큰(Expo 푸시 토큰)과 앱이 만든 임의의 기기 식별자, 여행별 알림 설정
 • 앱 사용 정보: 화면을 연 기록 같은 사용 이벤트(PostHog, 이름·이메일·여행 내용은 보내지 않고 기기마다 만든 임의 식별자로만 구분), 앱이 비정상 종료됐을 때의 오류 기록과 기기 정보(Sentry)
-• 광고: 광고 식별자(IDFA, iOS 앱 추적 투명성에서 허용한 경우에만)와 광고 표시에 필요한 기기 정보(Google AdMob)
+• 광고: 광고 식별자(IDFA, iOS 앱 추적 투명성에서 허용한 경우에만), 광고 표시에 필요한 기기 정보, 광고를 보거나 누른 기록, IP 주소로 추정한 대략적인 위치(Google AdMob)
 • 가계부 정보: 지출(금액·통화·환율·카테고리·날짜·메모·결제한 사람·나눈 사람)과 송금 기록. "나만 보는 지출"은 작성한 사람만 봅니다.
 • 예약 정보: 교통·숙소 예약(편명, 출발·도착 장소와 시각, 터미널, 예약번호, 금액, 메모)
 • 영수증 사진(영수증 인식을 쓸 때만): 카메라로 찍거나 앨범에서 고른 영수증 사진을 지출 정보(총액·통화·날짜·가게 이름·카테고리)를 읽는 데만 쓰고, 서버에 저장하지 않습니다. 월 사용 한도를 확인하려고 이번 달에 인식한 장 수를 셉니다.
@@ -108,7 +108,7 @@
 • Apple (Apple 로그인, 실시간 현황·iOS 푸시 알림 전달) — 미국
 • Kakao (카카오 로그인) — 대한민국
 • Google (Google 로그인) — 미국
-• Google AdMob (광고 게재) — 미국
+• Google AdMob (광고 게재·광고 측정: 광고 식별자, 기기 정보, 광고 상호작용, IP 주소) — 미국
 • OpenAI (영수증 인식: 영수증 사진을 보내 지출 정보를 읽음) — 미국
 • Expo (푸시 알림 전달: 기기 토큰과 알림 내용) — 미국
 • Google Firebase Cloud Messaging (Android 푸시 알림 전달) — 미국
@@ -172,7 +172,7 @@
 • If you turn on the Lock Screen Live Activity: a random device identifier created by the app and an Apple push token
 • If you allow notifications: a push token (Expo push token), a random device identifier created by the app, and your per-trip notification setting
 • App usage: usage events such as screens opened (PostHog; no name, email or trip content, only a random per-device identifier), and error reports with device information when the app crashes (Sentry)
-• Advertising: the advertising identifier (IDFA, only if you allow tracking on iOS) and device information needed to show ads (Google AdMob)
+• Advertising: the advertising identifier (IDFA, only if you allow tracking on iOS), device information needed to show ads, ad views and taps, and approximate location estimated from your IP address (Google AdMob)
 • Expense data: expenses (amount, currency, exchange rate, category, date, memo, who paid and who shares) and recorded transfers. "Only me" expenses are visible only to the person who added them.
 • Booking data: transport and lodging bookings (flight or train number, departure and arrival places and times, terminal, booking reference, amount, memo)
 • Receipt photos (only when you use receipt scanning): receipt photos you take with the camera or pick from your library are used only to read the expense (total, currency, date, store name, category) and are not stored on our servers. We count how many receipts you scanned this month to apply the monthly limit.
@@ -220,7 +220,7 @@ Anyone with an invite link can see the trip name, dates and cities, the nickname
 • Apple (Sign in with Apple, Live Activity and iOS push notification delivery) — USA
 • Kakao (Kakao login) — South Korea
 • Google (Google sign-in) — USA
-• Google AdMob (ads) — USA
+• Google AdMob (ad serving and measurement: advertising identifier, device information, ad interactions, IP address) — USA
 • OpenAI (receipt scanning: receipt photos are sent to read the expense) — USA
 • Expo (push notification delivery: push token and notification content) — USA
 • Google Firebase Cloud Messaging (Android push notification delivery) — USA
