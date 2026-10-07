@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>Oftway — 다닌 길이 쌓이는 지도 / Support</title>
+<style>
+  :root {
+    --bg: #F6F4EF;
+    --surface: #FFFFFF;
+    --text: #1C1C1E;
+    --secondary: #55555A;
+    --accent: #2F4A8A;
+    --border: #E2DED5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F1114;
+      --surface: #17191D;
+      --text: #F2F2F0;
+      --secondary: #B4B6BA;
+      --accent: #8FA8E8;
+      --border: #2C3036;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', system-ui, sans-serif;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 56px 24px 96px; }
+  .lang-toggle { display: flex; gap: 12px; margin-bottom: 32px; font-size: 14px; }
+  .lang-toggle a { color: var(--secondary); text-decoration: none; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  .meta { color: var(--secondary); font-size: 13px; }
+  .summary { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin: 28px 0 8px; }
+  .summary p { color: var(--text); }
+  section { margin: 32px 0; }
+  h2 { font-size: 17px; font-weight: 600; margin: 0 0 12px; }
+  p { margin: 0; color: var(--secondary); white-space: pre-line; font-size: 15px; }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 64px 0; }
+  a { color: var(--accent); }
+  .tag { color: var(--secondary); font-size: 15px; margin-bottom: 32px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; margin: 16px 0; }
+  .card h2 { margin-bottom: 10px; }
+  .lang { font-size: 13px; color: var(--secondary); margin-top: 48px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Oftway</h1>
+  <div class="tag">다닌 길이 쌓이는 지도 · The paths you take, layered on a map</div>
+</header>
+
+<div class="card">
+  <h2>무엇을 하는 앱인가요?</h2>
+  <p>다닌 길을 자동으로 기록해 지도에 남기고, 자주 다닌 길일수록 짙게 그립니다. 하루를 타임라인으로 돌아보고, 한 줄 일기와 머문 곳 메모를 남길 수 있어요. 위치 기록은 전부 iPhone 안에서 처리하고 저장하며, 우리 서버로 보내지 않습니다.</p>
+</div>
+
+<div class="card">
+  <h2>자주 묻는 것</h2>
+  <p>• 위치가 서버로 가나요? — 아니요. 위치, 다닌 길, 머문 곳, 일기·메모는 기기에만 있어요. 지도 이미지를 받을 때 보는 지도 영역이 지도 회사(네이버 등)로 가는 것 말고는 나가지 않아요. 자세한 내용은 개인정보 처리방침에 있어요.
+• 기록이 비어요. — 설정 › 개인정보 보호 및 보안 › 위치 서비스 › Oftway에서 '항상'과 '정확한 위치'를 켜 주세요. 앱의 기록 상태 바가 무엇이 필요한지 알려 줘요.
+• 배터리를 많이 쓰나요? — 움직일 때만 위치를 촘촘히 받고, 머물러 있을 때는 아껴 써요.
+• 기기를 바꾸면요? — iPhone의 iCloud 백업으로 옮기면 기록이 함께 넘어가요. 백업 파일 내보내기·가져오기도 출시와 함께 제공해요.
+• 공유 카드에 우리 집이 보이나요? — 보호 구역(집·회사 등) 둘레 300m는 가려져요. 그래도 보내기 전에 카드를 한 번 확인해 주세요.
+• 로그인해야 하나요? — 아니요. 로그인은 구독을 여러 기기에서 이어 쓰고 싶을 때만 하면 돼요. 탈퇴는 앱 › 설정 › 계정에서 할 수 있어요.</p>
+</div>
+
+<div class="card">
+  <h2>문의 · Contact</h2>
+  <p><a href="mailto:isolatorv@gmail.com">isolatorv@gmail.com</a></p>
+</div>
+
+<div class="card">
+  <h2>문서 · Documents</h2>
+  <p><a href="privacy.html">개인정보 처리방침 · Privacy Policy</a>
+<a href="terms.html">이용약관 · Terms of Service</a></p>
+</div>
+
+<div class="card" lang="en">
+  <h2>In English</h2>
+  <p>Oftway automatically records the paths you travel and draws the ones you take most often more darkly. Look back on each day in the timeline and leave a one-line journal or notes on places you stayed. All location records are processed and stored on your iPhone and are never sent to our servers.
+• Recording has gaps? Set Settings › Privacy & Security › Location Services › Oftway to "Always" and turn on "Precise Location". The status bar in the app tells you what is needed.
+• New iPhone? Moving with an iCloud backup brings your records along. Backup file export and import will be available at launch.
+• Signing in is optional; you can delete your account in App › Settings › Account.</p>
+</div>
+
+</div>
+</body>
+</html>
