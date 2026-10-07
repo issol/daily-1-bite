@@ -47,6 +47,14 @@ export const S = {
     siteName: '매일 한입',
     tagline: '매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다',
     copyright: (year: number) => `© ${year} 매일 한입. All rights reserved.`,
+    business: {
+      name: '아이쏠',
+      owner: '김민규',
+      registrationNumber: '618-57-00862',
+      address: '서울특별시 금천구 가산디지털1로 52 (가산동)',
+      phone: '010-3808-8637',
+      email: 'issol@daily1bite.com',
+    },
   },
   notFound: {
     title: '404',

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {S} from '@/lib/strings';
 
 export default function Footer() {
+  const biz = S.footer.business;
   return (
     <footer className="border-t border-gray-100 mt-16 py-10 text-sm text-gray-500">
       <div className="max-w-4xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -25,8 +26,18 @@ export default function Footer() {
           </Link>
         </div>
       </div>
-      <div className="text-center mt-6 text-xs text-gray-400">
-        {S.footer.copyright(new Date().getFullYear())}
+      <div className="max-w-4xl mx-auto px-4 mt-6 text-center text-xs text-gray-400 space-y-1">
+        <p>
+          상호: {biz.name} | 대표자: {biz.owner} | 사업자등록번호: {biz.registrationNumber}
+        </p>
+        <p>주소: {biz.address}</p>
+        <p>
+          대표전화: {biz.phone} | 문의:{' '}
+          <a href={`mailto:${biz.email}`} className="hover:text-amber-500 transition-colors">
+            {biz.email}
+          </a>
+        </p>
+        <p className="pt-2">{S.footer.copyright(new Date().getFullYear())}</p>
       </div>
     </footer>
   );
