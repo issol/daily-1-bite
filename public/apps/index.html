@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<!-- 스레드 @issol_dev 프로필·장터 댓글의 링크 목적지. 블로그 색인 정책과 분리하기 위해 다른 앱 페이지처럼 noindex. 앱 상태(출시·심사)가 바뀌면 여기와 ~/issol-threads/config/apps.json 을 같이 고친다. -->
+<meta name="robots" content="noindex" />
+<title>issol의 앱 — Joiny · DaySeed · Utakoto · Oftway · Airout</title>
+<meta name="description" content="혼자 앱을 만드는 개발자 issol이 만들고 운영하는 앱들. 함께 짜는 여행 일정 Joiny, 매일 습관 DaySeed, J-POP으로 배우는 일본어 Utakoto, 다닌 길이 쌓이는 지도 Oftway, 사진을 가볍게 비우는 Airout." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="issol" />
+<meta property="og:title" content="issol이 혼자 만드는 앱들" />
+<meta property="og:description" content="Joiny 함께 짜는 여행 일정 · DaySeed 매일 습관 · Utakoto J-POP으로 일본어 · Oftway 다닌 길이 쌓이는 지도 · Airout 사진 가볍게 비우기" />
+<meta property="og:url" content="https://daily1bite.com/apps" />
+<meta property="og:image" content="https://daily1bite.com/apps/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content="ko_KR" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="issol이 혼자 만드는 앱들" />
+<meta name="twitter:description" content="Joiny · DaySeed · Utakoto · Oftway · Airout" />
+<meta name="twitter:image" content="https://daily1bite.com/apps/og.png" />
+<link rel="canonical" href="https://daily1bite.com/apps" />
+<style>
+  :root {
+    --bg: #F6F4EF;
+    --surface: #FFFFFF;
+    --text: #1C1C1E;
+    --secondary: #55555A;
+    --accent: #2F4A8A;
+    --border: #E2DED5;
+    --chip: #ECE9E1;
+    --mark: #1F7A45;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0F1114;
+      --surface: #17191D;
+      --text: #F2F2F0;
+      --secondary: #B4B6BA;
+      --accent: #8FA8E8;
+      --border: #2C3036;
+      --chip: #22262C;
+      --mark: #7CF29A;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', system-ui, sans-serif;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 56px 24px 96px; }
+  @media (max-width: 480px) { .wrap { padding: 40px 16px 72px; } }
+  .mark { font-family: ui-monospace, 'SF Mono', Menlo, monospace; color: var(--mark); font-size: 15px; font-weight: 600; letter-spacing: 0; margin-bottom: 10px; }
+  h1 { font-size: 26px; margin: 0 0 6px; }
+  .tag { color: var(--secondary); font-size: 15px; margin-bottom: 8px; }
+  .intro { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin: 28px 0 8px; }
+  .intro p { color: var(--text); }
+  h2 { font-size: 17px; font-weight: 600; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ko { color: var(--secondary); font-size: 13px; font-weight: 500; }
+  .tagline { color: var(--text); font-size: 15px; margin: 0 0 8px; }
+  p { margin: 0; color: var(--secondary); font-size: 15px; }
+  a { color: var(--accent); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; margin: 16px 0; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 0; }
+  .chip { background: var(--chip); color: var(--secondary); border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+  .links { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; font-size: 14px; }
+  .links a { text-decoration: none; font-weight: 500; }
+  .links a:hover { text-decoration: underline; }
+  .section-title { font-size: 13px; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.04em; margin: 36px 0 4px; }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 48px 0 28px; }
+  .foot p { font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="mark" aria-hidden="true">&gt;▮ issol</div>
+  <h1>혼자 만드는 앱들</h1>
+  <div class="tag">앱 만드는 개발자 issol · 스레드 <a href="https://www.threads.com/@issol_dev">@issol_dev</a></div>
+</header>
+
+<div class="intro">
+  <p>혼자 앱을 만들고 운영합니다. 내 데이터는 내 폰에 두는 앱, 구독 대신 한 번 결제하는 앱, 가까운 사람과 같이 쓰는 앱을 만들어요. 아래 다섯 개를 만들고 있습니다.</p>
+</div>
+
+<div class="section-title">출시된 앱</div>
+
+<div class="card">
+  <h2>Joiny <span class="ko">조이니</span></h2>
+  <p class="tagline">함께 짜는 여행 일정</p>
+  <p>함께 갈 사람을 초대해 같이 여행 일정을 짜고, 지도로 동선을 보고, 비용을 정산하는 여행 플래너예요. 여행 중엔 '오늘' 화면이 먼저 열려요.</p>
+  <div class="chips"><span class="chip">iOS 무료</span><span class="chip">2026년 10월 출시</span></div>
+  <div class="links">
+    <a href="https://apps.apple.com/kr/app/id6817018797">App Store</a>
+    <a href="/joiny/privacy.html">개인정보 처리방침</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>DaySeed <span class="ko">데이시드</span></h2>
+  <p class="tagline">매일 습관, 매일 성장</p>
+  <p>매일의 습관을 한 번의 탭으로 기록하고, 캘린더로 일정을 정리하고, 가장 가까운 한 사람과 함께 쓰는 미니멀 기록 앱이에요. 습관 정의를 바꿔도 과거 기록은 그때 그대로 남아요.</p>
+  <div class="chips"><span class="chip">iOS 무료</span><span class="chip">위젯</span></div>
+  <div class="links">
+    <a href="https://apps.apple.com/kr/app/id6764353269">App Store</a>
+    <a href="/dayseed/privacy.html">개인정보 처리방침</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Utakoto <span class="ko">우타코토</span></h2>
+  <p class="tagline">J-POP으로 배우는 일본어</p>
+  <p>J-POP·애니송 가사로 일본어를 배우는 앱이에요. 가사마다 후리가나·한국어 발음·뜻이 붙고, 노래 속 단어가 JLPT 단어장으로 모여 복습할 수 있어요. 히라가나·가타카나·한자 쓰기도 있어요.</p>
+  <div class="chips"><span class="chip">iOS·Android 무료</span><span class="chip">스레드 @uta_koto</span></div>
+  <div class="links">
+    <a href="https://apps.apple.com/kr/app/id6760290605">App Store</a>
+    <a href="https://play.google.com/store/apps/details?id=space.utakoto.app">Google Play</a>
+    <a href="https://utakoto.space">utakoto.space</a>
+  </div>
+</div>
+
+<div class="section-title">준비 중인 앱</div>
+
+<div class="card">
+  <h2>Oftway <span class="ko">오프트웨이</span></h2>
+  <p class="tagline">다닌 길이 쌓이는 지도</p>
+  <p>따로 기록하지 않아도 다닌 길이 지도에 남고, 자주 다닌 길일수록 짙어지는 발자취 일기예요. 위치는 내 폰 밖으로 나가지 않아요. Pro는 한 번 결제, 구독이 아니에요.</p>
+  <div class="chips"><span class="chip">iOS · 출시 준비 중</span><span class="chip">데이터는 기기 안에만</span></div>
+  <div class="links">
+    <a href="/oftway/">소개 · 지원</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Airout <span class="ko">에어아웃</span></h2>
+  <p class="tagline">가볍게 비우기</p>
+  <p>쌓인 스크린샷·비슷한 사진·흔들린 사진을 iPhone 안에서 찾아 하루 10장씩 가볍게 비우는 앱이에요. 분석은 전부 기기 안에서 하고, 서버도 계정도 없어요.</p>
+  <div class="chips"><span class="chip">iOS 26+ · App Store 심사 중</span><span class="chip">서버 없음</span></div>
+  <div class="links">
+    <a href="/airout/">소개 · 지원</a>
+  </div>
+</div>
+
+<hr />
+
+<div class="foot">
+  <p>만드는 과정은 스레드 <a href="https://www.threads.com/@issol_dev">@issol_dev</a>에 올려요. 문의 <a href="mailto:isolatorv@gmail.com">isolatorv@gmail.com</a></p>
+</div>
+
+</div>
+</body>
+</html>
