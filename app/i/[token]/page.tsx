@@ -25,8 +25,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const isKo = await preferKorean();
   const title = isKo ? 'dayseed — 함께 쓰는 캘린더 초대' : 'dayseed — A shared calendar invite';
   const description = isKo
-    ? '연인·가족·친구와 일정을 같이 보세요. dayseed를 설치하면 자동으로 이어집니다.'
-    : 'Share calendars with the one closest to you. Install dayseed to continue.';
+    ? '연인·가족·친구와 일정을 같이 보세요. dayseed를 설치하고 로그인한 뒤 이 링크를 다시 누르면 참여합니다.'
+    : 'Share a calendar with your partner, family or friends. Install dayseed, sign in, then tap this link again to join.';
   return {
     title,
     description,
@@ -66,6 +66,7 @@ export default async function InviteFallback({ params }: Props) {
   const isKo = await preferKorean();
   const safeToken = encodeURIComponent(token);
   const appUrl = `dayseed:///i/${safeToken}`;
+  const inviteUrl = `https://daily1bite.com/i/${safeToken}`;
   const appStoreUrl = 'https://apps.apple.com/app/id6764353269';
 
   // Inline script as a JSON-encoded string. We embed `safeToken` and
@@ -75,13 +76,28 @@ export default async function InviteFallback({ params }: Props) {
     (function () {
       var appUrl = ${JSON.stringify(appUrl)};
       var storeUrl = ${JSON.stringify(appStoreUrl)};
+      var inviteUrl = ${JSON.stringify(inviteUrl)};
+      var copiedLabel = ${JSON.stringify(isKo ? '복사했어요' : 'Copied')};
       var btn = document.getElementById('open-app');
-      if (!btn) return;
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        window.location.href = appUrl;
-        setTimeout(function () { window.location.href = storeUrl; }, 1200);
-      });
+      if (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          window.location.href = appUrl;
+          setTimeout(function () { window.location.href = storeUrl; }, 1200);
+        });
+      }
+      // 앱을 링크에서 처음 설치하면 토큰이 App Store를 건너가지 못한다.
+      // 링크를 복사해 두면 앱의 함께 쓰기 화면에 붙여 넣을 수 있다.
+      var copy = document.getElementById('copy-link');
+      if (copy && navigator.clipboard) {
+        copy.addEventListener('click', function () {
+          navigator.clipboard.writeText(inviteUrl).then(function () {
+            copy.textContent = copiedLabel;
+          }, function () {});
+        });
+      } else if (copy) {
+        copy.style.display = 'none';
+      }
     })();
   `;
 
@@ -125,9 +141,31 @@ export default async function InviteFallback({ params }: Props) {
           }}
         >
           {isKo
-            ? '이 링크를 받았다면 누군가가 일정을 함께 보자고 청한 거예요. dayseed를 설치하면 자동으로 이어집니다.'
-            : 'Someone invited you to share calendars on dayseed. Install the app to continue.'}
+            ? '누군가 dayseed에서 일정을 함께 보자고 초대했어요.'
+            : 'Someone invited you to share a calendar on dayseed.'}
         </p>
+        <ol
+          style={{
+            textAlign: 'left',
+            color: '#2c2a26',
+            fontSize: 14,
+            lineHeight: 1.6,
+            margin: '0 0 20px',
+            paddingLeft: 20,
+          }}
+        >
+          <li>{isKo ? 'App Store에서 dayseed를 받고 로그인해요.' : 'Get dayseed from the App Store and sign in.'}</li>
+          <li>
+            {isKo
+              ? '이 링크를 한 번 더 누르면 바로 그룹에 들어가요.'
+              : 'Tap this link again to join the group.'}
+          </li>
+          <li style={{ color: '#6b6760' }}>
+            {isKo
+              ? '링크를 다시 찾기 어렵다면 아래 "링크 복사"를 눌러 두고, 앱의 함께 쓰기 화면에 붙여 넣어도 돼요.'
+              : 'Or tap "Copy link" below and paste it on the Share screen in the app.'}
+          </li>
+        </ol>
         <a
           id="open-app"
           href={appUrl}
@@ -158,6 +196,22 @@ export default async function InviteFallback({ params }: Props) {
         >
           {isKo ? 'App Store에서 받기' : 'Get from the App Store'}
         </a>
+        <br />
+        <button
+          id="copy-link"
+          type="button"
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#6b6760',
+            fontSize: 13,
+            padding: 8,
+            cursor: 'pointer',
+            textDecoration: 'underline',
+          }}
+        >
+          {isKo ? '링크 복사' : 'Copy link'}
+        </button>
         <div
           style={{
             marginTop: 24,
