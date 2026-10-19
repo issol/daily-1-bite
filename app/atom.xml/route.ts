@@ -36,8 +36,8 @@ export async function GET() {
 
   const atom = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ko">
-  <title>매일 한입 | AI 뉴스 요약 블로그</title>
-  <subtitle>매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다.</subtitle>
+  <title>매일 한입 | 1인 앱 개발일지</title>
+  <subtitle>혼자 앱 다섯 개를 만들고 운영하는 개발자의 개발일지.</subtitle>
   <link href="${BASE_URL}" rel="alternate" type="text/html"/>
   <link href="${BASE_URL}/atom.xml" rel="self" type="application/atom+xml"/>
   <id>${BASE_URL}/</id>

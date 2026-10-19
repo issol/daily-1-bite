@@ -33,3 +33,9 @@ Next.js 15 (App Router) + next-intl 블로그. AWS Amplify SSR/ISR 배포. 콘�
 ```bash
 npm run build      # 색인 관련 변경 후에는 docs/SEO-INVARIANTS.md의 "검증" 절을 그대로 실행한다
 ```
+
+## 개발일지 (2026-10-19 ~)
+
+이 블로그의 주 콘텐츠는 이제 **앱 개발일지**(`content/posts/ko/devlog/`, 카테고리 `devlog`)다. 매일 저녁 한 편이
+자동으로 나간다 — `scripts/devlog/README.md`. 글의 재료는 각 앱 레포의 실제 기록뿐이며, `scripts/devlog/verify-post.mjs` 가
+날짜·형식·근거 커밋·비밀값을 검사한다. 손으로 쓸 때도 같은 검사를 통과시킨다. 기존 140편은 그대로 둔다(대량 noindex·삭제도 신호 변경이다).

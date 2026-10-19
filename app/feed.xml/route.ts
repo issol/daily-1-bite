@@ -33,9 +33,9 @@ export async function GET() {
   xmlns:content="http://purl.org/rss/1.0/modules/content/"
   xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>매일 한입 | AI 뉴스 요약 블로그</title>
+    <title>매일 한입 | 1인 앱 개발일지</title>
     <link>${BASE_URL}</link>
-    <description>매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다. AI 트렌드, 도구 리뷰, 튜토리얼을 한입 크기로 전달합니다.</description>
+    <description>혼자 iOS 앱 다섯 개를 만들고 운영하는 개발자의 개발일지. 매일 한 앱, 한 가지 변경을 기록합니다.</description>
     <language>ko</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${BASE_URL}/feed.xml" rel="self" type="application/rss+xml"/>

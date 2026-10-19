@@ -17,23 +17,23 @@ export const AUTHOR = {
 
   url: `${BASE_URL}/about`,
   email: 'isolatorv@gmail.com',
-  jobTitle: 'AI 뉴스 큐레이터 & 개발자',
+  jobTitle: '1인 앱 개발자',
   description:
-    '현직 개발자로서 AI 도구를 실무에서 매일 사용하며, 개발자 관점에서 AI 뉴스와 도구를 솔직하게 정리합니다.',
+    '혼자 iOS 앱 다섯 개(Joiny·DaySeed·Utakoto·Airout·Oftway)를 만들고 운영합니다. 이 블로그에는 그 앱들의 개발일지를 씁니다.',
 
   // 검증 가능한 실존 인물 신호(sameAs). Google이 저자를 실제 웹 엔티티와 연결한다.
   //   프로필을 추가할수록(LinkedIn/X 등) 신뢰 신호가 강해진다.
   sameAs: ['https://github.com/issol'] as string[],
 
   knowsAbout: [
-    '인공지능',
-    'AI 도구',
-    'LLM',
-    'ChatGPT',
-    'Claude',
-    'Gemini',
-    '생성형 AI',
-    '검색엔진 최적화 (SEO)',
+    'iOS 앱 개발',
+    'React Native',
+    'Expo',
+    'Swift',
+    'Supabase',
+    'App Store 심사',
+    'Claude Code',
+    '1인 개발',
     'Next.js',
   ],
 } as const;
