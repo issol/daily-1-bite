@@ -1,12 +1,6 @@
 import Link from 'next/link';
 
-const CATEGORIES: Record<string, string> = {
-  'dev-life': 'Dev Life & Opinion',
-  'ai-tools': 'AI Tools & Review',
-  'ai-tutorial': 'AI Tutorial & How-to',
-  'seo': 'SEO',
-  'blog-info': 'Blog Info',
-};
+import {CATEGORIES} from '@/lib/categories';
 
 interface PostMeta {
   slug: string;

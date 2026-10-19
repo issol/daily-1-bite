@@ -34,7 +34,7 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
   return {
     title: `${label} (${posts.length}개 글)`,
     description,
-    keywords: [label, ...tagPool, 'AI', '매일 한입'],
+    keywords: [label, ...tagPool, '매일 한입'],
     alternates: {
       canonical: canonicalUrl,
       // hreflang 없음 — 단일 언어다. (개정된 I2)

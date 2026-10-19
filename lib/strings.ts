@@ -21,8 +21,8 @@ export const S = {
   },
   home: {
     siteName: '매일 한입',
-    tagline: '매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다.',
-    subTagline: '한입 크기로 읽는 AI 트렌드, 도구 리뷰, 튜토리얼.',
+    tagline: '혼자 앱 다섯 개를 만들고 운영하는 개발자의 개발일지.',
+    subTagline: '매일 한 앱, 한 가지 변경 — 왜 그렇게 했는지까지.',
     popular: '🔥 인기 글',
     allStats: '전체 통계 →',
     recent: '최근 글',
@@ -39,13 +39,13 @@ export const S = {
   },
   blog: {
     allPosts: '전체 글',
-    description: '매일 한입 블로그의 모든 글을 확인하세요.',
+    description: '매일 한입의 모든 글 — 개발일지와 이전 글.',
     search: '검색...',
     postCount: (count: number) => `전체 글 (${count})`,
   },
   footer: {
     siteName: '매일 한입',
-    tagline: '매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다',
+    tagline: '혼자 앱을 만드는 개발자의 개발일지',
     copyright: (year: number) => `© ${year} 매일 한입. All rights reserved.`,
     business: {
       name: '아이쏠',

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # SEO audit output
 .seo-audit/
+
+# devlog 파이프라인 작업 디렉터리(후보 JSON·실패한 초안·로그)
+.devlog/

@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
-export const alt = '매일 한입 - AI 뉴스 요약 블로그';
+export const alt = '매일 한입 - 1인 앱 개발일지';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -26,10 +26,10 @@ export default function Image() {
           매일 한입
         </div>
         <div style={{ fontSize: 28, color: '#6b7280', marginBottom: 12 }}>
-          매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다
+          혼자 앱 다섯 개를 만들고 운영하는 개발자의 개발일지
         </div>
         <div style={{ fontSize: 22, color: '#9ca3af' }}>
-          AI 트렌드 · 도구 리뷰 · 튜토리얼
+          Joiny · DaySeed · Utakoto · Airout · Oftway
         </div>
         <div
           style={{

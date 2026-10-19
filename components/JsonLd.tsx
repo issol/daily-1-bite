@@ -12,7 +12,7 @@ export function WebSiteJsonLd() {
     name: '매일 한입',
     alternateName: 'daily-1-bite',
     url: BASE_URL,
-    description: '매일 쏟아지는 AI 뉴스를 보기 쉽게 요약해드립니다. AI 트렌드, 도구 리뷰, 튜토리얼을 한입 크기로 전달합니다.',
+    description: '혼자 iOS 앱 다섯 개를 만들고 운영하는 개발자의 개발일지. 매일 한 앱, 한 가지 변경을 기록합니다.',
     inLanguage: 'ko-KR',
     publisher: {
       '@type': 'Person',

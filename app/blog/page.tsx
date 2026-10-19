@@ -12,7 +12,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://daily1bite.com';
 
 export const metadata: Metadata = {
   title: '전체 글',
-  description: '매일 한입 블로그의 모든 글을 확인하세요. AI 뉴스 요약, 도구 리뷰, 튜토리얼.',
+  description: '매일 한입의 모든 글. 1인 앱 개발일지와 이전의 AI 도구 리뷰·튜토리얼.',
   alternates: {
     canonical: `${BASE_URL}/blog`,
     // hreflang 없음 — 단일 언어다. (개정된 I2)
