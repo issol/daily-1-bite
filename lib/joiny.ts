@@ -9,16 +9,16 @@
 export const JOINY_SUPABASE_URL = process.env.JOINY_SUPABASE_URL ?? 'https://dtqsmgqrzekqtndskhfd.supabase.co';
 export const JOINY_PUBLISHABLE_KEY = process.env.JOINY_PUBLISHABLE_KEY ?? 'sb_publishable_G5E164i9gz90IBP4tz2bGg_aOopGle-';
 
-// App Store 출시(2026-10-07, 대한민국). Play는 아직 출시 전이다.
+// App Store 출시(2026-10-07, 대한민국), Google Play 출시(2026-10, 대한민국).
 export const JOINY_APP_STORE_URL: string | null = 'https://apps.apple.com/kr/app/id6817018797';
 export const JOINY_ANDROID_PACKAGE = 'app.joiny.mobile';
-export const JOINY_PLAY_PUBLISHED = false;
+export const JOINY_PLAY_PUBLISHED = true;
 
 // 1단계 테스트(동행 테스트) 동안의 설치 주소. 스토어 주소가 있으면 그쪽이 먼저다.
 // TestFlight 외부 테스트 공개 링크. 베타 앱 심사를 통과해 링크가 생기면 채운다.
 export const JOINY_TESTFLIGHT_URL: string | null = null;
 // Play 테스트 참여 링크. 테스터 목록(이메일)에 있는 사람만 참여할 수 있어 초대받은 사람 대부분은 쓸 수 없다.
-// iOS만 먼저 출시하는 동안은 비워 두고 Android에는 "준비 중"을 보여준다(2026-10-01 PO: iOS 먼저 출시).
+// Play 출시 뒤로는 스토어 링크를 쓰므로 비워 둔다.
 export const JOINY_PLAY_TEST_URL: string | null = null;
 
 export interface JoinyInvitePreview {
