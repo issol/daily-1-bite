@@ -98,7 +98,7 @@ function Preview({ p }: { p: JoinyInvitePreview }) {
  * - 카카오톡 같은 앱 안 브라우저는 Universal Links를 쓰지 않아 이 페이지가 열린다.
  *   "Joiny 앱에서 열기"가 joiny:// 로 앱을 열고, 없으면 스토어로 보낸다.
  * - 앱이 없으면 설치 뒤 이어간다: Android는 스토어 링크의 referrer로, iOS는 링크를 다시 눌러서.
- *   iOS는 App Store로 보낸다(2026-10-07 출시). Android는 Play 출시 전까지 "준비 중"을 보여준다.
+ *   iOS는 App Store로(2026-10-07 출시), Android는 Google Play로(2026-10 출시) 보낸다.
  */
 export default async function JoinyInvite({ params, searchParams }: Props) {
   const { token } = await params;
