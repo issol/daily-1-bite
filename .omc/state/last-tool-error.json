@@ -1,7 +1,7 @@
 {
-  "tool_name": "Read",
-  "tool_input_preview": "{\"file_path\":\"/Users/leriel/.claude/skills/blog/publish.md\"}",
-  "error": "File does not exist. Note: your current working directory is /Users/leriel/daily-1-bite.",
-  "timestamp": "2026-03-28T16:36:42.805Z",
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /Users/leriel/daily-1-bite; SP=/private/tmp/claude-501/-Users-leriel-daily-1-bite/c2a0e22a-b306-4d3d-b5a4-235fa0f134c6/scratchpad; /usr/bin/grep -E 'npm ci exit|build exit' $SP/../../ta...",
+  "error": "Exit code 1\nnpm ci exit=0\nbuild exit=0\n\n\n○  (Static)   prerendered as static content\n●  (SSG)      prerendered as static HTML (uses generateStaticParams)\nƒ  (Dynamic)  server-rendered on demand\n\n=== Middleware 항목 (없어야 함) ===\n0",
+  "timestamp": "2026-08-10T06:59:29.556Z",
   "retry_count": 1
 }
