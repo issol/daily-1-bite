@@ -1,0 +1,105 @@
+---
+title: "DaySeed — 로그아웃만 하던 '계정 삭제'를 실제 삭제로, 함께 쓴 일정은 '탈퇴한 사람'으로 남기기"
+date: "2026-10-23"
+description: "설정의 계정 삭제가 사실은 로그아웃만 하고 있었습니다. 외래키를 그대로 두고 지우면 다른 멤버의 공유 일정까지 사라지는 문제를 sentinel 사용자 하나와 정리 RPC 로 풀고, 그룹은 남은 멤버에게 넘긴 기록."
+category: "devlog"
+app: "dayseed"
+tags: ["DaySeed", "계정 삭제", "Supabase", "Postgres", "개인정보", "1인개발"]
+sources: ["720e4a2", "33ebc3c", "07ec0d6", "a44121e", "704106c", ".claude/intent/account-deletion/intent.md", ".claude/intent/account-deletion/spec.md", ".claude/intent/account-deletion/plan.md", ".claude/intent/account-deletion/rehearsal.sql"]
+noindex: false
+---
+
+## "삭제"를 두 번 확인받고 로그아웃만 하고 있었다
+
+10월 19일, 위시리스트의 개인정보처리방침 문구를 고치다가 설정 화면 코드에서 이 두 줄을 발견했습니다.
+
+```ts
+      // TODO: call a Supabase RPC that drops user data, then signOut.
+      await signOut();
+```
+
+DaySeed 의 설정 › 계정 삭제는 "삭제" 를 직접 입력하게 하는 것까지 두 단계로 확인을 받습니다. 그런데 그 뒤에 하는 일은 로그아웃뿐이었습니다. 계정과 데이터는 서버에 그대로 남고, 같은 이메일로 다시 로그인하면 전부 돌아옵니다. 개인정보처리방침에는 "계정 삭제 시 모든 개인 데이터는 즉시 영구적으로 삭제" 라고 적어 두었으니 문서와 동작이 어긋나 있었고, 앱 안에서 계정 삭제를 제공하라는 App Store 심사 지침 5.1.1(v) 에도 걸리는 상태였습니다.
+
+그렇다고 TODO 자리에서 auth 사용자만 지우면 되는 것도 아니었습니다. intent 에 외래키를 따라가며 적어 둔 것은 반대 방향의 문제입니다. 그룹의 `created_by` 가 연쇄 삭제로 걸려 있어서, 그룹을 만든 사람이 탈퇴하면 **그룹 전체**가 사라집니다. 일정과 위시의 `user_id` 도 연쇄 삭제라서, 함께 쓰던 일정이 남은 사람 화면에서도 없어집니다. 위시 사진은 Storage 에 있어서 DB 가 지우지 못하고 그대로 남습니다. 지금 상태로 지우면 너무 적게 지우는 문제가 너무 많이 지우는 문제로 바뀔 뿐이었습니다.
+
+## 무엇을 남기고 무엇을 지우나
+
+그래서 코드를 쓰기 전에 제품 결정 세 가지를 먼저 정했습니다. 함께 쓰던 일정·위시·댓글은 남기고 작성자를 "탈퇴한 사람" 으로 보여 준다. 그룹을 만든 사람이 탈퇴하면 남은 멤버에게 넘긴다. 유예 기간 없이 즉시 지운다.
+
+지우는 쪽은 프로필(닉네임·이메일·푸시 토큰·알림 설정), 루틴 전부, 개인 일정과 개인 위시(사진 포함), 개인 기념일, Live Activity 기기 등록, 내가 남긴 반응·투표·읽음 기록입니다. 남기는 쪽은 그룹에 공유된 일정·위시·댓글·히스토리 항목입니다.
+
+"탈퇴한 사람" 은 실제 사용자 한 명으로 만들었습니다. 고정 id 를 가진 auth 사용자인데, 비밀번호가 없고 `banned_until` 이 먼 미래이며 어떤 그룹의 멤버도 아닙니다. 탈퇴하는 사람이 공유한 행은 이 sentinel 의 것으로 바뀝니다. 그룹 정리는 정리 RPC `prepare_account_deletion` 의 첫 부분이 맡습니다.
+
+```sql
+  for g in
+    select gr.id, gr.created_by
+      from public.groups gr
+     where gr.created_by = p_user
+        or exists (select 1 from public.group_members gm where gm.group_id = gr.id and gm.user_id = p_user)
+  loop
+    select gm.user_id into heir
+      from public.group_members gm
+     where gm.group_id = g.id and gm.user_id <> p_user and gm.user_id <> sentinel
+     order by gm.joined_at, gm.user_id
+     limit 1;
+    if heir is null then
+      -- (그룹 위시 사진 경로를 모은 뒤)
+      delete from public.wishes where group_id = g.id;
+      -- Content a former member left here has nobody left to see it.
+      delete from public.events where group_id = g.id and user_id = sentinel;
+      delete from public.groups where id = g.id;
+    elsif g.created_by = p_user then
+      update public.groups set created_by = heir where id = g.id;
+    end if;
+  end loop;
+```
+
+남은 멤버 중 가장 먼저 들어온 사람이 그룹을 이어받고, 혼자였던 그룹은 지웁니다. 혼자 남은 사람이 탈퇴할 때는 앞서 떠난 사람이 남긴 sentinel 일정도 같이 지웁니다. 볼 사람이 아무도 없기 때문입니다. 그 뒤 공유된 일정·댓글·위시의 작성자와 히스토리의 행위자를 sentinel 로 바꾸고, 개인 위시는 사진 경로를 모아 반환한 다음 행을 지웁니다. 나머지 개인 데이터는 auth 사용자를 지울 때 기존 연쇄 삭제가 가져갑니다.
+
+이 RPC 를 부르는 것은 엣지 함수 `delete-account` 입니다. JWT 의 사용자 본인만 지우고, 순서는 정리 RPC → 위시 사진 삭제 → auth 사용자 삭제입니다.
+
+```ts
+  const list: string[] = Array.isArray(paths) ? paths : [];
+  for (let i = 0; i < list.length; i += 100) {
+    const { error } = await admin.storage.from('wish-photos').remove(list.slice(i, i + 100));
+    // Orphaned files are invisible (their wish rows are gone); log and go on
+    // rather than leave the account half-deleted.
+    if (error) console.error('delete-account: storage remove failed', error.message);
+  }
+
+  const { error: delError } = await admin.auth.admin.deleteUser(userId);
+```
+
+## 왜 sentinel 이었나
+
+다른 표현 방식을 비교한 기록은 남아 있지 않습니다. 다만 intent 의 제약에 sentinel 이 맞는 이유가 하나 적혀 있습니다. 업데이트하지 않은 2.1.1 이하 앱에서도 남은 공유 일정이 열려야 하니 **기존 컬럼과 RLS 를 바꾸지 않는다.** sentinel 을 쓰면 바뀌는 것은 `user_id` 값 하나뿐이고, 스키마와 권한 규칙은 그대로입니다. 구버전 앱은 sentinel 의 이름을 몰라 기본 대체 이름인 "함께 쓰는 사람" 으로 보여 주고, 새 앱은 프로필을 모아 오는 `listProfilesForUsers` 에서 sentinel id 를 보면 "탈퇴한 사람"(영어는 "Former member") 이름을 넣습니다. 작성자 이름을 보여 주는 화면이 전부 이 함수를 거치기 때문에 한 곳만 고치면 됐습니다.
+
+순서와 실패 처리에도 기준을 정해 두었습니다. 정리는 RPC 한 트랜잭션이라 중간에 실패하면 아무것도 옮겨지지 않고, 함수는 auth 사용자를 지우기 전에 멈춥니다. 모든 단계가 "아직 이 사용자 것인 행" 을 기준으로 움직이기 때문에 다시 불러도 안전합니다. Storage 삭제만은 예외로 두었습니다. 위 주석대로 행이 이미 없어 보이지 않는 파일 때문에 계정을 반쯤 지운 상태로 두느니 로그를 남기고 진행합니다. spec 에는 트리거 쪽 확인도 적혀 있습니다. 일정 기록 트리거는 `user_id` 변경을 비교하지 않으니 작성자를 sentinel 로 바꿔도 히스토리 행이나 푸시가 생기지 않습니다.
+
+앱 쪽에서는 로그아웃 방식이 하나 달라졌습니다.
+
+```ts
+export async function deleteAccount(): Promise<boolean> {
+  const { data, error } = await supabase.functions.invoke('delete-account', { method: 'POST' });
+  if (error || !(data as { ok?: boolean } | null)?.ok) return false;
+  await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+  await endLiveActivity('signed_out');
+  return true;
+}
+```
+
+계정이 이미 서버에서 사라졌으니 세션도 죽은 상태라, 서버에 로그아웃을 요청해 봐야 실패할 뿐입니다. 그래서 이 기기에서만 지웁니다. 실패하면 로그인 상태를 그대로 두고 "삭제하지 못했습니다" 안내를 띄워 다시 시도할 수 있게 했습니다.
+
+유예 기간과 복구, 웹에서의 삭제 요청, RevenueCat 구매 기록 삭제, 그룹 데이터 내보내기는 범위 밖으로 두었습니다. Apple 영수증은 Apple 소유라는 점이 방침에 이미 적혀 있습니다. 방침과 약관에는 "함께 쓰기 그룹에 공유한 일정·위시·댓글은 남은 멤버를 위해 작성자를 '탈퇴한 사람' 으로 바꿔 남기며, 내가 만든 그룹은 남은 멤버에게 넘어간다" 는 문장을 더했습니다.
+
+## 확인한 것
+
+plan 에 체크된 기록 기준입니다. 마이그레이션은 로컬 PG14 에서 리허설 SQL 로 돌렸습니다. 그룹 주인 A 와 멤버 B, 혼자 그룹을 가진 C 를 만들어 두고, 주인 이전·공유 일정·댓글·위시·히스토리의 sentinel 이관·개인 데이터 삭제·혼자 그룹 삭제·같은 사용자로 다시 부르기·sentinel 자신을 넘기면 거부·일반 로그인 권한으로는 호출 거부를 확인하는 구성입니다. 엣지 함수는 `deno check` 를 통과시켰습니다.
+
+운영 반영도 같은 날입니다. plan 의 T5 기록에 따르면 마이그레이션을 올리고 함수 v1 을 배포한 뒤, 임시 사용자 A(그룹 주인)·B 로 운영 E2E 를 돌렸습니다. A 를 지우자 A 의 auth·프로필·개인 일정·개인 위시·사진 파일이 0 이 됐고, 그룹 주인은 B 로 바뀌었고, A 가 공유한 일정·위시·댓글은 sentinel 로 남았고, B 의 일정과 투표는 그대로였습니다. anon 키만으로 부르면 401 이었습니다. 이어서 B 를 지우자 혼자 남은 그룹이 지워지면서 sentinel 일정·위시·댓글·히스토리까지 0 이 됐고, 옛 토큰으로 다시 부르면 401 이었습니다. 임시 데이터는 0건으로 정리했습니다.
+
+앱 쪽은 새 바이너리 없이 runtime 2.1.2 OTA `062fc40f` 로 나갔습니다. intent 에 적어 둔 판정 기준은 삭제 요청 수와 실제로 지워진 auth 사용자 수가 같은지(서버 로그), 그리고 남은 멤버 쪽 공유 일정이 유지되는지입니다. 그 수치는 아직 기록에 없습니다.
+
+[DaySeed](https://daily1bite.com/dayseed) 는 매일의 습관을 한 번의 탭으로 기록하고 캘린더를 가장 가까운 사람과 함께 쓰는 iOS 앱입니다. [App Store 에서 받기](https://apps.apple.com/app/id6764353269)
+
+{/* gate: 🧪 마이그레이션·함수·앱 diff 발췌, plan T1 리허설·T5 운영 E2E·OTA 기록 / 🧭 intent 연쇄 삭제 문제·PO 결정 3건·컬럼/RLS 불변 제약, 함수 Storage 실패 처리·local 로그아웃 이유, 비범위 → index */}
